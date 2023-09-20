@@ -22,7 +22,6 @@ public class Delivery {
     @Enumerated(EnumType.STRING)
     private DeliveryStatus deliveryStatus;  // 배송 상태
 
-
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "delivery")
     private Order order;
 
