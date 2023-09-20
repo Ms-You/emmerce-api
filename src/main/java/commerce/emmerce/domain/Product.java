@@ -2,6 +2,7 @@ package commerce.emmerce.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -51,5 +52,20 @@ public class Product {
 
     @OneToMany(mappedBy = "product", orphanRemoval = true)
     private List<CategoryProduct> categoryProductList = new ArrayList<>();
+
+
+    @Builder(builderMethodName = "createProduct")
+    private Product(String name, String detail, Integer originalPrice, Integer discountPrice, Integer discountRate,
+                    Integer stockQuantity, List<String> titleImgList, List<String> detailImgList, String seller) {
+        this.name = name;
+        this.detail = detail;
+        this.originalPrice = originalPrice;
+        this.discountPrice = discountPrice;
+        this.discountRate = discountRate;
+        this.stockQuantity = stockQuantity;
+        this.titleImgList = titleImgList;
+        this.detailImgList = detailImgList;
+        this.seller = seller;
+    }
 
 }

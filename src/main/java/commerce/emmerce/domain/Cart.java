@@ -2,6 +2,7 @@ package commerce.emmerce.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -22,5 +23,11 @@ public class Cart {
     @OneToMany(mappedBy = "cart", orphanRemoval = true)
     private List<CartProduct> cartProductList = new ArrayList<>();
 
+
+    @Builder(builderMethodName = "createCart")
+    private Cart(Member member) {
+
+        member.insertCart(this);
+    }
 
 }

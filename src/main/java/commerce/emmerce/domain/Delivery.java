@@ -2,6 +2,7 @@ package commerce.emmerce.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -24,5 +25,13 @@ public class Delivery {
 
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "delivery")
     private Order order;
+
+
+    @Builder(builderMethodName = "createDelivery")
+    private Delivery(Address address, DeliveryStatus deliveryStatus, Order order) {
+        this.address = address;
+        this.deliveryStatus = deliveryStatus;
+        this.order = order;
+    }
 
 }
