@@ -2,6 +2,7 @@ package commerce.emmerce.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -47,11 +48,32 @@ public class Member {
     private Cart cart;  // 장바구니
 
     @OneToMany(mappedBy = "member", orphanRemoval = true)
+    private List<Order> orderList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<Heart> heartList = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<Review> reviewList = new ArrayList<>();
 
 
+    @Builder(builderMethodName = "createMember")
+    private Member(String name, String email, String password, String passwordConfirm, String tel,
+                   String birth, String profileImg, Integer point, RoleType role, Address address) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.passwordConfirm = passwordConfirm;
+        this.tel = tel;
+        this.birth = birth;
+        this.profileImg = profileImg;
+        this.point = point;
+        this.role = role;
+        this.address = address;
+    }
+
+    public void insertCart(Cart cart) {
+        this.cart = cart;
+    }
 
 }

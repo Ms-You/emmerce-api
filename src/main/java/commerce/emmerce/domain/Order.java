@@ -2,6 +2,7 @@ package commerce.emmerce.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -38,5 +39,16 @@ public class Order {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "delivery_id")
     private Delivery delivery;
+
+
+    @Builder(builderMethodName = "createOrder")
+    private Order(LocalDateTime orderDate, OrderStatus orderStatus, Member member, Delivery delivery) {
+        this.orderDate = orderDate;
+        this.orderStatus = orderStatus;
+        this.member = member;
+        this.delivery = delivery;
+
+        member.getOrderList().add(this);
+    }
 
 }

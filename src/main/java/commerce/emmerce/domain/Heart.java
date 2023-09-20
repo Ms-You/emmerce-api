@@ -1,9 +1,7 @@
 package commerce.emmerce.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -23,5 +21,15 @@ public class Heart {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id")
     private Product product;
+
+
+    @Builder(builderMethodName = "createHeart")
+    private Heart(Member member, Product product) {
+        this.member = member;
+        this.product = product;
+
+        member.getHeartList().add(this);
+        product.getHeartList().add(this);
+    }
 
 }

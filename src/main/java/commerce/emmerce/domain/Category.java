@@ -2,6 +2,7 @@ package commerce.emmerce.domain;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,5 +30,14 @@ public class Category {
 
     @OneToMany(mappedBy = "category", orphanRemoval = true)
     private List<CategoryProduct> categoryProductList = new ArrayList<>();
+
+
+    @Builder(builderMethodName = "createCategory")
+    private Category(Integer tier, String name, String code, String parentCode) {
+        this.tier = tier;
+        this.name = name;
+        this.code = code;
+        this.parentCode = parentCode;
+    }
 
 }
