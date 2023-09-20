@@ -22,10 +22,10 @@ public class Order {
     private Long id;
 
     @CreatedDate
-    private LocalDateTime order_date;   // 주문 날짜
+    private LocalDateTime orderDate;   // 주문 날짜
 
     @Enumerated(EnumType.STRING)
-    private OrderStatus order_status;  // 주문 상태
+    private OrderStatus orderStatus;  // 주문 상태
 
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -33,7 +33,7 @@ public class Order {
     private Member member;
 
     @OneToMany(mappedBy = "order", orphanRemoval = true)
-    private List<OrderProduct> order_product_list = new ArrayList<>();
+    private List<OrderProduct> orderProductList = new ArrayList<>();
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "delivery_id")

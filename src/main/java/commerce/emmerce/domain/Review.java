@@ -23,12 +23,12 @@ public class Review {
 
     private String description;
 
-    private Double star_score;   // 별점
+    private Double starScore;   // 별점
 
-    private List<String> review_img_list;
+    private List<String> reviewImgList;
 
     @CreatedDate
-    private LocalDate write_date;
+    private LocalDate writeDate;
 
 
     @ManyToOne(fetch = FetchType.LAZY)

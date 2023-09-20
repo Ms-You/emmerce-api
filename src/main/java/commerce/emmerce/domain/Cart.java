@@ -20,7 +20,7 @@ public class Cart {
 
 
     @OneToMany(mappedBy = "cart", orphanRemoval = true)
-    private List<CartProduct> cart_product_list = new ArrayList<>();
+    private List<CartProduct> cartProductList = new ArrayList<>();
 
 
 }

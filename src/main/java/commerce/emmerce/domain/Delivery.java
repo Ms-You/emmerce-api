@@ -19,7 +19,7 @@ public class Delivery {
     private Address address;    // 주소
 
     @Enumerated(EnumType.STRING)
-    private DeliveryStatus delivery_status;  // 배송 상태
+    private DeliveryStatus deliveryStatus;  // 배송 상태
 
 
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "delivery")

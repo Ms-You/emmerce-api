@@ -17,19 +17,21 @@ public class Member {
     @Column(name = "member_id")
     private Long id;
 
+    @Column(unique = true)
     private String name;
 
+    @Column(unique = true)
     private String email;
 
     private String password;
 
-    private String password_confirm;
+    private String passwordConfirm;
 
     private String tel;
 
     private String birth;
 
-    private String profile_img;
+    private String profileImg;
 
     private Integer point;  // 보유 포인트
 
@@ -45,9 +47,11 @@ public class Member {
     private Cart cart;  // 장바구니
 
     @OneToMany(mappedBy = "member", orphanRemoval = true)
-    private List<Heart> heart_list = new ArrayList<>();
+    private List<Heart> heartList = new ArrayList<>();
 
     @OneToMany(mappedBy = "member", orphanRemoval = true)
-    private List<Review> review_list = new ArrayList<>();
+    private List<Review> reviewList = new ArrayList<>();
+
+
 
 }

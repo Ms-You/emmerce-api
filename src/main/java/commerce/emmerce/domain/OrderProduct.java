@@ -15,9 +15,9 @@ public class OrderProduct {
     @Column(name = "order_product_id")
     private Long id;
 
-    private Integer total_price;
+    private Integer totalPrice;
 
-    private Integer total_count;
+    private Integer totalCount;
 
 
     @ManyToOne(fetch = FetchType.LAZY)

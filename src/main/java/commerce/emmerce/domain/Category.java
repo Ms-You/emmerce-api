@@ -24,10 +24,10 @@ public class Category {
 
     private String code;
 
-    private String parent_code;
+    private String parentCode;
 
 
     @OneToMany(mappedBy = "category", orphanRemoval = true)
-    private List<CategoryProduct> category_product_list = new ArrayList<>();
+    private List<CategoryProduct> categoryProductList = new ArrayList<>();
 
 }
