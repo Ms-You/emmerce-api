@@ -5,16 +5,17 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Entity
+@Table
 public class Member {
 
-    @Id @GeneratedValue
+    @Id
     @Column(name = "member_id")
     private Long id;
 
@@ -43,17 +44,17 @@ public class Member {
     private Address address;    // 주소
 
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, orphanRemoval = true)
-    @JoinColumn(name = "cart_id")
+//    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, orphanRemoval = true)
+//    @JoinColumn(name = "cart_id")
     private Cart cart;  // 장바구니
 
-    @OneToMany(mappedBy = "member", orphanRemoval = true)
+//    @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<Order> orderList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member", orphanRemoval = true)
+//    @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<Heart> heartList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "member", orphanRemoval = true)
+//    @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<Review> reviewList = new ArrayList<>();
 
 

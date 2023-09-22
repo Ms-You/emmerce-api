@@ -5,14 +5,14 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Entity
+@Table
 public class Delivery {
 
     @Id
-    @GeneratedValue
     @Column(name = "delivery_id")
     private Long id;
 
@@ -22,7 +22,7 @@ public class Delivery {
     @Enumerated(EnumType.STRING)
     private DeliveryStatus deliveryStatus;  // 배송 상태
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "delivery")
+//    @OneToOne(fetch = FetchType.LAZY, mappedBy = "delivery")
     private Order order;
 
 

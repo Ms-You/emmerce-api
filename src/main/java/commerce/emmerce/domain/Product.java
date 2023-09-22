@@ -5,17 +5,17 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Entity
+@Table
 public class Product {
 
     @Id
-    @GeneratedValue
     @Column(name = "product_id")
     private Long id;
 
@@ -38,19 +38,19 @@ public class Product {
     private String seller;  // 판매자
 
 
-    @OneToMany(mappedBy = "product", orphanRemoval = true)
+//    @OneToMany(mappedBy = "product", orphanRemoval = true)
     private List<CartProduct> cartProductList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product", orphanRemoval = true)
+//    @OneToMany(mappedBy = "product", orphanRemoval = true)
     private List<OrderProduct> orderProductList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product", orphanRemoval = true)
+//    @OneToMany(mappedBy = "product", orphanRemoval = true)
     private List<Heart> heartList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product", orphanRemoval = true)
+//    @OneToMany(mappedBy = "product", orphanRemoval = true)
     private List<Review> reviewList = new ArrayList<>();
 
-    @OneToMany(mappedBy = "product", orphanRemoval = true)
+//    @OneToMany(mappedBy = "product", orphanRemoval = true)
     private List<CategoryProduct> categoryProductList = new ArrayList<>();
 
 
