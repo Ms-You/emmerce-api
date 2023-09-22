@@ -16,23 +16,15 @@ public class CartProduct {
     @Column(name = "cart_product_id")
     private Long id;
 
+    private Long cartId;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "cart_id")
-    private Cart cart;
-
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "product_id")
-    private Product product;
+    private Long productId;
 
 
     @Builder
-    private CartProduct(Cart cart, Product product) {
-        this.cart = cart;
-        this.product = product;
-
-        cart.getCartProductList().add(this);
-        product.getCartProductList().add(this);
+    private CartProduct(Long cartId, Long productId) {
+        this.cartId = cartId;
+        this.productId = productId;
     }
 
 }

@@ -38,22 +38,6 @@ public class Product {
     private String seller;  // 판매자
 
 
-//    @OneToMany(mappedBy = "product", orphanRemoval = true)
-    private List<CartProduct> cartProductList = new ArrayList<>();
-
-//    @OneToMany(mappedBy = "product", orphanRemoval = true)
-    private List<OrderProduct> orderProductList = new ArrayList<>();
-
-//    @OneToMany(mappedBy = "product", orphanRemoval = true)
-    private List<Heart> heartList = new ArrayList<>();
-
-//    @OneToMany(mappedBy = "product", orphanRemoval = true)
-    private List<Review> reviewList = new ArrayList<>();
-
-//    @OneToMany(mappedBy = "product", orphanRemoval = true)
-    private List<CategoryProduct> categoryProductList = new ArrayList<>();
-
-
     @Builder(builderMethodName = "createProduct")
     private Product(String name, String detail, Integer originalPrice, Integer discountPrice, Integer discountRate,
                     Integer stockQuantity, List<String> titleImgList, List<String> detailImgList, String seller) {

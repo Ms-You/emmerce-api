@@ -13,23 +13,15 @@ public class Heart {
     @Column(name = "heart_id")
     private Long id;
 
+    private Long memberId;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "member_id")
-    private Member member;
-
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "product_id")
-    private Product product;
+    private Long productId;
 
 
     @Builder(builderMethodName = "createHeart")
-    private Heart(Member member, Product product) {
-        this.member = member;
-        this.product = product;
-
-        member.getHeartList().add(this);
-        product.getHeartList().add(this);
+    private Heart(Long memberId, Long productId) {
+        this.memberId = memberId;
+        this.productId = productId;
     }
 
 }

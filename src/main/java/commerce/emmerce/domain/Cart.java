@@ -7,9 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table
@@ -19,15 +16,11 @@ public class Cart {
     @Column(name = "cart_id")
     private Long id;
 
-
-//    @OneToMany(mappedBy = "cart", orphanRemoval = true)
-    private List<CartProduct> cartProductList = new ArrayList<>();
-
+    private Long memberId;
 
     @Builder(builderMethodName = "createCart")
-    private Cart(Member member) {
-
-        member.insertCart(this);
+    private Cart(Long memberId) {
+        this.memberId = memberId;
     }
 
 }

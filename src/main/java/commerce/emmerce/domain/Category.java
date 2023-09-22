@@ -7,9 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table
@@ -26,10 +23,6 @@ public class Category {
     private String code;
 
     private String parentCode;
-
-
-//    @OneToMany(mappedBy = "category", orphanRemoval = true)
-    private List<CategoryProduct> categoryProductList = new ArrayList<>();
 
 
     @Builder(builderMethodName = "createCategory")

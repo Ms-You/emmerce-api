@@ -22,15 +22,14 @@ public class Delivery {
     @Enumerated(EnumType.STRING)
     private DeliveryStatus deliveryStatus;  // 배송 상태
 
-//    @OneToOne(fetch = FetchType.LAZY, mappedBy = "delivery")
-    private Order order;
+    private Long orderId;
 
 
     @Builder(builderMethodName = "createDelivery")
-    private Delivery(Address address, DeliveryStatus deliveryStatus, Order order) {
+    private Delivery(Address address, DeliveryStatus deliveryStatus, Long orderId) {
         this.address = address;
         this.deliveryStatus = deliveryStatus;
-        this.order = order;
+        this.orderId = orderId;
     }
 
 }

@@ -7,9 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table
@@ -44,20 +41,6 @@ public class Member {
     private Address address;    // 주소
 
 
-//    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, orphanRemoval = true)
-//    @JoinColumn(name = "cart_id")
-    private Cart cart;  // 장바구니
-
-//    @OneToMany(mappedBy = "member", orphanRemoval = true)
-    private List<Order> orderList = new ArrayList<>();
-
-//    @OneToMany(mappedBy = "member", orphanRemoval = true)
-    private List<Heart> heartList = new ArrayList<>();
-
-//    @OneToMany(mappedBy = "member", orphanRemoval = true)
-    private List<Review> reviewList = new ArrayList<>();
-
-
     @Builder(builderMethodName = "createMember")
     private Member(String name, String email, String password, String passwordConfirm, String tel,
                    String birth, String profileImg, Integer point, RoleType role, Address address) {
@@ -71,10 +54,6 @@ public class Member {
         this.point = point;
         this.role = role;
         this.address = address;
-    }
-
-    public void insertCart(Cart cart) {
-        this.cart = cart;
     }
 
 }
