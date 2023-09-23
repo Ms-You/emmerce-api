@@ -11,7 +11,7 @@ public class Heart {
 
     @Id
     @Column(name = "heart_id")
-    private Long id;
+    private Long heartId;
 
     private Long memberId;
 

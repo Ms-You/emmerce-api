@@ -18,7 +18,7 @@ public class Review {
 
     @Id
     @Column(name = "review_id")
-    private Long id;
+    private Long reviewId;
 
     private String title;
 

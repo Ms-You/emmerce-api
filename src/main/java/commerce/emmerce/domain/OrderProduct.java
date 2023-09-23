@@ -14,7 +14,7 @@ public class OrderProduct {
 
     @Id
     @Column(name = "order_product_id")
-    private Long id;
+    private Long orderProductId;
 
     private Integer totalPrice;
 

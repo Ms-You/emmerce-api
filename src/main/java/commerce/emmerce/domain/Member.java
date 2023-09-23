@@ -14,7 +14,7 @@ public class Member {
 
     @Id
     @Column(name = "member_id")
-    private Long id;
+    private Long memberId;
 
     @Column(unique = true)
     private String name;
@@ -23,8 +23,6 @@ public class Member {
     private String email;
 
     private String password;
-
-    private String passwordConfirm;
 
     private String tel;
 
@@ -37,23 +35,27 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private RoleType role;
 
-    @Embedded
-    private Address address;    // 주소
+    private String city;
+
+    private String street;
+
+    private String zipcode;
 
 
     @Builder(builderMethodName = "createMember")
-    private Member(String name, String email, String password, String passwordConfirm, String tel,
-                   String birth, String profileImg, Integer point, RoleType role, Address address) {
+    private Member(String name, String email, String password, String tel, String birth, String profileImg,
+                   Integer point, RoleType role, String city, String street, String zipcode) {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.passwordConfirm = passwordConfirm;
         this.tel = tel;
         this.birth = birth;
         this.profileImg = profileImg;
         this.point = point;
         this.role = role;
-        this.address = address;
+        this.city = city;
+        this.street = street;
+        this.zipcode = zipcode;
     }
 
 }

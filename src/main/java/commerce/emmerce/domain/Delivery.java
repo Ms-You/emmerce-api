@@ -14,10 +14,13 @@ public class Delivery {
 
     @Id
     @Column(name = "delivery_id")
-    private Long id;
+    private Long deliveryId;
 
-    @Embedded
-    private Address address;    // 주소
+    private String city;
+
+    private String street;
+
+    private String zipcode;
 
     @Enumerated(EnumType.STRING)
     private DeliveryStatus deliveryStatus;  // 배송 상태
@@ -26,8 +29,10 @@ public class Delivery {
 
 
     @Builder(builderMethodName = "createDelivery")
-    private Delivery(Address address, DeliveryStatus deliveryStatus, Long orderId) {
-        this.address = address;
+    private Delivery(String city, String street, String zipcode, DeliveryStatus deliveryStatus, Long orderId) {
+        this.city = city;
+        this.street = street;
+        this.zipcode = zipcode;
         this.deliveryStatus = deliveryStatus;
         this.orderId = orderId;
     }

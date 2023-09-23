@@ -14,7 +14,7 @@ public class CategoryProduct {
 
     @Id
     @Column(name = "category_product_id")
-    private Long id;
+    private Long categoryProductId;
 
     private Long categoryId;
 

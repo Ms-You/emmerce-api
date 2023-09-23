@@ -14,7 +14,7 @@ public class Category {
 
     @Id
     @Column(name = "category_id")
-    private Long id;
+    private Long categoryId;
 
     private Integer tier;
 

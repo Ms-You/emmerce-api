@@ -17,7 +17,7 @@ public class Order {
 
     @Id
     @Column(name = "order_id")
-    private Long id;
+    private Long orderId;
 
     @CreatedDate
     private LocalDateTime orderDate;   // 주문 날짜
