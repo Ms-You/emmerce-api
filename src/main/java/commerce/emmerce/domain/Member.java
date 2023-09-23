@@ -5,18 +5,16 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Entity
+@Table
 public class Member {
 
-    @Id @GeneratedValue
+    @Id
     @Column(name = "member_id")
-    private Long id;
+    private Long memberId;
 
     @Column(unique = true)
     private String name;
@@ -25,8 +23,6 @@ public class Member {
     private String email;
 
     private String password;
-
-    private String passwordConfirm;
 
     private String tel;
 
@@ -39,41 +35,27 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private RoleType role;
 
-    @Embedded
-    private Address address;    // 주소
+    private String city;
 
+    private String street;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, orphanRemoval = true)
-    @JoinColumn(name = "cart_id")
-    private Cart cart;  // 장바구니
-
-    @OneToMany(mappedBy = "member", orphanRemoval = true)
-    private List<Order> orderList = new ArrayList<>();
-
-    @OneToMany(mappedBy = "member", orphanRemoval = true)
-    private List<Heart> heartList = new ArrayList<>();
-
-    @OneToMany(mappedBy = "member", orphanRemoval = true)
-    private List<Review> reviewList = new ArrayList<>();
+    private String zipcode;
 
 
     @Builder(builderMethodName = "createMember")
-    private Member(String name, String email, String password, String passwordConfirm, String tel,
-                   String birth, String profileImg, Integer point, RoleType role, Address address) {
+    private Member(String name, String email, String password, String tel, String birth, String profileImg,
+                   Integer point, RoleType role, String city, String street, String zipcode) {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.passwordConfirm = passwordConfirm;
         this.tel = tel;
         this.birth = birth;
         this.profileImg = profileImg;
         this.point = point;
         this.role = role;
-        this.address = address;
-    }
-
-    public void insertCart(Cart cart) {
-        this.cart = cart;
+        this.city = city;
+        this.street = street;
+        this.zipcode = zipcode;
     }
 
 }

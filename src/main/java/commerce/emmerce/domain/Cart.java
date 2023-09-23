@@ -5,29 +5,22 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Entity
+@Table
 public class Cart {
 
     @Id
-    @GeneratedValue
     @Column(name = "cart_id")
-    private Long id;
+    private Long cartId;
 
-
-    @OneToMany(mappedBy = "cart", orphanRemoval = true)
-    private List<CartProduct> cartProductList = new ArrayList<>();
-
+    private Long memberId;
 
     @Builder(builderMethodName = "createCart")
-    private Cart(Member member) {
-
-        member.insertCart(this);
+    private Cart(Long memberId) {
+        this.memberId = memberId;
     }
 
 }

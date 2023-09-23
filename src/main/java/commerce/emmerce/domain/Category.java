@@ -5,19 +5,16 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Entity
+@Table
 public class Category {
 
     @Id
-    @GeneratedValue
     @Column(name = "category_id")
-    private Long id;
+    private Long categoryId;
 
     private Integer tier;
 
@@ -26,10 +23,6 @@ public class Category {
     private String code;
 
     private String parentCode;
-
-
-    @OneToMany(mappedBy = "category", orphanRemoval = true)
-    private List<CategoryProduct> categoryProductList = new ArrayList<>();
 
 
     @Builder(builderMethodName = "createCategory")

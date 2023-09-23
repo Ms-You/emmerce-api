@@ -5,32 +5,36 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Entity
+@Table
 public class Delivery {
 
     @Id
-    @GeneratedValue
     @Column(name = "delivery_id")
-    private Long id;
+    private Long deliveryId;
 
-    @Embedded
-    private Address address;    // 주소
+    private String city;
+
+    private String street;
+
+    private String zipcode;
 
     @Enumerated(EnumType.STRING)
     private DeliveryStatus deliveryStatus;  // 배송 상태
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "delivery")
-    private Order order;
+    private Long orderId;
 
 
     @Builder(builderMethodName = "createDelivery")
-    private Delivery(Address address, DeliveryStatus deliveryStatus, Order order) {
-        this.address = address;
+    private Delivery(String city, String street, String zipcode, DeliveryStatus deliveryStatus, Long orderId) {
+        this.city = city;
+        this.street = street;
+        this.zipcode = zipcode;
         this.deliveryStatus = deliveryStatus;
-        this.order = order;
+        this.orderId = orderId;
     }
 
 }
