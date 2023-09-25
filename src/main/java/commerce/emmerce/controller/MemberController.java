@@ -13,6 +13,7 @@ public class MemberController {
 
     private final MemberRepository memberRepository;
 
+
     @GetMapping("/member/list")
     public Flux<Member> memberList() {
         return memberRepository.findAll();

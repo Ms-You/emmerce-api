@@ -35,6 +35,7 @@ public class SecurityConfig {
                 .cors(corsSpec -> corsSpec.configurationSource(corsConfigurationSource()))  // cors
                 .authorizeExchange((authorizeExchangeSpec ->
                         authorizeExchangeSpec.pathMatchers("/auth/register", "auth/login")
+
                                 .permitAll()
                                 .anyExchange()
                                 .authenticated()))
@@ -63,6 +64,7 @@ public class SecurityConfig {
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+
     }
 
 
@@ -72,6 +74,7 @@ public class SecurityConfig {
                 new UserDetailsRepositoryReactiveAuthenticationManager(userDetailsService);
         authenticationManager.setPasswordEncoder(passwordEncoder());
         return authenticationManager;
+
     }
 
 
