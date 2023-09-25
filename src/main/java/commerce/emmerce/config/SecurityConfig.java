@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.web.cors.CorsConfiguration;
@@ -18,7 +19,6 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.server.WebFilter;
 
 @Configuration
-@RequiredArgsConstructor
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
@@ -41,6 +41,12 @@ public class SecurityConfig {
 
 
     @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+
+    @Bean
     public WebFilter customHeaderOptionFilter() {
         return (exchange, chain) -> {
             exchange.getResponse().getHeaders().set("X-Frame-Options", "SAMEORIGIN");
@@ -50,6 +56,10 @@ public class SecurityConfig {
     }
 
 
+    /*
+       custom filter 적용하지 않을 때
+       .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec.authenticationEntryPoint())
+    */
     @Bean
     public WebFilter customAuthenticateAndAccessDeniedHandlingFilter() {
         return (exchange, chain) -> chain.filter(exchange)

@@ -14,5 +14,9 @@ logging:
   level:
     org.springframework.r2dbc.core: debug
 
+jwt:
+  secret: VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHa
+
 server:
   port: 8088
+
