@@ -1,0 +1,22 @@
+spring:
+  # 콘솔 텍스트 색깔 설정
+  output:
+    ansi:
+      enabled: always
+
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/emmerce
+    username: postgres
+    password: root
+
+# R2DBC에서 Database로 나가는 쿼리를 보고 싶을 때
+logging:
+  level:
+    org.springframework.r2dbc.core: debug
+
+jwt:
+  secret: VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHa
+
+server:
+  port: 8088
+
