@@ -4,8 +4,7 @@ import commerce.emmerce.config.jwt.TokenDTO;
 import commerce.emmerce.config.jwt.TokenProvider;
 import commerce.emmerce.domain.Member;
 import commerce.emmerce.domain.RoleType;
-import commerce.emmerce.dto.LoginReq;
-import commerce.emmerce.dto.MemberReq;
+import commerce.emmerce.dto.MemberDTO;
 import commerce.emmerce.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
@@ -24,15 +23,15 @@ public class AuthService {
     private final TokenProvider tokenProvider;
     private final MemberRepository memberRepository;
 
-    public Mono<Member> register(MemberReq memberReq) {
-        passwordCorrect(memberReq.getPassword(), memberReq.getPasswordConfirm());
+    public Mono<Member> register(MemberDTO.MemberRegisterReq memberRegisterReq) {
+        passwordCorrect(memberRegisterReq.getPassword(), memberRegisterReq.getPasswordConfirm());
 
         Member member = Member.createMember()
-                .name(memberReq.getName())
-                .email(memberReq.getEmail())
-                .password(passwordEncoder.encode(memberReq.getPassword()))
-                .tel(memberReq.getTel())
-                .birth(memberReq.getBirth())
+                .name(memberRegisterReq.getName())
+                .email(memberRegisterReq.getEmail())
+                .password(passwordEncoder.encode(memberRegisterReq.getPassword()))
+                .tel(memberRegisterReq.getTel())
+                .birth(memberRegisterReq.getBirth())
                 .profileImg(null)
                 .point(0)
                 .role(RoleType.ROLE_USER)
@@ -51,9 +50,9 @@ public class AuthService {
     }
 
 
-    public Mono<TokenDTO> login(LoginReq loginReq) {
+    public Mono<TokenDTO> login(MemberDTO.MemberLoginReq memberLoginReq) {
         Authentication authentication =
-        new UsernamePasswordAuthenticationToken(loginReq.getLoginId(), loginReq.getPassword());
+        new UsernamePasswordAuthenticationToken(memberLoginReq.getLoginId(), memberLoginReq.getPassword());
 
         return authenticationManager.authenticate(authentication)
                 .map(tokenProvider::generateToken)
