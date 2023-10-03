@@ -1,16 +1,18 @@
 package commerce.emmerce.domain;
 
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Table
 public class Heart {
 
     @Id
-    @Column(name = "heart_id")
+    @Column(value = "heart_id")
     private Long heartId;
 
     private Long memberId;
