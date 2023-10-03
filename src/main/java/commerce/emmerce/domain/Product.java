@@ -1,10 +1,8 @@
 package commerce.emmerce.domain;
 
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.ArrayList;
@@ -12,11 +10,12 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Table
 public class Product {
 
     @Id
-    @Column(name = "product_id")
+    @Column(value = "product_id")
     private Long productId;
 
     private String name;

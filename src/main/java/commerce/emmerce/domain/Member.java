@@ -1,25 +1,22 @@
 package commerce.emmerce.domain;
 
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table
+@AllArgsConstructor
+@Table("member")
 public class Member {
 
     @Id
-    @Column(name = "member_id")
+    @Column(value = "member_id")
     private Long memberId;
 
-    @Column(unique = true)
     private String name;
 
-    @Column(unique = true)
     private String email;
 
     private String password;
@@ -32,7 +29,6 @@ public class Member {
 
     private Integer point;  // 보유 포인트
 
-    @Enumerated(EnumType.STRING)
     private RoleType role;
 
     private String city;

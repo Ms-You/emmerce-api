@@ -1,19 +1,18 @@
 package commerce.emmerce.domain;
 
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Table
 public class Category {
 
     @Id
-    @Column(name = "category_id")
+    @Column(value = "category_id")
     private Long categoryId;
 
     private Integer tier;
