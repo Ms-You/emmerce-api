@@ -10,7 +10,6 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table
 public class Product {
 
@@ -41,8 +40,9 @@ public class Product {
 
 
     @Builder(builderMethodName = "createProduct")
-    private Product(String name, String detail, Integer originalPrice, Integer discountPrice, Integer discountRate, Integer stockQuantity,
+    private Product(Long productId, String name, String detail, Integer originalPrice, Integer discountPrice, Integer discountRate, Integer stockQuantity,
                     Double starScore, List<String> titleImgList, List<String> detailImgList, String seller) {
+        this.productId = productId;
         this.name = name;
         this.detail = detail;
         this.originalPrice = originalPrice;

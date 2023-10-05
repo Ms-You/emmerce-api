@@ -7,7 +7,6 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table("member")
 public class Member {
 
@@ -39,8 +38,9 @@ public class Member {
 
 
     @Builder(builderMethodName = "createMember")
-    private Member(String name, String email, String password, String tel, String birth, String profileImg,
+    private Member(Long id, String name, String email, String password, String tel, String birth, String profileImg,
                    Integer point, RoleType role, String city, String street, String zipcode) {
+        this.memberId = id;
         this.name = name;
         this.email = email;
         this.password = password;
