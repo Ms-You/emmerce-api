@@ -1,10 +1,8 @@
 package commerce.emmerce.domain;
 
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.ArrayList;
@@ -16,7 +14,7 @@ import java.util.List;
 public class Product {
 
     @Id
-    @Column(name = "product_id")
+    @Column(value = "product_id")
     private Long productId;
 
     private String name;
@@ -42,8 +40,9 @@ public class Product {
 
 
     @Builder(builderMethodName = "createProduct")
-    private Product(String name, String detail, Integer originalPrice, Integer discountPrice, Integer discountRate, Integer stockQuantity,
+    private Product(Long productId, String name, String detail, Integer originalPrice, Integer discountPrice, Integer discountRate, Integer stockQuantity,
                     Double starScore, List<String> titleImgList, List<String> detailImgList, String seller) {
+        this.productId = productId;
         this.name = name;
         this.detail = detail;
         this.originalPrice = originalPrice;
