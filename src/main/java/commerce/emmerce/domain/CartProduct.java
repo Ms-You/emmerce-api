@@ -7,7 +7,6 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table
 public class CartProduct {
 
@@ -19,11 +18,15 @@ public class CartProduct {
 
     private Long productId;
 
+    private Integer quantity;
+
 
     @Builder
-    private CartProduct(Long cartId, Long productId) {
+    private CartProduct(Long cartProductId, Long cartId, Long productId, Integer quantity) {
+        this.cartProductId = cartProductId;
         this.cartId = cartId;
         this.productId = productId;
+        this.quantity = quantity;
     }
 
 }

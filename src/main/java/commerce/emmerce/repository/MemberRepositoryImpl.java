@@ -47,8 +47,6 @@ public class MemberRepositoryImpl {
                                 .then()
                 )
                 .as(transactionalOperator::transactional);
-
-
     }
 
 
