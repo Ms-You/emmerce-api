@@ -27,7 +27,7 @@ public class CategoryProductRepositoryImpl {
                 .then();
     }
 
-    public Mono<Void> delete(Long categoryId, Long productId) {
+    public Mono<Void> deleteByCategoryIdAndProductId(Long categoryId, Long productId) {
         String query = """
                 delete from category_product where category_id = :categoryId and product_id = :productId
                 """;

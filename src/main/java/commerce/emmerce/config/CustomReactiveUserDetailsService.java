@@ -1,7 +1,7 @@
 package commerce.emmerce.config;
 
 import commerce.emmerce.domain.Member;
-import commerce.emmerce.repository.MemberRepository;
+import commerce.emmerce.repository.MemberRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,7 +19,7 @@ import java.util.List;
 @Service
 public class CustomReactiveUserDetailsService implements ReactiveUserDetailsService {
 
-    private final MemberRepository memberRepository;
+    private final MemberRepositoryImpl memberRepository;
 
     @Override
     public Mono<UserDetails> findByUsername(String username) {

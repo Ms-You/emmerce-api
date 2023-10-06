@@ -25,9 +25,11 @@ public class CategoryProductService {
         return categoryProductRepository.save(categoryProduct);
     }
 
+
     public Mono<Void> cancel(CategoryProductDTO.CategoryProductReq categoryProductReq) {
-        return categoryProductRepository.delete(categoryProductReq.getCategoryId(), categoryProductReq.getProductId());
+        return categoryProductRepository.deleteByCategoryIdAndProductId(categoryProductReq.getCategoryId(), categoryProductReq.getProductId());
     }
+
 
     public Flux<ProductDTO.ProductListResp> findProductList(Long categoryId) {
         Flux<Product> productList = categoryProductRepository.productListByCategory(categoryId);

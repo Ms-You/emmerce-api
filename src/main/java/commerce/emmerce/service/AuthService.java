@@ -5,7 +5,7 @@ import commerce.emmerce.config.jwt.TokenProvider;
 import commerce.emmerce.domain.Member;
 import commerce.emmerce.domain.RoleType;
 import commerce.emmerce.dto.MemberDTO;
-import commerce.emmerce.repository.MemberRepository;
+import commerce.emmerce.repository.MemberRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,9 +21,10 @@ public class AuthService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final ReactiveAuthenticationManager authenticationManager;
     private final TokenProvider tokenProvider;
-    private final MemberRepository memberRepository;
+    private final MemberRepositoryImpl memberRepository;
 
-    public Mono<Member> register(MemberDTO.MemberRegisterReq memberRegisterReq) {
+
+    public Mono<Void> register(MemberDTO.MemberRegisterReq memberRegisterReq) {
         passwordCorrect(memberRegisterReq.getPassword(), memberRegisterReq.getPasswordConfirm());
 
         Member member = Member.createMember()
@@ -32,7 +33,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(memberRegisterReq.getPassword()))
                 .tel(memberRegisterReq.getTel())
                 .birth(memberRegisterReq.getBirth())
-                .profileImg(null)
+                .profileImg("default_img")
                 .point(0)
                 .role(RoleType.ROLE_USER)
                 .city("도시")

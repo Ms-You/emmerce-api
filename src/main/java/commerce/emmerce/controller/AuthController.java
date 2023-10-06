@@ -22,7 +22,7 @@ public class AuthController {
 
 
     @PostMapping("/register")
-    public Mono<Member> signup(@RequestBody MemberDTO.MemberRegisterReq memberRegisterReq) {
+    public Mono<Void> signup(@RequestBody MemberDTO.MemberRegisterReq memberRegisterReq) {
         return authService.register(memberRegisterReq);
     }
 
