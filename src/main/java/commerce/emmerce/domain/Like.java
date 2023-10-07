@@ -7,21 +7,21 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table
-public class Heart {
+@Table("likes")
+public class Like {
 
     @Id
-    @Column(value = "heart_id")
-    private Long heartId;
+    @Column(value = "like_id")
+    private Long likeId;
 
     private Long memberId;
 
     private Long productId;
 
 
-    @Builder(builderMethodName = "createHeart")
-    private Heart(Long heartId, Long memberId, Long productId) {
-        this.heartId = heartId;
+    @Builder
+    private Like(Long likeId, Long memberId, Long productId) {
+        this.likeId = likeId;
         this.memberId = memberId;
         this.productId = productId;
     }

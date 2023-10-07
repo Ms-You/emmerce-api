@@ -81,12 +81,11 @@ public class CartProductRepositoryImpl {
         String query = """
                 delete
                 from cart_product cp
-                where cp.cart_id = :cartId and cp.product_id = :productId
+                where cp.cart_product_id = :cartProductId
                 """;
 
         return databaseClient.sql(query)
-                .bind("cartId", cartProduct.getCartId())
-                .bind("productId", cartProduct.getProductId())
+                .bind("cartProductId", cartProduct.getCartProductId())
                 .then();
     }
 
