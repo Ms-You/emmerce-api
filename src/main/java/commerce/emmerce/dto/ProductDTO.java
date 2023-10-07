@@ -41,6 +41,7 @@ public class ProductDTO {
         private List<String> titleImgList;
         private List<String> detailImgList;
         private String seller;
+        private Long likeCount;
     }
 
     @Getter
@@ -55,6 +56,7 @@ public class ProductDTO {
         private Integer discountRate;
         private Double starScore;
         private List<String> titleImgList;
+        private Long likeCount;
     }
 
 }
