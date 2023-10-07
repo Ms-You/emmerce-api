@@ -7,7 +7,6 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table
 public class Heart {
 
@@ -21,7 +20,8 @@ public class Heart {
 
 
     @Builder(builderMethodName = "createHeart")
-    private Heart(Long memberId, Long productId) {
+    private Heart(Long heartId, Long memberId, Long productId) {
+        this.heartId = heartId;
         this.memberId = memberId;
         this.productId = productId;
     }
