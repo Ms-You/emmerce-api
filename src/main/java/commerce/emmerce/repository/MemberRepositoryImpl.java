@@ -38,14 +38,13 @@ public class MemberRepositoryImpl {
                 .bind("city", member.getCity())
                 .bind("street", member.getStreet())
                 .bind("zipcode", member.getZipcode())
-                .fetch()
-                .one()
+                .fetch().one()
                 .map(result -> (Long) result.get("member_id"))
                 .flatMap(memberId ->
                         databaseClient.sql(cartQuery)
                                 .bind("memberId", memberId)
                                 .then()
-                )
+                ).switchIfEmpty(Mono.empty())
                 .as(transactionalOperator::transactional);
     }
 

@@ -48,6 +48,7 @@ public class CategoryProductRepositoryImpl {
 
         return databaseClient.sql(query)
                 .bind("categoryId", categoryId)
+                .fetch().all()
                 .map(row -> Product.createProduct()
                             .productId((Long) row.get("product_id"))
                             .name((String) row.get("name"))
@@ -60,8 +61,7 @@ public class CategoryProductRepositoryImpl {
                             .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
                             .detailImgList(Arrays.asList((String[]) row.get("detail_img_list")))
                             .seller((String) row.get("seller"))
-                            .build())
-                .all();
+                            .build());
     }
 
 }

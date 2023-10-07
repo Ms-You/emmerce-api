@@ -40,8 +40,7 @@ public class CartProductRepositoryImpl {
         return databaseClient.sql(query)
                 .bind("cartId", cartId)
                 .bind("productId", productId)
-                .fetch()
-                .one()
+                .fetch().one()
                 .map(row -> CartProduct.builder()
                         .cartProductId((Long) row.get("cart_product_id"))
                         .cartId((Long) row.get("cart_id"))
@@ -61,8 +60,7 @@ public class CartProductRepositoryImpl {
 
         return databaseClient.sql(query)
                 .bind("cartId", cartId)
-                .fetch()
-                .all()
+                .fetch().all()
                 .map(row -> Product.createProduct()
                         .productId((Long) row.get("product_id"))
                         .name((String) row.get("name"))
@@ -104,6 +102,7 @@ public class CartProductRepositoryImpl {
 
         return databaseClient.sql(query)
                 .bind("cartId", cartId)
+                .fetch().all()
                 .map(row -> CartProductDTO.CartProductListResp.builder()
                         .productId((Long) row.get("product_id"))
                         .name((String) row.get("name"))
@@ -111,8 +110,7 @@ public class CartProductRepositoryImpl {
                         .discountPrice((Integer) row.get("discount_price"))
                         .totalCount((Integer) row.get("quantity"))
                         .totalPrice((Integer) row.get("discount_price") * (Integer) row.get("quantity"))
-                        .build())
-                .all();
+                        .build());
     }
 
 }
