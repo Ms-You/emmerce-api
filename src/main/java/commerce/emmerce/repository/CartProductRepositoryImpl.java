@@ -91,6 +91,18 @@ public class CartProductRepositoryImpl {
     }
 
 
+    public Mono<Long> deleteAll(Long cartId) {
+        String query = """
+                delete
+                from cart_product cp
+                where cp.cart_id = :cartId
+                """;
+
+        return databaseClient.sql(query)
+                .bind("cartId", cartId)
+                .fetch().rowsUpdated();
+    }
+
 
     public Flux<CartProductDTO.CartProductListResp> findAllByCartId(Long cartId) {
         String query = """

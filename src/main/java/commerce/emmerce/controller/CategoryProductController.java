@@ -1,6 +1,5 @@
 package commerce.emmerce.controller;
 
-import commerce.emmerce.dto.CategoryProductDTO;
 import commerce.emmerce.dto.ProductDTO;
 import commerce.emmerce.service.CategoryProductService;
 import lombok.RequiredArgsConstructor;
@@ -9,25 +8,25 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
-@RequestMapping("/category-product")
+@RequestMapping("/category/{categoryId}/product")
 @RestController
 public class CategoryProductController {
 
     private final CategoryProductService categoryProductService;
 
-    @PostMapping
-    public Mono<Void> enrollProductToCategory(@RequestBody CategoryProductDTO.CategoryProductReq categoryProductReq) {
-        return categoryProductService.enroll(categoryProductReq);
+    @PostMapping("/{productId}")
+    public Mono<Void> enrollProductToCategory(@PathVariable Long categoryId, @PathVariable Long productId) {
+        return categoryProductService.enroll(categoryId, productId);
     }
 
-    @DeleteMapping
-    public Mono<Void> deleteProductToCategory(@RequestBody CategoryProductDTO.CategoryProductReq categoryProductReq) {
-        return categoryProductService.cancel(categoryProductReq);
+    @DeleteMapping("/{productId}")
+    public Mono<Void> deleteProductToCategory(@PathVariable Long categoryId, @PathVariable Long productId) {
+        return categoryProductService.cancel(categoryId, productId);
     }
 
 
-    @GetMapping("/category/{id}")
-    public Flux<ProductDTO.ProductListResp> findProductsByCategory(@PathVariable(value = "id") Long categoryId) {
+    @GetMapping("/list")
+    public Flux<ProductDTO.ProductListResp> findProductsByCategory(@PathVariable Long categoryId) {
         return categoryProductService.findProductList(categoryId);
     }
 

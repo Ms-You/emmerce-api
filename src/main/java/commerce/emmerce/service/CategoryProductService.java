@@ -2,7 +2,6 @@ package commerce.emmerce.service;
 
 import commerce.emmerce.domain.CategoryProduct;
 import commerce.emmerce.domain.Product;
-import commerce.emmerce.dto.CategoryProductDTO;
 import commerce.emmerce.dto.ProductDTO;
 import commerce.emmerce.repository.CategoryProductRepositoryImpl;
 import lombok.RequiredArgsConstructor;
@@ -16,18 +15,18 @@ public class CategoryProductService {
 
     private final CategoryProductRepositoryImpl categoryProductRepository;
 
-    public Mono<Void> enroll(CategoryProductDTO.CategoryProductReq categoryProductReq) {
+    public Mono<Void> enroll(Long categoryId, Long productId) {
         CategoryProduct categoryProduct = CategoryProduct.builder()
-                .categoryId(categoryProductReq.getCategoryId())
-                .productId(categoryProductReq.getProductId())
+                .categoryId(categoryId)
+                .productId(productId)
                 .build();
 
         return categoryProductRepository.save(categoryProduct);
     }
 
 
-    public Mono<Void> cancel(CategoryProductDTO.CategoryProductReq categoryProductReq) {
-        return categoryProductRepository.deleteByCategoryIdAndProductId(categoryProductReq.getCategoryId(), categoryProductReq.getProductId());
+    public Mono<Void> cancel(Long categoryId, Long productId) {
+        return categoryProductRepository.deleteByCategoryIdAndProductId(categoryId, productId);
     }
 
 

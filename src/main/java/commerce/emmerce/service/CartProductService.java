@@ -4,10 +4,12 @@ import commerce.emmerce.domain.CartProduct;
 import commerce.emmerce.dto.CartProductDTO;
 import commerce.emmerce.repository.CartProductRepositoryImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class CartProductService {
@@ -48,6 +50,14 @@ public class CartProductService {
         return cartProductRepository.findByCartIdAndProductId(cartId, productId)
                 .flatMap(cartProduct ->
                         cartProductRepository.delete(cartProduct)
+                );
+    }
+
+
+    public Mono<Long> clear(Long cartId) {
+        return cartProductRepository.deleteAll(cartId)
+                .doOnNext(rowsUpdated ->
+                        log.info("삭제된 상품 개수 : {}", rowsUpdated)
                 );
     }
 
