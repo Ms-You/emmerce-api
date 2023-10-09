@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table("orders")
 public class Order {
 
@@ -27,7 +26,8 @@ public class Order {
 
 
     @Builder(builderMethodName = "createOrder")
-    private Order(LocalDateTime orderDate, OrderStatus orderStatus, Long memberId) {
+    private Order(Long orderId, LocalDateTime orderDate, OrderStatus orderStatus, Long memberId) {
+        this.orderId = orderId;
         this.orderDate = orderDate;
         this.orderStatus = orderStatus;
         this.memberId = memberId;
