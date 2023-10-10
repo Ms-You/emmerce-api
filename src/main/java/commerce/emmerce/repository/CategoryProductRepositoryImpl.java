@@ -1,7 +1,7 @@
 package commerce.emmerce.repository;
 
 import commerce.emmerce.domain.CategoryProduct;
-import commerce.emmerce.domain.Product;
+import commerce.emmerce.dto.ProductDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
@@ -27,7 +27,7 @@ public class CategoryProductRepositoryImpl {
                 .then();
     }
 
-    public Mono<Void> delete(Long categoryId, Long productId) {
+    public Mono<Void> deleteByCategoryIdAndProductId(Long categoryId, Long productId) {
         String query = """
                 delete from category_product where category_id = :categoryId and product_id = :productId
                 """;
@@ -38,30 +38,30 @@ public class CategoryProductRepositoryImpl {
                 .then();
     }
 
-    public Flux<Product> productListByCategory(Long categoryId) {
+
+    public Flux<ProductDTO.ProductListResp> productListByCategoryId(Long categoryId) {
         String query = """
-                select *
+                select p.*, count(l.*) as like_count
                 from product p
                 inner join category_product cp on cp.product_id = p.product_id
+                left join likes l on l.product_id = p.product_id
                 where cp.category_id = :categoryId
+                group by p.product_id
                 """;
 
         return databaseClient.sql(query)
                 .bind("categoryId", categoryId)
-                .map(row -> Product.createProduct()
-                            .productId((Long) row.get("product_id"))
-                            .name((String) row.get("name"))
-                            .detail((String) row.get("detail"))
-                            .originalPrice((Integer) row.get("original_price"))
-                            .discountPrice((Integer) row.get("discount_price"))
-                            .discountRate((Integer) row.get("discount_rate"))
-                            .stockQuantity((Integer) row.get("stock_quantity"))
-                            .starScore((Double) row.get("star_score"))
-                            .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
-                            .detailImgList(Arrays.asList((String[]) row.get("detail_img_list")))
-                            .seller((String) row.get("seller"))
-                            .build())
-                .all();
+                .fetch().all()
+                .map(row -> ProductDTO.ProductListResp.builder()
+                        .productId((Long) row.get("product_id"))
+                        .name((String) row.get("name"))
+                        .originalPrice((Integer) row.get("original_price"))
+                        .discountPrice((Integer) row.get("discount_price"))
+                        .discountRate((Integer) row.get("discount_rate"))
+                        .starScore((Double) row.get("star_score"))
+                        .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
+                        .likeCount((Long) row.get("like_count"))
+                        .build());
     }
 
 }

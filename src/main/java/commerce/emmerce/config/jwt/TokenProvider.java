@@ -13,6 +13,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 import java.security.Key;
 import java.util.Arrays;
@@ -76,23 +77,25 @@ public class TokenProvider {
      * @param accessToken
      * @return Authentication
      */
-    public Authentication getAuthentication(String accessToken) {
-        Claims claims = parseClaims(accessToken);
+    public Mono<Authentication> getAuthentication(String accessToken) {
+        return Mono.fromCallable(() -> {
+            Claims claims = parseClaims(accessToken);
 
-        if(claims.get(AUTHORITIES_KEY) == null) {
-            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
-        }
+            if(claims.get(AUTHORITIES_KEY) == null) {
+                throw new RuntimeException("권한 정보가 없는 토큰입니다.");
+            }
 
-        // 클레임에서 권한 정보 추출
-        Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
+            // 클레임에서 권한 정보 추출
+            Collection<? extends GrantedAuthority> authorities =
+                    Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+                            .map(SimpleGrantedAuthority::new)
+                            .collect(Collectors.toList());
 
-        // UserDetails 객체로 인증 객체 리턴
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
+            // UserDetails 객체로 인증 객체 리턴
+            UserDetails principal = new User(claims.getSubject(), "", authorities);
 
-        return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+            return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+        });
     }
 
 
@@ -116,25 +119,27 @@ public class TokenProvider {
     /**
      * 토큰 검증
      * @param token
-     * @return boolean
+     * @return Mono<Boolean>
      */
-    public boolean validateToken(String token) {
-        try {
-            Jwts.parserBuilder()
-                    .setSigningKey(key).build()
-                    .parseClaimsJws(token);
+    public Mono<Boolean> validateToken(String token) {
+        return Mono.fromCallable(() -> {
+            try {
+                Jwts.parserBuilder()
+                        .setSigningKey(key).build()
+                        .parseClaimsJws(token);
 
-            return true;
-        } catch (SecurityException | MalformedJwtException e) {
-            log.info("유효하지 않은 토큰입니다.", e);
-        } catch (ExpiredJwtException e){
-            log.info("만료된 토큰입니다.", e);
-        } catch (UnsupportedJwtException e){
-            log.info("지원하지 않는 토큰입니다.", e);
-        } catch (IllegalArgumentException e){
-            log.info("JWT 클레임 문자열이 비었습니다.", e);
-        }
-        return false;
+                return true;
+            } catch (SecurityException | MalformedJwtException e) {
+                log.info("유효하지 않은 토큰입니다.", e);
+            } catch (ExpiredJwtException e){
+                log.info("만료된 토큰입니다.", e);
+            } catch (UnsupportedJwtException e){
+                log.info("지원하지 않는 토큰입니다.", e);
+            } catch (IllegalArgumentException e){
+                log.info("JWT 클레임 문자열이 비었습니다.", e);
+            }
+            return false;
+        });
     }
 
 }

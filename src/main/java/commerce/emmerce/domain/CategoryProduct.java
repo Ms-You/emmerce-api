@@ -7,7 +7,6 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table
 public class CategoryProduct {
 
@@ -21,7 +20,8 @@ public class CategoryProduct {
 
 
     @Builder
-    private CategoryProduct(Long categoryId, Long productId) {
+    private CategoryProduct(Long categoryProductId, Long categoryId, Long productId) {
+        this.categoryProductId = categoryProductId;
         this.categoryId = categoryId;
         this.productId = productId;
     }

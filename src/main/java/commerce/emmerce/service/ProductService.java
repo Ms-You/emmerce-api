@@ -32,23 +32,7 @@ public class ProductService {
 
 
     public Mono<ProductDTO.ProductDetailResp> detail(Long productId) {
-        Mono<Product> product = productRepository.findById(productId);
-
-        return product.map(p -> {
-            return ProductDTO.ProductDetailResp.builder()
-                    .productId(p.getProductId())
-                    .name(p.getName())
-                    .detail(p.getDetail())
-                    .originalPrice(p.getOriginalPrice())
-                    .discountPrice(p.getDiscountPrice())
-                    .discountRate(p.getDiscountRate())
-                    .stockQuantity(p.getStockQuantity())
-                    .starScore(p.getStarScore())
-                    .titleImgList(p.getTitleImgList())
-                    .detailImgList(p.getDetailImgList())
-                    .seller(p.getSeller())
-                    .build();
-        });
+        return productRepository.findDetailById(productId);
     }
 
 }

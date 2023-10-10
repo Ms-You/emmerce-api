@@ -31,7 +31,7 @@ public class Product {
 
     private Double starScore;   // 별점
 
-    // jsonb 형태로 저장 (JSON으로 변환하여 저장)
+    // text[] 자료형으로 저장
     private List<String> titleImgList = new ArrayList<>();   // 대표 이미지 목록
 
     private List<String> detailImgList = new ArrayList<>();   // 상세 이미지 목록
