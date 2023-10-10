@@ -15,6 +15,12 @@ public class Delivery {
     @Column(value = "delivery_id")
     private Long deliveryId;
 
+    private String name;
+
+    private String tel;
+
+    private String email;
+
     private String city;
 
     private String street;
@@ -27,7 +33,10 @@ public class Delivery {
 
 
     @Builder(builderMethodName = "createDelivery")
-    private Delivery(String city, String street, String zipcode, DeliveryStatus deliveryStatus, Long orderId) {
+    private Delivery(String name, String tel, String email, String city, String street, String zipcode, DeliveryStatus deliveryStatus, Long orderId) {
+        this.name = name;
+        this.tel = tel;
+        this.email = email;
         this.city = city;
         this.street = street;
         this.zipcode = zipcode;

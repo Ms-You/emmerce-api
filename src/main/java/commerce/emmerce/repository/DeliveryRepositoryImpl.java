@@ -16,10 +16,14 @@ public class DeliveryRepositoryImpl {
 
     public Mono<Void> save(Delivery delivery) {
         String query = """
-                insert into delivery (city, street, zipcode, delivery_status, order_id) values (:city, :street, :zipcode, :deliveryStatus, :orderId)
+                insert into delivery (name, tel, email, city, street, zipcode, delivery_status, order_id) 
+                values (:name, :tel, :email, :city, :street, :zipcode, :deliveryStatus, :orderId)
                 """;
 
         return databaseClient.sql(query)
+                .bind("name", delivery.getName())
+                .bind("tel", delivery.getTel())
+                .bind("email", delivery.getEmail())
                 .bind("city", delivery.getCity())
                 .bind("street", delivery.getStreet())
                 .bind("zipcode", delivery.getZipcode())

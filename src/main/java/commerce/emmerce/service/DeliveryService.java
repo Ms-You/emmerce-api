@@ -19,6 +19,9 @@ public class DeliveryService {
 
     public Mono<Void> deliveryStart(DeliveryDTO.DeliveryReq deliveryReq) {
         return deliveryRepository.save(Delivery.createDelivery()
+                .name(deliveryReq.getName())
+                .tel(deliveryReq.getTel())
+                .email(deliveryReq.getEmail())
                 .city(deliveryReq.getCity())
                 .street(deliveryReq.getStreet())
                 .zipcode(deliveryReq.getZipcode())
