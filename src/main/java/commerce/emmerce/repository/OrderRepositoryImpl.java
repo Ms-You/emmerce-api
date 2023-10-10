@@ -24,7 +24,7 @@ public class OrderRepositoryImpl {
 
         return databaseClient.sql(query)
                 .bind("orderDate", order.getOrderDate())
-                .bind("orderStatus", order.getOrderStatus().name())
+                .bind("orderStatus", order.getOrderStatus().getValue())
                 .bind("memberId", order.getMemberId())
                 .fetch().one()
                 .map(row -> Order.createOrder()

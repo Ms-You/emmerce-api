@@ -30,7 +30,7 @@ public class OrderService {
                 .flatMap(name -> memberRepository.findByName(name)
                         .flatMap(member -> orderRepository.save(Order.createOrder()
                                         .orderDate(LocalDateTime.now())
-                                        .orderStatus(OrderStatus.ING)
+                                        .orderStatus(OrderStatus.COMPLETE)
                                         .memberId(member.getMemberId())
                                         .build())
                                 .flatMap(order -> Flux.fromIterable(orderCartProductReqList)
