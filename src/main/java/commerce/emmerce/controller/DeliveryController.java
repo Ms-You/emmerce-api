@@ -15,15 +15,6 @@ public class DeliveryController {
 
     private final DeliveryService deliveryService;
 
-
-    @PostMapping
-    public Mono<ResponseEntity> createDelivery(@RequestBody DeliveryDTO.DeliveryReq deliveryReq) {
-        return deliveryService.deliveryStart(deliveryReq)
-                .then(Mono.just(new ResponseEntity(HttpStatus.CREATED)))
-                .onErrorReturn(new ResponseEntity(HttpStatus.BAD_REQUEST));
-    }
-
-
     @PutMapping("/{deliveryId}")
     public Mono<ResponseEntity> updateDeliveryStatus(@PathVariable Long deliveryId,
                                                      @RequestBody DeliveryDTO.DeliveryStatusReq deliveryStatusReq) {

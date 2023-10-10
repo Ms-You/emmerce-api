@@ -1,15 +1,14 @@
 package commerce.emmerce.service;
 
 import commerce.emmerce.config.SecurityUtil;
-import commerce.emmerce.domain.Order;
-import commerce.emmerce.domain.OrderProduct;
-import commerce.emmerce.domain.OrderStatus;
+import commerce.emmerce.domain.*;
+import commerce.emmerce.dto.DeliveryDTO;
 import commerce.emmerce.dto.OrderDTO;
-import commerce.emmerce.repository.MemberRepositoryImpl;
-import commerce.emmerce.repository.OrderProductRepositoryImpl;
-import commerce.emmerce.repository.OrderRepositoryImpl;
+import commerce.emmerce.dto.PaymentDTO;
+import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -23,28 +22,63 @@ public class OrderService {
     private final MemberRepositoryImpl memberRepository;
     private final OrderRepositoryImpl orderRepository;
     private final OrderProductRepositoryImpl orderProductRepository;
+    private final DeliveryRepositoryImpl deliveryRepository;
+    private final PaymentRepositoryImpl paymentRepository;
 
 
-    public Mono<Void> createOrder(List<OrderDTO.OrderCartProductReq> orderCartProductReqList) {
+    @Transactional
+    public Mono<Void> startOrder(OrderDTO.OrderReq orderReq) {
         return SecurityUtil.getCurrentMemberName()
                 .flatMap(name -> memberRepository.findByName(name)
-                        .flatMap(member -> orderRepository.save(Order.createOrder()
-                                        .orderDate(LocalDateTime.now())
-                                        .orderStatus(OrderStatus.COMPLETE)
-                                        .memberId(member.getMemberId())
-                                        .build())
-                                .flatMap(order -> Flux.fromIterable(orderCartProductReqList)
-                                        .flatMap(orderCartProductDTO -> orderProductRepository.save(OrderProduct.builder()
-                                                .totalPrice(orderCartProductDTO.getTotalPrice())
-                                                .totalCount(orderCartProductDTO.getTotalCount())
-                                                .orderId(order.getOrderId())
-                                                .productId(orderCartProductDTO.getProductId())
-                                                .build()))
-                                        .then()
-                                )
+                        .flatMap(member -> makeOrder(member, orderReq)
                         )
                 );
     }
+    
+    private Mono<Void> makeOrder(Member member, OrderDTO.OrderReq orderReq) {
+        return orderRepository.save(Order.createOrder()
+                        .orderDate(LocalDateTime.now())
+                        .orderStatus(OrderStatus.COMPLETE)
+                        .memberId(member.getMemberId())
+                        .build())
+                .flatMap(savedOrder -> saveProductsForOrder(savedOrder, orderReq.getOrderProductList())
+                        .then(createDeliveryForOrder(savedOrder, orderReq.getDeliveryReq()))
+                        .then(createPaymentForOrder(savedOrder, orderReq.getPaymentReq()))
+                );
+    }
 
+    private Mono<Void> saveProductsForOrder(Order order, List<OrderDTO.OrderProductReq> orderProductReqList) {
+        return Flux.fromIterable(orderProductReqList)
+                .flatMap(orderProductReq -> orderProductRepository.save(OrderProduct.builder()
+                        .totalPrice(orderProductReq.getTotalPrice())
+                        .totalCount(orderProductReq.getTotalCount())
+                        .orderId(order.getOrderId())
+                        .productId(orderProductReq.getProductId())
+                        .build()))
+                .then();
+    }
+
+    private Mono<Void> createDeliveryForOrder(Order order, DeliveryDTO.DeliveryReq deliveryReq) {
+        return deliveryRepository.save(Delivery.createDelivery()
+                .name(deliveryReq.getName())
+                .tel(deliveryReq.getTel())
+                .email(deliveryReq.getEmail())
+                .city(deliveryReq.getCity())
+                .street(deliveryReq.getStreet())
+                .zipcode(deliveryReq.getZipcode())
+                .deliveryStatus(DeliveryStatus.READY)
+                .orderId(order.getOrderId())
+                .build());
+    }
+
+    private Mono<Void> createPaymentForOrder(Order order, PaymentDTO.PaymentReq paymentReq) {
+        return paymentRepository.save(Payment.createPayment()
+                        .amount(paymentReq.getAmount())
+                        .paymentStatus(paymentReq.getPaymentStatus())
+                        .paymentMethod(paymentReq.getPaymentMethod())
+                        .orderId(order.getOrderId())
+                        .build())
+                .then();
+    }
 
 }

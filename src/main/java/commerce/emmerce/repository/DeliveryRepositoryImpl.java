@@ -27,7 +27,7 @@ public class DeliveryRepositoryImpl {
                 .bind("city", delivery.getCity())
                 .bind("street", delivery.getStreet())
                 .bind("zipcode", delivery.getZipcode())
-                .bind("deliveryStatus", delivery.getDeliveryStatus())
+                .bind("deliveryStatus", delivery.getDeliveryStatus().name())
                 .bind("orderId", delivery.getOrderId())
                 .then();
     }
@@ -41,7 +41,7 @@ public class DeliveryRepositoryImpl {
                 """;
 
         return databaseClient.sql(query)
-                .bind("deliveryStatus", deliveryStatus.getValue())
+                .bind("deliveryStatus", deliveryStatus.name())
                 .bind("deliveryId", deliveryId)
                 .fetch().rowsUpdated();
     }
