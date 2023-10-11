@@ -7,7 +7,6 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table
 public class OrderProduct {
 
@@ -25,7 +24,8 @@ public class OrderProduct {
 
 
     @Builder
-    private OrderProduct(Integer totalPrice, Integer totalCount, Long orderId, Long productId) {
+    private OrderProduct(Long orderProductId, Integer totalPrice, Integer totalCount, Long orderId, Long productId) {
+        this.orderProductId = orderProductId;
         this.totalPrice = totalPrice;
         this.totalCount = totalCount;
         this.orderId = orderId;

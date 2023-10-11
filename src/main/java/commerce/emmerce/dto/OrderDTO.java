@@ -1,8 +1,13 @@
 package commerce.emmerce.dto;
 
+import commerce.emmerce.domain.OrderStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class OrderDTO {
@@ -28,6 +33,29 @@ public class OrderDTO {
         private Integer totalPrice;
     }
 
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class OrderResp {
+        private Long orderId;
+        private LocalDateTime orderDate;
+        private OrderStatus orderStatus;
+        private List<OrderProductResp> orderProductRespList;
+    }
+
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class OrderProductResp {
+        private Long productId;
+        private String name;
+        private List<String> titleImgList = new ArrayList<>();
+        private String seller;  // 판매자
+    }
 
 
 }

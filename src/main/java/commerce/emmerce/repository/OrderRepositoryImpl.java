@@ -5,6 +5,7 @@ import commerce.emmerce.domain.OrderStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -27,6 +28,25 @@ public class OrderRepositoryImpl {
                 .bind("orderStatus", order.getOrderStatus().name())
                 .bind("memberId", order.getMemberId())
                 .fetch().one()
+                .map(row -> Order.createOrder()
+                        .orderId((Long) row.get("order_id"))
+                        .orderDate((LocalDateTime) row.get("order_date"))
+                        .orderStatus(OrderStatus.valueOf((String) row.get("order_status")))
+                        .memberId((Long) row.get("member_id"))
+                        .build());
+    }
+
+    public Flux<Order> findByMemberId(Long memberId) {
+        String query = """
+                select * 
+                from orders o
+                where o.member_id = :memberId
+                order by o.order_date desc 
+                """;
+
+        return databaseClient.sql(query)
+                .bind("memberId", memberId)
+                .fetch().all()
                 .map(row -> Order.createOrder()
                         .orderId((Long) row.get("order_id"))
                         .orderDate((LocalDateTime) row.get("order_date"))

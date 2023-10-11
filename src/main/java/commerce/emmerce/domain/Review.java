@@ -7,6 +7,7 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -25,7 +26,7 @@ public class Review {
 
     private Double starScore;   // 별점
 
-    private List<String> reviewImgList;
+    private List<String> reviewImgList = new ArrayList<>();
 
     @CreatedDate
     private LocalDate writeDate;
