@@ -7,6 +7,7 @@ import commerce.emmerce.dto.OrderDTO;
 import commerce.emmerce.dto.PaymentDTO;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class OrderService {
@@ -22,6 +24,7 @@ public class OrderService {
     private final MemberRepositoryImpl memberRepository;
     private final OrderRepositoryImpl orderRepository;
     private final OrderProductRepositoryImpl orderProductRepository;
+    private final ProductRepositoryImpl productRepository;
     private final DeliveryRepositoryImpl deliveryRepository;
     private final PaymentRepositoryImpl paymentRepository;
 
@@ -41,6 +44,7 @@ public class OrderService {
                         .orderStatus(OrderStatus.COMPLETE)
                         .memberId(member.getMemberId())
                         .build())
+                .doOnSuccess(savedOrder -> log.info("생성된 order_id: {}", savedOrder.getOrderId()))
                 .flatMap(savedOrder -> saveProductsForOrder(savedOrder, orderReq.getOrderProductList())
                         .then(createDeliveryForOrder(savedOrder, orderReq.getDeliveryReq()))
                         .then(createPaymentForOrder(savedOrder, orderReq.getPaymentReq()))
@@ -79,6 +83,43 @@ public class OrderService {
                         .orderId(order.getOrderId())
                         .build())
                 .then();
+    }
+
+
+    @Transactional
+    public Flux<OrderDTO.OrderResp> getOrderList() {
+        return SecurityUtil.getCurrentMemberName()
+                .flatMap(name -> memberRepository.findByName(name))
+                .flatMapMany(member -> findOrders(member));
+    }
+
+
+    public Flux<OrderDTO.OrderResp> findOrders(Member member) {
+        return orderRepository.findByMemberId(member.getMemberId())
+                .flatMap(order -> findOrderProducts(order)
+                        .map(product -> OrderDTO.OrderProductResp.builder()
+                                .productId(product.getProductId())
+                                .name(product.getName())
+                                .titleImgList(product.getTitleImgList())
+                                .seller(product.getSeller())
+                                .build()
+                        ).collectList()
+                        .map(orderProductResps -> OrderDTO.OrderResp.builder()
+                                .orderId(order.getOrderId())
+                                .orderDate(order.getOrderDate())
+                                .orderStatus(order.getOrderStatus())
+                                .orderProductRespList(orderProductResps)
+                                .build())
+                );
+    }
+
+    public Flux<Product> findOrderProducts(Order order) {
+        return orderProductRepository.findByOrderId(order.getOrderId())
+                .flatMap(orderProduct -> findProducts(orderProduct));
+    }
+
+    public Mono<Product> findProducts(OrderProduct orderProduct) {
+        return productRepository.findById(orderProduct.getProductId());
     }
 
 }

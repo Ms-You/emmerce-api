@@ -7,7 +7,6 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table
 public class Delivery {
 
@@ -33,7 +32,8 @@ public class Delivery {
 
 
     @Builder(builderMethodName = "createDelivery")
-    private Delivery(String name, String tel, String email, String city, String street, String zipcode, DeliveryStatus deliveryStatus, Long orderId) {
+    private Delivery(Long deliveryId, String name, String tel, String email, String city, String street, String zipcode, DeliveryStatus deliveryStatus, Long orderId) {
+        this.deliveryId = deliveryId;
         this.name = name;
         this.tel = tel;
         this.email = email;

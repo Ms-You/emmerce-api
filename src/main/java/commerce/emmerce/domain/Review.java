@@ -7,11 +7,11 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table
 public class Review {
 
@@ -25,7 +25,7 @@ public class Review {
 
     private Double starScore;   // 별점
 
-    private List<String> reviewImgList;
+    private List<String> reviewImgList = new ArrayList<>();
 
     @CreatedDate
     private LocalDate writeDate;
@@ -36,8 +36,9 @@ public class Review {
 
 
     @Builder(builderMethodName = "createReview")
-    private Review(String title, String description, Double startScore, List<String> reviewImgList,
-                   LocalDate writeDate, Long memberId, Long productId) {
+    private Review(Long reviewId, String title, String description, Double startScore,
+                   List<String> reviewImgList, LocalDate writeDate, Long memberId, Long productId) {
+        this.reviewId = reviewId;
         this.title = title;
         this.description = description;
         this.starScore = startScore;
