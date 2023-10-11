@@ -7,6 +7,7 @@ import commerce.emmerce.dto.OrderDTO;
 import commerce.emmerce.dto.PaymentDTO;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class OrderService {
@@ -42,6 +44,7 @@ public class OrderService {
                         .orderStatus(OrderStatus.COMPLETE)
                         .memberId(member.getMemberId())
                         .build())
+                .doOnSuccess(savedOrder -> log.info("생성된 order_id: {}", savedOrder.getOrderId()))
                 .flatMap(savedOrder -> saveProductsForOrder(savedOrder, orderReq.getOrderProductList())
                         .then(createDeliveryForOrder(savedOrder, orderReq.getDeliveryReq()))
                         .then(createPaymentForOrder(savedOrder, orderReq.getPaymentReq()))

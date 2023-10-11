@@ -12,7 +12,6 @@ import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table
 public class Review {
 
@@ -37,8 +36,9 @@ public class Review {
 
 
     @Builder(builderMethodName = "createReview")
-    private Review(String title, String description, Double startScore, List<String> reviewImgList,
-                   LocalDate writeDate, Long memberId, Long productId) {
+    private Review(Long reviewId, String title, String description, Double startScore,
+                   List<String> reviewImgList, LocalDate writeDate, Long memberId, Long productId) {
+        this.reviewId = reviewId;
         this.title = title;
         this.description = description;
         this.starScore = startScore;
