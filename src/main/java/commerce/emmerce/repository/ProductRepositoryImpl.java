@@ -1,8 +1,6 @@
 package commerce.emmerce.repository;
 
-import commerce.emmerce.domain.OrderProduct;
 import commerce.emmerce.domain.Product;
-import commerce.emmerce.dto.OrderDTO;
 import commerce.emmerce.dto.ProductDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
@@ -19,12 +17,25 @@ public class ProductRepositoryImpl {
     private final DatabaseClient databaseClient;
 
 
-    public Mono<Void> save(Product product) {
+    public Mono<Void> save(Product product) {   // product 가 이미 존재하면 insert 대신 update
         String query = """
-                insert into product (name, detail, original_price, discount_price, discount_rate, stock_quantity, star_score, title_img_list, detail_img_list, seller)
-                    values(:name, :detail, :originalPrice, :discountPrice, :discountRate, :stockQuantity, :starScore, :titleImgList, :detailImgList, :seller)
+                insert into product (product_id, name, detail, original_price, 
+                    discount_price, discount_rate, stock_quantity, star_score, 
+                    title_img_list, detail_img_list, seller)
+                values(:productId, :name, :detail, :originalPrice, 
+                    :discountPrice, :discountRate, :stockQuantity, :starScore, 
+                    :titleImgList, :detailImgList, :seller)
+                on conflict (product_id) do update set
+                    name = :name,
+                    detail = :detail,
+                    original_price = :originalPrice,
+                    discount_price = :discountPrice,
+                    discount_rate = :discountRate,
+                    stock_quantity = :stockQuantity,
+                    star_score= :starScore
                 """;
         return databaseClient.sql(query)
+                .bind("productId", product.getProductId())
                 .bind("name", product.getName())
                 .bind("detail", product.getDetail())
                 .bind("originalPrice", product.getOriginalPrice())
@@ -37,6 +48,7 @@ public class ProductRepositoryImpl {
                 .bind("seller", product.getSeller())
                 .then();
     }
+
 
     public Mono<Product> findById(Long productId) {
         String query = """
@@ -92,32 +104,28 @@ public class ProductRepositoryImpl {
     }
 
 
-//    public Flux<Product> findByOrderProduct(OrderProduct orderProduct) {
-//        String query = """
-//                select *
-//                from product p
-//                inner join order_product op
-//                on p.product_id = op.product_id
-//                where op.id = :orderProductId
-//                """;
-//
-//        return databaseClient.sql(query)
-//                .bind("orderProductId", orderProduct.getOrderProductId())
-//                .fetch().all()
-//                .map(row -> Product.createProduct()
-//                        .productId((Long) row.get("product_id"))
-//                        .name((String) row.get("name"))
-//                        .detail((String) row.get("detail"))
-//                        .originalPrice((Integer) row.get("original_price"))
-//                        .discountPrice((Integer) row.get("discount_price"))
-//                        .discountRate((Integer) row.get("discount_rate"))
-//                        .stockQuantity((Integer) row.get("stock_quantity"))
-//                        .starScore((Double) row.get("star_score"))
-//                        .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
-//                        .detailImgList(Arrays.asList((String[]) row.get("detail_img_list")))
-//                        .seller((String) row.get("seller"))
-//                        .build());
-//    }
+    public Flux<Product> findAll() {
+        String query = """
+                select *
+                from product p
+                """;
+
+        return databaseClient.sql(query)
+                .fetch().all()
+                .map(row -> Product.createProduct()
+                        .productId((Long) row.get("product_id"))
+                        .name((String) row.get("name"))
+                        .detail((String) row.get("detail"))
+                        .originalPrice((Integer) row.get("original_price"))
+                        .discountPrice((Integer) row.get("discount_price"))
+                        .discountRate((Integer) row.get("discount_rate"))
+                        .stockQuantity((Integer) row.get("stock_quantity"))
+                        .starScore((Double) row.get("star_score"))
+                        .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
+                        .detailImgList(Arrays.asList((String[]) row.get("detail_img_list")))
+                        .seller((String) row.get("seller"))
+                        .build());
+    }
 
 
 }

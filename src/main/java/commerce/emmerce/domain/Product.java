@@ -55,4 +55,10 @@ public class Product {
         this.seller = seller;
     }
 
+
+    public void updateStarScore(double starScore) {
+        this.starScore = starScore;
+    }
+
+
 }

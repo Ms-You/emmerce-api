@@ -4,7 +4,11 @@ import commerce.emmerce.domain.Review;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.LocalDate;
+import java.util.Arrays;
 
 @RequiredArgsConstructor
 @Repository
@@ -27,6 +31,29 @@ public class ReviewRepositoryImpl {
                 .bind("memberId", review.getMemberId())
                 .bind("productId", review.getProductId())
                 .then();
+    }
+
+
+    public Flux<Review> findAllByProductId(Long productId) {
+        String query = """
+                select *
+                from review r
+                where r.product_id = :productId
+                """;
+
+        return databaseClient.sql(query)
+                .bind("productId", productId)
+                .fetch().all()
+                .map(row -> Review.createReview()
+                        .reviewId((Long) row.get("review_id"))
+                        .title((String) row.get("title"))
+                        .description((String) row.get("description"))
+                        .startScore((Double) row.get("star_score"))
+                        .reviewImgList(Arrays.asList((String[]) row.get("review_img_list")))
+                        .writeDate((LocalDate) row.get("write_date"))
+                        .memberId((Long) row.get("member_id"))
+                        .productId((Long) row.get("product_id"))
+                        .build());
     }
 
 }

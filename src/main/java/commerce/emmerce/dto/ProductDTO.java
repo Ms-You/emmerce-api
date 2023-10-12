@@ -19,7 +19,6 @@ public class ProductDTO {
         private Integer discountPrice;
         private Integer discountRate;
         private Integer stockQuantity;
-        private Double starScore;
         private List<String> titleImgList = new ArrayList<>();
         private List<String> detailImgList = new ArrayList<>();
         private String seller;

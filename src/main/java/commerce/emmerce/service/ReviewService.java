@@ -35,6 +35,7 @@ public class ReviewService {
 
     public Mono<Void> getOrderProduct(Member member, ReviewDTO.ReviewReq reviewReq) {
         return orderProductRepository.findByOrderIdAndProductId(reviewReq.getOrderId(), reviewReq.getProductId())
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("잘못된 상품입니다.")))
                 .flatMap(orderProduct -> checkDeliveryStatus(member, orderProduct, reviewReq));
     }
 
