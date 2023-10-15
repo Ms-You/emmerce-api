@@ -41,6 +41,12 @@ public class ProductDTO {
         private List<String> detailImgList;
         private String seller;
         private Long likeCount;
+        // 리뷰 목록
+        private List<ReviewDTO.ReviewResp> reviewRespList;
+
+        public void setReviewRespList(List<ReviewDTO.ReviewResp> reviewRespList) {
+            this.reviewRespList = reviewRespList;
+        }
     }
 
     @Getter

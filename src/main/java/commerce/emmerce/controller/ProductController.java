@@ -3,6 +3,7 @@ package commerce.emmerce.controller;
 import commerce.emmerce.dto.ProductDTO;
 import commerce.emmerce.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -19,9 +20,11 @@ public class ProductController {
     }
 
 
-    @GetMapping("/{id}")
-    public Mono<ProductDTO.ProductDetailResp> productDetail(@PathVariable(value = "id") Long productId) {
-        return productService.detail(productId);
+    @GetMapping("/{productId}")
+    public Mono<ResponseEntity<ProductDTO.ProductDetailResp>> productDetail(@PathVariable Long productId) {
+        return productService.detail(productId)
+                .map(resp -> ResponseEntity.ok(resp))
+                .defaultIfEmpty(ResponseEntity.notFound().build());
     }
 
 

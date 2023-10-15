@@ -9,13 +9,14 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
+@RequestMapping("/review")
 @RestController
 public class ReviewController {
 
     private final ReviewService reviewService;
 
 
-    @PostMapping("/review")
+    @PostMapping
     public Mono<ResponseEntity> writeReview(@RequestBody ReviewDTO.ReviewReq reviewReq) {
         return reviewService.write(reviewReq)
                 .then(Mono.just(new ResponseEntity(HttpStatus.CREATED)))
@@ -23,7 +24,7 @@ public class ReviewController {
     }
 
 
-    @DeleteMapping("/review/{reviewId}")
+    @DeleteMapping("/{reviewId}")
     public Mono<ResponseEntity> removeReview(@PathVariable Long reviewId) {
         return reviewService.remove(reviewId)
                 .then(Mono.just(new ResponseEntity(HttpStatus.NO_CONTENT)))

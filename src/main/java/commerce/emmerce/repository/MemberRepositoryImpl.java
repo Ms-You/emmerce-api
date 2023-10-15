@@ -3,7 +3,6 @@ package commerce.emmerce.repository;
 import commerce.emmerce.domain.Member;
 import commerce.emmerce.domain.RoleType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.reactive.TransactionalOperator;
@@ -58,6 +57,32 @@ public class MemberRepositoryImpl {
 
         return databaseClient.sql(query)
                 .bind("name", name)
+                .fetch().one()
+                .map(row -> Member.createMember()
+                        .id((Long) row.get("member_id"))
+                        .name((String) row.get("name"))
+                        .email((String) row.get("email"))
+                        .password((String) row.get("password"))
+                        .tel((String) row.get("tel"))
+                        .birth((String) row.get("birth"))
+                        .profileImg((String) row.get("profile_img"))
+                        .point((Integer) row.get("point"))
+                        .role(RoleType.valueOf((String) row.get("role")))
+                        .city((String) row.get("city"))
+                        .street((String) row.get("street"))
+                        .zipcode((String) row.get("zipcode"))
+                        .build());
+    }
+
+    public Mono<Member> findById(Long memberId) {
+        String query = """
+                select *
+                from member m
+                where m.member_id = :memberId
+                """;
+
+        return databaseClient.sql(query)
+                .bind("memberId", memberId)
                 .fetch().one()
                 .map(row -> Member.createMember()
                         .id((Long) row.get("member_id"))

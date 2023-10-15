@@ -3,6 +3,8 @@ package commerce.emmerce.service;
 import commerce.emmerce.domain.Product;
 import commerce.emmerce.domain.Review;
 import commerce.emmerce.dto.ProductDTO;
+import commerce.emmerce.dto.ReviewDTO;
+import commerce.emmerce.repository.MemberRepositoryImpl;
 import commerce.emmerce.repository.ProductRepositoryImpl;
 import commerce.emmerce.repository.ReviewRepositoryImpl;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ public class ProductService {
 
     private final ProductRepositoryImpl productRepository;
     private final ReviewRepositoryImpl reviewRepository;
+    private final MemberRepositoryImpl memberRepository;
 
     public Mono<Void> create(ProductDTO.ProductReq productReq) {
         Product product = Product.createProduct()
@@ -35,9 +38,38 @@ public class ProductService {
 
 
     public Mono<ProductDTO.ProductDetailResp> detail(Long productId) {
-        return productRepository.findDetailById(productId);
+        return productRepository.findDetailById(productId)
+                .flatMap(productDetailResp -> reviewRepository.findAllByProductId(productId)
+                        .flatMap(review -> memberRepository.findById(review.getMemberId())
+                                .map(member -> ReviewDTO.ReviewResp.builder()
+                                        .reviewId(review.getReviewId())
+                                        .title(review.getTitle())
+                                        .description(review.getDescription())
+                                        .starScore(review.getStarScore())
+                                        .reviewImgList(review.getReviewImgList())
+                                        .writeDate(review.getWriteDate())
+                                        .memberId(review.getMemberId())
+                                        .writer(maskingMemberName(member.getName()))
+                                        .build()
+                                )
+                        ).collectList()
+                        .map(reviewRespList -> {
+                            productDetailResp.setReviewRespList(reviewRespList);
+                            return productDetailResp;
+                        })
+                );
     }
 
+
+
+    private String maskingMemberName(String existsName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(existsName.substring(0,1));
+        sb.append("********");
+        sb.append(existsName.substring(existsName.length() - 1));
+
+        return sb.toString();
+    }
 
     public Mono<Void> updateAllProductStarScore() {
         return productRepository.findAll()
