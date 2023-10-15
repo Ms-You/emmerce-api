@@ -15,6 +15,12 @@ public class DeliveryController {
 
     private final DeliveryService deliveryService;
 
+    /**
+     * 배달 상태 수정 (관리자)
+     * @param deliveryId
+     * @param deliveryStatusReq
+     * @return
+     */
     @PutMapping("/{deliveryId}")
     public Mono<ResponseEntity> updateDeliveryStatus(@PathVariable Long deliveryId,
                                                      @RequestBody DeliveryDTO.DeliveryStatusReq deliveryStatusReq) {

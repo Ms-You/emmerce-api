@@ -14,6 +14,12 @@ public class DeliveryService {
 
     private final DeliveryRepositoryImpl deliveryRepository;
 
+    /**
+     * 배송 상태 수정
+     * @param deliveryId
+     * @param deliveryStatusReq
+     * @return
+     */
     public Mono<Long> changeStatus(Long deliveryId, DeliveryDTO.DeliveryStatusReq deliveryStatusReq) {
         return deliveryRepository.updateStatus(deliveryId, deliveryStatusReq.getDeliveryStatus())
                 .doOnNext(rowsUpdated ->

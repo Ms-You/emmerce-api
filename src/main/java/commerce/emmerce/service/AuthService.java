@@ -23,7 +23,11 @@ public class AuthService {
     private final TokenProvider tokenProvider;
     private final MemberRepositoryImpl memberRepository;
 
-
+    /**
+     * 회원가입
+     * @param memberRegisterReq
+     * @return
+     */
     public Mono<Void> register(MemberDTO.MemberRegisterReq memberRegisterReq) {
         passwordCorrect(memberRegisterReq.getPassword(), memberRegisterReq.getPasswordConfirm());
 
@@ -45,12 +49,23 @@ public class AuthService {
     }
 
 
+    /**
+     * 비밀번호 일치 여부 확인
+     * @param password
+     * @param passwordConfirm
+     * @return
+     */
     private boolean passwordCorrect(String password, String passwordConfirm) {
         // 추후 예외 처리
         return password.equals(passwordConfirm) ? true : false;
     }
 
 
+    /**
+     * 로그인
+     * @param memberLoginReq
+     * @return
+     */
     public Mono<TokenDTO> login(MemberDTO.MemberLoginReq memberLoginReq) {
         Authentication authentication =
         new UsernamePasswordAuthenticationToken(memberLoginReq.getLoginId(), memberLoginReq.getPassword());

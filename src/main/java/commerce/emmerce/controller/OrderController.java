@@ -17,6 +17,11 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    /**
+     * 상품 주문
+     * @param orderReq
+     * @return
+     */
     @PostMapping
     public Mono<ResponseEntity> orderProducts(@RequestBody OrderDTO.OrderReq orderReq) {
         return orderService.startOrder(orderReq)
@@ -25,6 +30,10 @@ public class OrderController {
     }
 
 
+    /**
+     * 주문 목록 조회
+     * @return
+     */
     @GetMapping
     public Flux<OrderDTO.OrderResp> orderList() {
         return orderService.getOrderList();

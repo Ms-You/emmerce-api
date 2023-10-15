@@ -15,7 +15,11 @@ public class ReviewController {
 
     private final ReviewService reviewService;
 
-
+    /**
+     * 리뷰 작성
+     * @param reviewReq
+     * @return
+     */
     @PostMapping
     public Mono<ResponseEntity> writeReview(@RequestBody ReviewDTO.ReviewReq reviewReq) {
         return reviewService.write(reviewReq)
@@ -24,6 +28,11 @@ public class ReviewController {
     }
 
 
+    /**
+     * 리뷰 제거
+     * @param reviewId
+     * @return
+     */
     @DeleteMapping("/{reviewId}")
     public Mono<ResponseEntity> removeReview(@PathVariable Long reviewId) {
         return reviewService.remove(reviewId)

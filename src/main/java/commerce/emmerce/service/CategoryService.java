@@ -14,6 +14,11 @@ public class CategoryService {
 
     private final CategoryRepositoryImpl categoryRepository;
 
+    /**
+     * 카테고리 추가
+     * @param categoryReq
+     * @return
+     */
     public Mono<Void> create(CategoryDTO.CategoryReq categoryReq) {
         Category category = Category.createCategory()
                 .tier(categoryReq.getTier())
@@ -25,6 +30,11 @@ public class CategoryService {
         return categoryRepository.save(category);
     }
 
+
+    /**
+     * 카테고리 목록 조회
+     * @return
+     */
     public Flux<CategoryDTO.CategoryResp> list() {
         return categoryRepository.findAll();
     }

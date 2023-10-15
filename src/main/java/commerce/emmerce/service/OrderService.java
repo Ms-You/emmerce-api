@@ -29,6 +29,11 @@ public class OrderService {
     private final PaymentRepositoryImpl paymentRepository;
 
 
+    /**
+     * 주문 시작
+     * @param orderReq
+     * @return
+     */
     @Transactional
     public Mono<Void> startOrder(OrderDTO.OrderReq orderReq) {
         return SecurityUtil.getCurrentMemberName()
@@ -37,7 +42,13 @@ public class OrderService {
                         )
                 );
     }
-    
+
+    /**
+     * 주문 정보 생성
+     * @param member
+     * @param orderReq
+     * @return
+     */
     private Mono<Void> makeOrder(Member member, OrderDTO.OrderReq orderReq) {
         return orderRepository.save(Order.createOrder()
                         .orderDate(LocalDateTime.now())
@@ -51,6 +62,12 @@ public class OrderService {
                 );
     }
 
+    /**
+     * 주문에 상품 정보 추가
+     * @param order
+     * @param orderProductReqList
+     * @return
+     */
     private Mono<Void> saveProductsForOrder(Order order, List<OrderDTO.OrderProductReq> orderProductReqList) {
         return Flux.fromIterable(orderProductReqList)
                 .flatMap(orderProductReq -> orderProductRepository.save(OrderProduct.builder()
@@ -62,6 +79,12 @@ public class OrderService {
                 .then();
     }
 
+    /**
+     * 배송 정보 추가
+     * @param order
+     * @param deliveryReq
+     * @return
+     */
     private Mono<Void> createDeliveryForOrder(Order order, DeliveryDTO.DeliveryReq deliveryReq) {
         return deliveryRepository.save(Delivery.createDelivery()
                 .name(deliveryReq.getName())
@@ -75,6 +98,12 @@ public class OrderService {
                 .build());
     }
 
+    /**
+     * 결제 정보 추가
+     * @param order
+     * @param paymentReq
+     * @return
+     */
     private Mono<Void> createPaymentForOrder(Order order, PaymentDTO.PaymentReq paymentReq) {
         return paymentRepository.save(Payment.createPayment()
                         .amount(paymentReq.getAmount())
@@ -86,6 +115,10 @@ public class OrderService {
     }
 
 
+    /**
+     * 주문 목록 조회
+     * @return
+     */
     @Transactional
     public Flux<OrderDTO.OrderResp> getOrderList() {
         return SecurityUtil.getCurrentMemberName()
@@ -93,7 +126,11 @@ public class OrderService {
                 .flatMapMany(member -> findOrders(member));
     }
 
-
+    /**
+     * 로그인한 사용자의 주문 목록 조회
+     * @param member
+     * @return
+     */
     public Flux<OrderDTO.OrderResp> findOrders(Member member) {
         return orderRepository.findByMemberId(member.getMemberId())
                 .flatMap(order -> findOrderProducts(order)
@@ -113,11 +150,21 @@ public class OrderService {
                 );
     }
 
+    /**
+     * 주문 상품 목록 조회
+     * @param order
+     * @return
+     */
     public Flux<Product> findOrderProducts(Order order) {
         return orderProductRepository.findByOrderId(order.getOrderId())
                 .flatMap(orderProduct -> findProducts(orderProduct));
     }
 
+    /**
+     * 상품 정보 조회
+     * @param orderProduct
+     * @return
+     */
     public Mono<Product> findProducts(OrderProduct orderProduct) {
         return productRepository.findById(orderProduct.getProductId());
     }

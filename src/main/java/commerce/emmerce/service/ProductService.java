@@ -19,6 +19,11 @@ public class ProductService {
     private final ReviewRepositoryImpl reviewRepository;
     private final MemberRepositoryImpl memberRepository;
 
+    /**
+     * 상품 추가
+     * @param productReq
+     * @return
+     */
     public Mono<Void> create(ProductDTO.ProductReq productReq) {
         Product product = Product.createProduct()
                 .name(productReq.getName())
@@ -37,6 +42,11 @@ public class ProductService {
     }
 
 
+    /**
+     * 상품 상세 정보 반환 (with review)
+     * @param productId
+     * @return
+     */
     public Mono<ProductDTO.ProductDetailResp> detail(Long productId) {
         return productRepository.findDetailById(productId)
                 .flatMap(productDetailResp -> reviewRepository.findAllByProductId(productId)
@@ -61,7 +71,11 @@ public class ProductService {
     }
 
 
-
+    /**
+     * 사용자 이름 마스킹 처리
+     * @param existsName
+     * @return
+     */
     private String maskingMemberName(String existsName) {
         StringBuilder sb = new StringBuilder();
         sb.append(existsName.substring(0,1));
@@ -71,6 +85,11 @@ public class ProductService {
         return sb.toString();
     }
 
+
+    /**
+     * 모든 상품 별점 업데이트
+     * @return
+     */
     public Mono<Void> updateAllProductStarScore() {
         return productRepository.findAll()
                 .flatMap(product -> reviewRepository.findAllByProductId(product.getProductId())

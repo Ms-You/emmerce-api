@@ -16,6 +16,12 @@ public class CartProductController {
 
     private final CartProductService cartProductService;
 
+    /**
+     * 장바구니에 상품 추가
+     * @param cartId
+     * @param cartProductReq
+     * @return
+     */
     @PostMapping("/product")
     public Mono<ResponseEntity> putProductInCart(@PathVariable Long cartId, @RequestBody CartProductDTO.CartProductReq cartProductReq) {
         return cartProductService.putInCart(cartId, cartProductReq)
@@ -24,12 +30,23 @@ public class CartProductController {
     }
 
 
+    /**
+     * 장바구니에 속한 상품 목록 조회
+     * @param cartId
+     * @return
+     */
     @GetMapping("/product")
     public ResponseEntity<Flux<CartProductDTO.CartProductListResp>> cartProductList(@PathVariable Long cartId) {
         return ResponseEntity.ok().body(cartProductService.productList(cartId));
     }
 
 
+    /**
+     * 장바구니에서 상품 제거
+     * @param cartId
+     * @param productId
+     * @return
+     */
     @DeleteMapping("/product/{productId}")
     public Mono<ResponseEntity> removeProductInCart(@PathVariable Long cartId, @PathVariable Long productId) {
         return cartProductService.removeInCart(cartId, productId)
@@ -38,7 +55,11 @@ public class CartProductController {
     }
 
 
-    // 장바구니 비우기
+    /**
+     * 장바구니 비우기
+     * @param cartId
+     * @return
+     */
     @DeleteMapping("/clear")
     public Mono<ResponseEntity> clearCart(@PathVariable Long cartId) {
         return cartProductService.clear(cartId)

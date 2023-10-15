@@ -14,12 +14,22 @@ public class ProductController {
 
     private final ProductService productService;
 
+    /**
+     * 새로운 상품 추가
+     * @param productReq
+     * @return
+     */
     @PostMapping
     public Mono<Void> createProduct(@RequestBody ProductDTO.ProductReq productReq) {
         return productService.create(productReq);
     }
 
 
+    /**
+     * 상품 상세 정보 조회
+     * @param productId
+     * @return
+     */
     @GetMapping("/{productId}")
     public Mono<ResponseEntity<ProductDTO.ProductDetailResp>> productDetail(@PathVariable Long productId) {
         return productService.detail(productId)
