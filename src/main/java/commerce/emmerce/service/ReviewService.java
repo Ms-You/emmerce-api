@@ -8,6 +8,7 @@ import commerce.emmerce.domain.Review;
 import commerce.emmerce.dto.ReviewDTO;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ReviewService {
@@ -58,6 +60,14 @@ public class ReviewService {
                 .build());
     }
 
+
+    @Transactional
+    public Mono<Void> remove(Long reviewId) {
+        return reviewRepository.deleteById(reviewId)
+                .doOnNext(rowsUpdated ->
+                        log.info("삭제된 리뷰 수: {}", rowsUpdated)
+                ).then();
+    }
 
 
 }
