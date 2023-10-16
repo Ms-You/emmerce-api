@@ -60,5 +60,8 @@ public class Product {
         this.starScore = starScore;
     }
 
+    public void updateStockQuantity(int stockQuantity) {
+        this.stockQuantity = stockQuantity;
+    }
 
 }

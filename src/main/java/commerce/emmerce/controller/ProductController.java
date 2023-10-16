@@ -3,6 +3,7 @@ package commerce.emmerce.controller;
 import commerce.emmerce.dto.ProductDTO;
 import commerce.emmerce.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -35,6 +36,19 @@ public class ProductController {
         return productService.detail(productId)
                 .map(resp -> ResponseEntity.ok(resp))
                 .defaultIfEmpty(ResponseEntity.notFound().build());
+    }
+
+
+    /**
+     * 상품 재고 수량 변경 (관리자)
+     * @param productId
+     * @return
+     */
+    @PutMapping("/{productId}")
+    public Mono<ResponseEntity> updateStockQuantity(@PathVariable Long productId, @RequestBody ProductDTO.ProductStockQuantityReq productStockQuantityReq) {
+        return productService.updateProductStockQuantity(productId, productStockQuantityReq)
+                .then(Mono.just(new ResponseEntity(HttpStatus.ACCEPTED)))
+                .onErrorReturn(new ResponseEntity(HttpStatus.BAD_REQUEST));
     }
 
 

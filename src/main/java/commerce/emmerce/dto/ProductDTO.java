@@ -26,6 +26,12 @@ public class ProductDTO {
 
     @Getter
     @NoArgsConstructor
+    public static class ProductStockQuantityReq {
+        private Integer stockQuantity;
+    }
+
+    @Getter
+    @NoArgsConstructor
     @AllArgsConstructor
     @Builder
     public static class ProductDetailResp {

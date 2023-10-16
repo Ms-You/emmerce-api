@@ -112,4 +112,19 @@ public class ProductService {
                 .then();
     }
 
+
+    /**
+     * 상품 재고 수량 변경
+     * @param productId
+     * @return
+     */
+    public Mono<Void> updateProductStockQuantity(Long productId, ProductDTO.ProductStockQuantityReq productStockQuantityReq) {
+        return productRepository.findById(productId)
+                .flatMap(product -> {
+                    product.updateStockQuantity(productStockQuantityReq.getStockQuantity());
+
+                    return productRepository.save(product);
+                });
+    }
+
 }
