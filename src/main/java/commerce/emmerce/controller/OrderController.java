@@ -23,10 +23,8 @@ public class OrderController {
      * @return
      */
     @PostMapping
-    public Mono<ResponseEntity> orderProducts(@RequestBody OrderDTO.OrderReq orderReq) {
-        return orderService.startOrder(orderReq)
-                .then(Mono.just(new ResponseEntity(HttpStatus.CREATED)))
-                .onErrorReturn(new ResponseEntity(HttpStatus.BAD_REQUEST));
+    public Mono<Void> orderProducts(@RequestBody OrderDTO.OrderReq orderReq) {
+        return orderService.startOrder(orderReq);
     }
 
 

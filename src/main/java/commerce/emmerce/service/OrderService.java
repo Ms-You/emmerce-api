@@ -24,7 +24,8 @@ public class OrderService {
     private final MemberRepositoryImpl memberRepository;
     private final OrderRepositoryImpl orderRepository;
     private final OrderProductRepositoryImpl orderProductRepository;
-    private final ProductRepositoryImpl productRepository;
+    private final ProductRepositoryImpl customProductRepository;
+    private final ProductRepository productRepository;
     private final DeliveryRepositoryImpl deliveryRepository;
     private final PaymentRepositoryImpl paymentRepository;
 
@@ -68,15 +69,28 @@ public class OrderService {
      * @param orderProductReqList
      * @return
      */
-    private Mono<Void> saveProductsForOrder(Order order, List<OrderDTO.OrderProductReq> orderProductReqList) {
+    private Flux<Void> saveProductsForOrder(Order order, List<OrderDTO.OrderProductReq> orderProductReqList) {
         return Flux.fromIterable(orderProductReqList)
-                .flatMap(orderProductReq -> orderProductRepository.save(OrderProduct.builder()
-                        .totalPrice(orderProductReq.getTotalPrice())
-                        .totalCount(orderProductReq.getTotalCount())
-                        .orderId(order.getOrderId())
-                        .productId(orderProductReq.getProductId())
-                        .build()))
-                .then();
+                .flatMap(orderProductReq -> customProductRepository.findById(orderProductReq.getProductId())
+                        .flatMap(product -> {
+                            if(product.getStockQuantity() < orderProductReq.getTotalCount()) {
+                                return Mono.error(new RuntimeException("'" + product.getName() + "' 상품의 재고가 부족합니다."));
+                            } else {
+                                // 재고 업데이트
+                                int stockQuantity = product.getStockQuantity() - orderProductReq.getTotalCount();
+                                product.updateStockQuantity(stockQuantity);
+
+                                return orderProductRepository.save(OrderProduct.builder()
+                                        .totalPrice(orderProductReq.getTotalPrice())
+                                        .totalCount(orderProductReq.getTotalCount())
+                                        .orderId(order.getOrderId())
+                                        .productId(orderProductReq.getProductId())
+                                        .build())
+                                        .then(productRepository.save(product))
+                                        .then();
+                            }
+                        })
+                );
     }
 
     /**
@@ -166,7 +180,7 @@ public class OrderService {
      * @return
      */
     public Mono<Product> findProducts(OrderProduct orderProduct) {
-        return productRepository.findById(orderProduct.getProductId());
+        return customProductRepository.findById(orderProduct.getProductId());
     }
 
 }
