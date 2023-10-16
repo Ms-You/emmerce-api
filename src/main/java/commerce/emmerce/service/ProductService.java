@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.time.LocalDateTime;
+
 @RequiredArgsConstructor
 @Service
 public class ProductService {
@@ -36,6 +38,7 @@ public class ProductService {
                 .titleImgList(productReq.getTitleImgList())
                 .detailImgList(productReq.getDetailImgList())
                 .seller(productReq.getSeller())
+                .enrollTime(LocalDateTime.now())
                 .build();
 
         return productRepository.save(product);

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +47,7 @@ public class ProductDTO {
         private List<String> titleImgList;
         private List<String> detailImgList;
         private String seller;
+        private LocalDateTime enrollTime;
         private Long likeCount;
         // 리뷰 목록
         private List<ReviewDTO.ReviewResp> reviewRespList;
