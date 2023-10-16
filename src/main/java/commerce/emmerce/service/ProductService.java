@@ -5,6 +5,7 @@ import commerce.emmerce.domain.Review;
 import commerce.emmerce.dto.ProductDTO;
 import commerce.emmerce.dto.ReviewDTO;
 import commerce.emmerce.repository.MemberRepositoryImpl;
+import commerce.emmerce.repository.ProductRepository;
 import commerce.emmerce.repository.ProductRepositoryImpl;
 import commerce.emmerce.repository.ReviewRepositoryImpl;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,8 @@ import java.time.LocalDateTime;
 @Service
 public class ProductService {
 
-    private final ProductRepositoryImpl productRepository;
+    private final ProductRepositoryImpl customProductRepository;
+    private final ProductRepository productRepository;
     private final ReviewRepositoryImpl reviewRepository;
     private final MemberRepositoryImpl memberRepository;
 
@@ -27,21 +29,20 @@ public class ProductService {
      * @return
      */
     public Mono<Void> create(ProductDTO.ProductReq productReq) {
-        Product product = Product.createProduct()
-                .name(productReq.getName())
-                .detail(productReq.getDetail())
-                .originalPrice(productReq.getOriginalPrice())
-                .discountPrice(productReq.getDiscountPrice())
-                .discountRate(productReq.getDiscountRate())
-                .stockQuantity(productReq.getStockQuantity())
-                .starScore(0.0) // 초기 값 세팅
-                .titleImgList(productReq.getTitleImgList())
-                .detailImgList(productReq.getDetailImgList())
-                .seller(productReq.getSeller())
-                .enrollTime(LocalDateTime.now())
-                .build();
-
-        return productRepository.save(product);
+        return productRepository.save(Product.createProduct()
+                        .name(productReq.getName())
+                        .detail(productReq.getDetail())
+                        .originalPrice(productReq.getOriginalPrice())
+                        .discountPrice(productReq.getDiscountPrice())
+                        .discountRate(productReq.getDiscountRate())
+                        .stockQuantity(productReq.getStockQuantity())
+                        .starScore(0.0) // 초기 값 세팅
+                        .titleImgList(productReq.getTitleImgList())
+                        .detailImgList(productReq.getDetailImgList())
+                        .seller(productReq.getSeller())
+                        .enrollTime(LocalDateTime.now())
+                        .build())
+                .then();
     }
 
 
@@ -51,7 +52,7 @@ public class ProductService {
      * @return
      */
     public Mono<ProductDTO.ProductDetailResp> detail(Long productId) {
-        return productRepository.findDetailById(productId)
+        return customProductRepository.findDetailById(productId)
                 .flatMap(productDetailResp -> reviewRepository.findAllByProductId(productId)
                         .flatMap(review -> memberRepository.findById(review.getMemberId())
                                 .map(member -> ReviewDTO.ReviewResp.builder()
@@ -94,7 +95,7 @@ public class ProductService {
      * @return
      */
     public Mono<Void> updateAllProductStarScore() {
-        return productRepository.findAll()
+        return customProductRepository.findAll()
                 .flatMap(product -> reviewRepository.findAllByProductId(product.getProductId())
                         .collectList()
                         .filter(reviews -> !reviews.isEmpty())
@@ -122,11 +123,11 @@ public class ProductService {
      * @return
      */
     public Mono<Void> updateProductStockQuantity(Long productId, ProductDTO.ProductStockQuantityReq productStockQuantityReq) {
-        return productRepository.findById(productId)
+        return customProductRepository.findById(productId)
                 .flatMap(product -> {
                     product.updateStockQuantity(productStockQuantityReq.getStockQuantity());
 
-                    return productRepository.save(product);
+                    return productRepository.save(product).then();
                 });
     }
 
