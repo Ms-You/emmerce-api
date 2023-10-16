@@ -55,4 +55,23 @@ public class OrderRepositoryImpl {
                         .build());
     }
 
+
+    public Mono<Order> findById(Long orderId) {
+        String query = """
+                select *
+                from orders o
+                where o.order_id = :orderId
+                """;
+
+        return databaseClient.sql(query)
+                .bind("orderId", orderId)
+                .fetch().one()
+                .map(row -> Order.createOrder()
+                        .orderId((Long) row.get("order_id"))
+                        .orderDate((LocalDateTime) row.get("order_date"))
+                        .orderStatus(OrderStatus.valueOf((String) row.get("order_status")))
+                        .memberId((Long) row.get("member_id"))
+                        .build());
+    }
+
 }

@@ -2,7 +2,7 @@ package commerce.emmerce.domain;
 
 public enum PaymentStatus {
 
-    PAID("결제완료"), PENDING("결제중"), FAILED("결제실패");
+    PAID("결제완료"), PENDING("결제중"), FAILED("결제실패"), REFUND("환불");
 
     private String value;
 

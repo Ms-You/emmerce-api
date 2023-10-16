@@ -15,18 +15,19 @@ public class OrderProductRepositoryImpl {
 
     public Mono<Void> save(OrderProduct orderProduct) {
         String query = """
-                insert into order_product (total_price, order_id, product_id) values (:totalPrice, :orderId, :productId)
+                insert into order_product (total_price, total_count, order_id, product_id) values (:totalPrice, :totalCount, :orderId, :productId)
                 """;
 
         return databaseClient.sql(query)
                 .bind("totalPrice", orderProduct.getTotalPrice())
+                .bind("totalCount", orderProduct.getTotalCount())
                 .bind("orderId", orderProduct.getOrderId())
                 .bind("productId", orderProduct.getProductId())
                 .then();
     }
 
 
-    public Flux<OrderProduct> findByOrderId(Long orderId) {
+    public Flux<OrderProduct> findAllByOrderId(Long orderId) {
         String query = """
                 select *
                 from order_product op

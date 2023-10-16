@@ -3,8 +3,6 @@ package commerce.emmerce.controller;
 import commerce.emmerce.dto.OrderDTO;
 import commerce.emmerce.service.OrderService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -37,4 +35,14 @@ public class OrderController {
         return orderService.getOrderList();
     }
 
+
+    /**
+     * 주문 취소
+     * @param orderId
+     * @return
+     */
+    @PutMapping("/{orderId}/cancel")
+    public Mono<Void> orderCancel(@PathVariable Long orderId) {
+        return orderService.cancel(orderId);
+    }
 }

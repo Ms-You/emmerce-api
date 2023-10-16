@@ -8,8 +8,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.math.BigDecimal;
-
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table("payment")
@@ -19,7 +17,7 @@ public class Payment {
     @Column(value = "payment_id")
     private Long paymentId;
 
-    private BigDecimal amount;
+    private Double amount;
 
     private PaymentStatus paymentStatus;
 
@@ -29,11 +27,16 @@ public class Payment {
 
 
     @Builder(builderMethodName = "createPayment")
-    public Payment(Long paymentId, BigDecimal amount, PaymentStatus paymentStatus, PaymentMethod paymentMethod, Long orderId) {
+    public Payment(Long paymentId, Double amount, PaymentStatus paymentStatus, PaymentMethod paymentMethod, Long orderId) {
         this.paymentId = paymentId;
         this.amount = amount;
         this.paymentStatus = paymentStatus;
         this.paymentMethod = paymentMethod;
         this.orderId = orderId;
+    }
+
+
+    public void updateStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
     }
 }
