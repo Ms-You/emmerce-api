@@ -44,4 +44,8 @@ public class Delivery {
         this.orderId = orderId;
     }
 
+    public void updateStatus(DeliveryStatus deliveryStatus) {
+        this.deliveryStatus = deliveryStatus;
+    }
+
 }

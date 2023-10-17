@@ -14,6 +14,11 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+    /**
+     * 결제 정보 조회
+     * @param paymentId
+     * @return
+     */
     @GetMapping("/{paymentId}")
     public Mono<ResponseEntity<PaymentDTO.PaymentResp>> getDetails(@PathVariable Long paymentId) {
         return paymentService.details(paymentId)

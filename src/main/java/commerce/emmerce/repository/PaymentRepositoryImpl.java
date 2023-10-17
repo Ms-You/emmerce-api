@@ -8,8 +8,6 @@ import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
-import java.math.BigDecimal;
-
 @RequiredArgsConstructor
 @Repository
 public class PaymentRepositoryImpl {
@@ -32,7 +30,7 @@ public class PaymentRepositoryImpl {
                 .fetch().one()
                 .map(row -> Payment.createPayment()
                         .paymentId((Long) row.get("payment_id"))
-                        .amount((BigDecimal) row.get("amount"))
+                        .amount((Double) row.get("amount"))
                         .paymentStatus(PaymentStatus.valueOf((String) row.get("payment_status")))
                         .paymentMethod(PaymentMethod.valueOf((String) row.get("payment_method")))
                         .orderId((Long) row.get("order_id"))
@@ -53,7 +51,27 @@ public class PaymentRepositoryImpl {
                 .fetch().one()
                 .map(row -> Payment.createPayment()
                         .paymentId((Long) row.get("payment_id"))
-                        .amount((BigDecimal) row.get("amount"))
+                        .amount((Double) row.get("amount"))
+                        .paymentStatus(PaymentStatus.valueOf((String) row.get("payment_status")))
+                        .paymentMethod(PaymentMethod.valueOf((String) row.get("payment_method")))
+                        .orderId((Long) row.get("order_id"))
+                        .build());
+    }
+
+
+    public Mono<Payment> findByOrderId(Long orderId) {
+        String query = """
+                select *
+                from payment p
+                where p.order_id = :orderId
+                """;
+
+        return databaseClient.sql(query)
+                .bind("orderId", orderId)
+                .fetch().one()
+                .map(row -> Payment.createPayment()
+                        .paymentId((Long) row.get("payment_id"))
+                        .amount((Double) row.get("amount"))
                         .paymentStatus(PaymentStatus.valueOf((String) row.get("payment_status")))
                         .paymentMethod(PaymentMethod.valueOf((String) row.get("payment_method")))
                         .orderId((Long) row.get("order_id"))

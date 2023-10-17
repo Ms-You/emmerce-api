@@ -8,6 +8,7 @@ import commerce.emmerce.domain.Review;
 import commerce.emmerce.dto.ReviewDTO;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ReviewService {
@@ -25,6 +27,11 @@ public class ReviewService {
     private final ReviewRepositoryImpl reviewRepository;
     private final DeliveryRepositoryImpl deliveryRepository;
 
+    /**
+     * 리뷰 작성
+     * @param reviewReq
+     * @return
+     */
     @Transactional
     public Mono<Void> write(ReviewDTO.ReviewReq reviewReq) {
         return SecurityUtil.getCurrentMemberName()
@@ -33,11 +40,25 @@ public class ReviewService {
                 );
     }
 
+    /**
+     * 주문 상품 조회
+     * @param member
+     * @param reviewReq
+     * @return
+     */
     public Mono<Void> getOrderProduct(Member member, ReviewDTO.ReviewReq reviewReq) {
         return orderProductRepository.findByOrderIdAndProductId(reviewReq.getOrderId(), reviewReq.getProductId())
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("잘못된 상품입니다.")))
                 .flatMap(orderProduct -> checkDeliveryStatus(member, orderProduct, reviewReq));
     }
 
+    /**
+     * 배송 상태 조회
+     * @param member
+     * @param orderProduct
+     * @param reviewReq
+     * @return
+     */
     public Mono<Void> checkDeliveryStatus(Member member, OrderProduct orderProduct, ReviewDTO.ReviewReq reviewReq) {
         return deliveryRepository.findByOrderId(orderProduct.getOrderId())
                 .filter(delivery -> delivery.getDeliveryStatus().equals(DeliveryStatus.COMPLETE))
@@ -45,6 +66,12 @@ public class ReviewService {
                 .flatMap(delivery -> writeReview(member, reviewReq));
     }
 
+    /**
+     * 리뷰 작성
+     * @param member
+     * @param reviewReq
+     * @return
+     */
     public Mono<Void> writeReview(Member member, ReviewDTO.ReviewReq reviewReq) {
         return reviewRepository.save(Review.createReview()
                 .title(reviewReq.getTitle())
@@ -57,6 +84,19 @@ public class ReviewService {
                 .build());
     }
 
+
+    /**
+     * 리뷰 삭제
+     * @param reviewId
+     * @return
+     */
+    @Transactional
+    public Mono<Void> remove(Long reviewId) {
+        return reviewRepository.deleteById(reviewId)
+                .doOnNext(rowsUpdated ->
+                        log.info("삭제된 리뷰 수: {}", rowsUpdated)
+                ).then();
+    }
 
 
 }

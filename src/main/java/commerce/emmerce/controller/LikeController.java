@@ -19,6 +19,11 @@ public class LikeController {
 
     private final LikeService likeService;
 
+    /**
+     * 상품 좋아요 (토글)
+     * @param productId
+     * @return
+     */
     @PostMapping("/{productId}/like")
     public Mono<ResponseEntity> likeProduct(@PathVariable Long productId) {
         return likeService.toggleLike(productId)

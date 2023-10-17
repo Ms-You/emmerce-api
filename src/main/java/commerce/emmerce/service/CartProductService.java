@@ -1,11 +1,16 @@
 package commerce.emmerce.service;
 
+import commerce.emmerce.config.SecurityUtil;
+import commerce.emmerce.domain.Cart;
 import commerce.emmerce.domain.CartProduct;
 import commerce.emmerce.dto.CartProductDTO;
 import commerce.emmerce.repository.CartProductRepositoryImpl;
+import commerce.emmerce.repository.CartRepositoryImpl;
+import commerce.emmerce.repository.MemberRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -15,49 +20,71 @@ import reactor.core.publisher.Mono;
 public class CartProductService {
 
     private final CartProductRepositoryImpl cartProductRepository;
+    private final CartRepositoryImpl cartRepository;
+    private final MemberRepositoryImpl memberRepository;
 
 
-    public Mono<Void> putInCart(Long cartId, CartProductDTO.CartProductReq cartProductReq) {
-        CartProduct cartProduct = CartProduct.builder()
-                .cartId(cartId)
-                .productId(cartProductReq.getProductId())
-                .quantity(cartProductReq.getQuantity())
-                .build();
-
-        return cartProductRepository.save(cartProduct);
+    /**
+     * 현재 로그인 한 사용자 정보 반환
+     * @return
+     */
+    public Mono<Cart> getCurrentMemberCart() {
+        return SecurityUtil.getCurrentMemberName()
+                .flatMap(name -> memberRepository.findByName(name))
+                .flatMap(member -> cartRepository.findByMemberId(member.getMemberId()));
     }
 
 
-    public Flux<CartProductDTO.CartProductListResp> productList(Long cartId) {
-        // 성능 최적화적인 부분에서 떨어질듯
-        /*return cartProductRepository.findAllProductsByCartId(cartId)
-                .flatMap(product ->
-                        cartProductRepository.findByCartIdAndProductId(cartId, product.getProductId())
-                                .map(cartProduct -> CartProductDTO.CartProductListResp.builder()
-                                        .productId(product.getProductId())
-                                        .name(product.getName())
-                                        .titleImgList(product.getTitleImgList())
-                                        .discountPrice(product.getDiscountPrice())
-                                        .totalCount(cartProduct.getQuantity())
-                                        .totalPrice(product.getDiscountPrice() * cartProduct.getQuantity())
-                                        .build())
-                );*/
-        return cartProductRepository.findAllByCartId(cartId);
-    }
-
-
-    public Mono<Void> removeInCart(Long cartId, Long productId) {
-        return cartProductRepository.findByCartIdAndProductId(cartId, productId)
-                .flatMap(cartProduct ->
-                        cartProductRepository.delete(cartProduct)
+    /**
+     * 장바구니에 상품 추가
+     * @param cartProductReq
+     * @return
+     */
+    @Transactional
+    public Mono<Void> putInCart(CartProductDTO.CartProductReq cartProductReq) {
+        return getCurrentMemberCart()
+                .flatMap(cart -> cartProductRepository.save(CartProduct.builder()
+                        .cartId(cart.getCartId())
+                        .productId(cartProductReq.getProductId())
+                        .quantity(cartProductReq.getQuantity())
+                        .build())
                 );
     }
 
 
-    public Mono<Long> clear(Long cartId) {
-        return cartProductRepository.deleteAll(cartId)
-                .doOnNext(rowsUpdated ->
-                        log.info("삭제된 상품 개수 : {}", rowsUpdated)
+    /**
+     * 상품 목록 조회
+     * @return
+     */
+    public Flux<CartProductDTO.CartProductListResp> productList() {
+        return getCurrentMemberCart()
+                .flatMapMany(cart -> cartProductRepository.findAllByCartId(cart.getCartId()));
+    }
+
+
+    /**
+     * 장바구니에서 상품 제거
+     * @param productId
+     * @return
+     */
+    @Transactional
+    public Mono<Void> removeInCart(Long productId) {
+        return getCurrentMemberCart()
+                .flatMap(cart -> cartProductRepository.findByCartIdAndProductId(cart.getCartId(), productId)
+                        .flatMap(cartProduct -> cartProductRepository.delete(cartProduct))
+                );
+    }
+
+
+    /**
+     * 장바구니 비우기
+     * @return
+     */
+    @Transactional
+    public Mono<Long> clear() {
+        return getCurrentMemberCart()
+                .flatMap(cart -> cartProductRepository.deleteAll(cart.getCartId())
+                        .doOnNext(rowsUpdated -> log.info("삭제된 상품 개수: {}", rowsUpdated))
                 );
     }
 

@@ -15,7 +15,11 @@ public class LikeService {
     private final MemberRepositoryImpl memberRepository;
     private final LikeRepositoryImpl likeRepository;
 
-
+    /**
+     * 상품 좋아요 (토글)
+     * @param productId
+     * @return
+     */
     public Mono<Void> toggleLike(Long productId) {
         return SecurityUtil.getCurrentMemberName()
                 .flatMap(name -> memberRepository.findByName(name)

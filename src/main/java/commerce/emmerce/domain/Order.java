@@ -33,4 +33,8 @@ public class Order {
         this.memberId = memberId;
     }
 
+    public void updateStatus(OrderStatus orderStatus) {
+        this.orderStatus = orderStatus;
+    }
+
 }

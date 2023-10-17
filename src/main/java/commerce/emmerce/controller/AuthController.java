@@ -21,12 +21,22 @@ public class AuthController {
     private final AuthService authService;
 
 
+    /**
+     * 회원가입
+     * @param memberRegisterReq
+     * @return
+     */
     @PostMapping("/register")
     public Mono<Void> signup(@RequestBody MemberDTO.MemberRegisterReq memberRegisterReq) {
         return authService.register(memberRegisterReq);
     }
 
 
+    /**
+     * 로그인
+     * @param memberLoginReq
+     * @return
+     */
     @PostMapping("/login")
     public Mono<ResponseEntity<?>> login(@RequestBody MemberDTO.MemberLoginReq memberLoginReq) {
         return authService.login(memberLoginReq)
