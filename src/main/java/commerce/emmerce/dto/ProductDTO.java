@@ -18,7 +18,6 @@ public class ProductDTO {
         private String detail;
         private Integer originalPrice;
         private Integer discountPrice;
-        private Integer discountRate;
         private Integer stockQuantity;
         private List<String> titleImgList = new ArrayList<>();
         private List<String> detailImgList = new ArrayList<>();
@@ -27,8 +26,14 @@ public class ProductDTO {
 
     @Getter
     @NoArgsConstructor
-    public static class ProductStockQuantityReq {
+    public static class ProductUpdateReq {
+        private String name;
+        private String detail;
+        private Integer originalPrice;
+        private Integer discountPrice;
         private Integer stockQuantity;
+        private List<String> titleImgList = new ArrayList<>();
+        private List<String> detailImgList = new ArrayList<>();
     }
 
     @Getter

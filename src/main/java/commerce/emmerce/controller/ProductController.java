@@ -40,13 +40,13 @@ public class ProductController {
 
 
     /**
-     * 상품 재고 수량 변경 (관리자)
+     * 상품 정보 수정 (관리자)
      * @param productId
      * @return
      */
     @PutMapping("/{productId}")
-    public Mono<ResponseEntity> updateStockQuantity(@PathVariable Long productId, @RequestBody ProductDTO.ProductStockQuantityReq productStockQuantityReq) {
-        return productService.updateProductStockQuantity(productId, productStockQuantityReq)
+    public Mono<ResponseEntity> updateProduct(@PathVariable Long productId, @RequestBody ProductDTO.ProductUpdateReq productUpdateReq) {
+        return productService.update(productId, productUpdateReq)
                 .then(Mono.just(new ResponseEntity(HttpStatus.ACCEPTED)))
                 .onErrorReturn(new ResponseEntity(HttpStatus.BAD_REQUEST));
     }

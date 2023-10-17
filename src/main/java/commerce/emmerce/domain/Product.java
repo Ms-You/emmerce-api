@@ -68,4 +68,16 @@ public class Product {
         this.stockQuantity = stockQuantity;
     }
 
+    public void updateProduct(String name, String detail, int originalPrice, int discountPrice, int discountRate,
+                              int stockQuantity, List<String> titleImgList, List<String> detailImgList) {
+        this.name = name;
+        this.detail = detail;
+        this.originalPrice = originalPrice;
+        this.discountPrice = discountPrice;
+        this.discountRate = discountRate;
+        this.stockQuantity = stockQuantity;
+        this.titleImgList = titleImgList;
+        this.detailImgList = detailImgList;
+    }
+
 }

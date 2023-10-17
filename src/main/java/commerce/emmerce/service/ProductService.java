@@ -29,12 +29,15 @@ public class ProductService {
      * @return
      */
     public Mono<Void> create(ProductDTO.ProductReq productReq) {
+        // 할인률 계산
+        int discountRate = (int) Math.round((double) (productReq.getOriginalPrice() - productReq.getDiscountPrice()) / productReq.getOriginalPrice() * 100);
+
         return productRepository.save(Product.createProduct()
                         .name(productReq.getName())
                         .detail(productReq.getDetail())
                         .originalPrice(productReq.getOriginalPrice())
                         .discountPrice(productReq.getDiscountPrice())
-                        .discountRate(productReq.getDiscountRate())
+                        .discountRate(discountRate)
                         .stockQuantity(productReq.getStockQuantity())
                         .starScore(0.0) // 초기 값 세팅
                         .titleImgList(productReq.getTitleImgList())
@@ -118,14 +121,18 @@ public class ProductService {
 
 
     /**
-     * 상품 재고 수량 변경
+     * 상품 정보 수정
      * @param productId
      * @return
      */
-    public Mono<Void> updateProductStockQuantity(Long productId, ProductDTO.ProductStockQuantityReq productStockQuantityReq) {
+    public Mono<Void> update(Long productId, ProductDTO.ProductUpdateReq productUpdateReq) {
         return customProductRepository.findById(productId)
                 .flatMap(product -> {
-                    product.updateStockQuantity(productStockQuantityReq.getStockQuantity());
+                    // 할인률 계산
+                    int discountRate = (int) Math.round((double) (productUpdateReq.getOriginalPrice() - productUpdateReq.getDiscountPrice()) / productUpdateReq.getOriginalPrice() * 100);
+
+                    product.updateProduct(productUpdateReq.getName(), productUpdateReq.getDetail(), productUpdateReq.getOriginalPrice(), productUpdateReq.getDiscountPrice(),
+                            discountRate, productUpdateReq.getStockQuantity(), productUpdateReq.getTitleImgList(), productUpdateReq.getDetailImgList());
 
                     return productRepository.save(product).then();
                 });
