@@ -72,9 +72,7 @@ public class ProductDTO {
         private Integer originalPrice;
         private Integer discountPrice;
         private Integer discountRate;
-        private Double starScore;
         private List<String> titleImgList;
-        private Long likeCount;
     }
 
 }

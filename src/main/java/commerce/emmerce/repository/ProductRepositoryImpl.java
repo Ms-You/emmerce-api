@@ -99,4 +99,31 @@ public class ProductRepositoryImpl {
     }
 
 
+    public Flux<Product> findLatestProducts() {
+        String query = """
+                select *
+                from product p
+                order by p.enroll_time desc
+                limit 12
+                """;
+
+        return databaseClient.sql(query)
+                .fetch().all()
+                .map(row -> Product.createProduct()
+                        .productId((Long) row.get("product_id"))
+                        .name((String) row.get("name"))
+                        .detail((String) row.get("detail"))
+                        .originalPrice((Integer) row.get("original_price"))
+                        .discountPrice((Integer) row.get("discount_price"))
+                        .discountRate((Integer) row.get("discount_rate"))
+                        .stockQuantity((Integer) row.get("stock_quantity"))
+                        .starScore((Double) row.get("star_score"))
+                        .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
+                        .detailImgList(Arrays.asList((String[]) row.get("detail_img_list")))
+                        .seller((String) row.get("seller"))
+                        .enrollTime((LocalDateTime) row.get("enroll_time"))
+                        .build());
+    }
+
+
 }

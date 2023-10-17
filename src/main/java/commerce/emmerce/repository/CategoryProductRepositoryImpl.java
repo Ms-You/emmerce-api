@@ -1,6 +1,7 @@
 package commerce.emmerce.repository;
 
 import commerce.emmerce.domain.CategoryProduct;
+import commerce.emmerce.dto.CategoryProductDTO;
 import commerce.emmerce.dto.ProductDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
@@ -39,7 +40,7 @@ public class CategoryProductRepositoryImpl {
     }
 
 
-    public Flux<ProductDTO.ProductListResp> productListByCategoryId(Long categoryId) {
+    public Flux<CategoryProductDTO.CategoryProductListResp> findAllByCategoryId(Long categoryId) {
         String query = """
                 select p.*, count(l.*) as like_count
                 from product p
@@ -52,7 +53,7 @@ public class CategoryProductRepositoryImpl {
         return databaseClient.sql(query)
                 .bind("categoryId", categoryId)
                 .fetch().all()
-                .map(row -> ProductDTO.ProductListResp.builder()
+                .map(row -> CategoryProductDTO.CategoryProductListResp.builder()
                         .productId((Long) row.get("product_id"))
                         .name((String) row.get("name"))
                         .originalPrice((Integer) row.get("original_price"))

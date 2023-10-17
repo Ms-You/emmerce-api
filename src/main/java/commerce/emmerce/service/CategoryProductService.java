@@ -1,6 +1,7 @@
 package commerce.emmerce.service;
 
 import commerce.emmerce.domain.CategoryProduct;
+import commerce.emmerce.dto.CategoryProductDTO;
 import commerce.emmerce.dto.ProductDTO;
 import commerce.emmerce.repository.CategoryProductRepositoryImpl;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +47,7 @@ public class CategoryProductService {
      * @param categoryId
      * @return
      */
-    public Flux<ProductDTO.ProductListResp> findProductList(Long categoryId) {
-        return categoryProductRepository.productListByCategoryId(categoryId);
+    public Flux<CategoryProductDTO.CategoryProductListResp> findCategoryProductList(Long categoryId) {
+        return categoryProductRepository.findAllByCategoryId(categoryId);
     }
 }

@@ -1,5 +1,6 @@
 package commerce.emmerce.controller;
 
+import commerce.emmerce.dto.CategoryProductDTO;
 import commerce.emmerce.dto.ProductDTO;
 import commerce.emmerce.service.CategoryProductService;
 import lombok.RequiredArgsConstructor;
@@ -44,8 +45,8 @@ public class CategoryProductController {
      * @return
      */
     @GetMapping("/list")
-    public Flux<ProductDTO.ProductListResp> findProductsByCategory(@PathVariable Long categoryId) {
-        return categoryProductService.findProductList(categoryId);
+    public Flux<CategoryProductDTO.CategoryProductListResp> findProductsByCategory(@PathVariable Long categoryId) {
+        return categoryProductService.findCategoryProductList(categoryId);
     }
 
 

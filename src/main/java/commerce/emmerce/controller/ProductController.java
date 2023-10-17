@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
@@ -49,6 +50,16 @@ public class ProductController {
         return productService.update(productId, productUpdateReq)
                 .then(Mono.just(new ResponseEntity(HttpStatus.ACCEPTED)))
                 .onErrorReturn(new ResponseEntity(HttpStatus.BAD_REQUEST));
+    }
+
+
+    /**
+     * 최신 상품 목록 조회
+     * @return
+     */
+    @GetMapping("/latest")
+    public Flux<ProductDTO.ProductListResp> latestProducts() {
+        return productService.latest();
     }
 
 

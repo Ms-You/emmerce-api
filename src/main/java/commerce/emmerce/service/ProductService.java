@@ -10,6 +10,7 @@ import commerce.emmerce.repository.ProductRepositoryImpl;
 import commerce.emmerce.repository.ReviewRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -136,6 +137,24 @@ public class ProductService {
 
                     return productRepository.save(product).then();
                 });
+    }
+
+
+    /**
+     * 최신 상품 12개 조회
+     * @return
+     */
+    public Flux<ProductDTO.ProductListResp> latest() {
+        return customProductRepository.findLatestProducts()
+                .map(product -> ProductDTO.ProductListResp.builder()
+                        .productId(product.getProductId())
+                        .name(product.getName())
+                        .originalPrice(product.getOriginalPrice())
+                        .discountPrice(product.getDiscountPrice())
+                        .discountRate(product.getDiscountRate())
+                        .titleImgList(product.getTitleImgList())
+                        .build()
+                );
     }
 
 }
