@@ -41,9 +41,9 @@ public class ProductService {
                         .discountRate(discountRate)
                         .stockQuantity(productReq.getStockQuantity())
                         .starScore(0.0) // 초기 값 세팅
-                        .titleImgList(productReq.getTitleImgList())
+                        .titleImg(productReq.getTitleImg())
                         .detailImgList(productReq.getDetailImgList())
-                        .seller(productReq.getSeller())
+                        .brand(productReq.getBrand())
                         .enrollTime(LocalDateTime.now())
                         .build())
                 .then();
@@ -133,7 +133,7 @@ public class ProductService {
                     int discountRate = (int) Math.round((double) (productUpdateReq.getOriginalPrice() - productUpdateReq.getDiscountPrice()) / productUpdateReq.getOriginalPrice() * 100);
 
                     product.updateProduct(productUpdateReq.getName(), productUpdateReq.getDetail(), productUpdateReq.getOriginalPrice(), productUpdateReq.getDiscountPrice(),
-                            discountRate, productUpdateReq.getStockQuantity(), productUpdateReq.getTitleImgList(), productUpdateReq.getDetailImgList());
+                            discountRate, productUpdateReq.getStockQuantity(), productUpdateReq.getTitleImg(), productUpdateReq.getDetailImgList());
 
                     return productRepository.save(product).then();
                 });
@@ -145,16 +145,7 @@ public class ProductService {
      * @return
      */
     public Flux<ProductDTO.ProductListResp> latest() {
-        return customProductRepository.findLatestProducts()
-                .map(product -> ProductDTO.ProductListResp.builder()
-                        .productId(product.getProductId())
-                        .name(product.getName())
-                        .originalPrice(product.getOriginalPrice())
-                        .discountPrice(product.getDiscountPrice())
-                        .discountRate(product.getDiscountRate())
-                        .titleImgList(product.getTitleImgList())
-                        .build()
-                );
+        return customProductRepository.findLatestProducts();
     }
 
 }

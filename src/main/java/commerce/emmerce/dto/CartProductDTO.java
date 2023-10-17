@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 public class CartProductDTO {
 
     @Getter
@@ -23,7 +21,7 @@ public class CartProductDTO {
     public static class CartProductListResp {
         private Long productId;
         private String name;
-        private List<String> titleImgList;
+        private String titleImg;
         private Integer discountPrice;
         private Integer totalCount;
         private Integer totalPrice;

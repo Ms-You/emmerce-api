@@ -37,9 +37,9 @@ public class ProductRepositoryImpl {
                         .discountRate((Integer) row.get("discount_rate"))
                         .stockQuantity((Integer) row.get("stock_quantity"))
                         .starScore((Double) row.get("star_score"))
-                        .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
+                        .titleImg((String) row.get("title_img"))
                         .detailImgList(Arrays.asList((String[]) row.get("detail_img_list")))
-                        .seller((String) row.get("seller"))
+                        .brand((String) row.get("brand"))
                         .enrollTime((LocalDateTime) row.get("enroll_time"))
                         .build());
     }
@@ -65,9 +65,9 @@ public class ProductRepositoryImpl {
                         .discountRate((Integer) row.get("discount_rate"))
                         .stockQuantity((Integer) row.get("stock_quantity"))
                         .starScore((Double) row.get("star_score"))
-                        .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
+                        .titleImg((String) row.get("title_img"))
                         .detailImgList(Arrays.asList((String[]) row.get("detail_img_list")))
-                        .seller((String) row.get("seller"))
+                        .brand((String) row.get("brand"))
                         .enrollTime((LocalDateTime) row.get("enroll_time"))
                         .likeCount((Long) row.get("like_count"))
                         .build());
@@ -91,37 +91,36 @@ public class ProductRepositoryImpl {
                         .discountRate((Integer) row.get("discount_rate"))
                         .stockQuantity((Integer) row.get("stock_quantity"))
                         .starScore((Double) row.get("star_score"))
-                        .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
+                        .titleImg((String) row.get("title_img"))
                         .detailImgList(Arrays.asList((String[]) row.get("detail_img_list")))
-                        .seller((String) row.get("seller"))
+                        .brand((String) row.get("brand"))
                         .enrollTime((LocalDateTime) row.get("enroll_time"))
                         .build());
     }
 
 
-    public Flux<Product> findLatestProducts() {
+    public Flux<ProductDTO.ProductListResp> findLatestProducts() {
         String query = """
-                select *
+                select p.*, count(l.*) as like_count
                 from product p
+                left join likes l on l.product_id = p.product_id
+                group by p.product_id
                 order by p.enroll_time desc
                 limit 12
                 """;
 
         return databaseClient.sql(query)
                 .fetch().all()
-                .map(row -> Product.createProduct()
+                .map(row -> ProductDTO.ProductListResp.builder()
                         .productId((Long) row.get("product_id"))
                         .name((String) row.get("name"))
-                        .detail((String) row.get("detail"))
                         .originalPrice((Integer) row.get("original_price"))
                         .discountPrice((Integer) row.get("discount_price"))
                         .discountRate((Integer) row.get("discount_rate"))
-                        .stockQuantity((Integer) row.get("stock_quantity"))
                         .starScore((Double) row.get("star_score"))
-                        .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
-                        .detailImgList(Arrays.asList((String[]) row.get("detail_img_list")))
-                        .seller((String) row.get("seller"))
-                        .enrollTime((LocalDateTime) row.get("enroll_time"))
+                        .titleImg((String) row.get("title_img"))
+                        .likeCount((Long) row.get("like_count"))
+                        .brand((String) row.get("brand"))
                         .build());
     }
 

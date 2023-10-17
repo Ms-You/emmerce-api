@@ -2,14 +2,11 @@ package commerce.emmerce.repository;
 
 import commerce.emmerce.domain.CategoryProduct;
 import commerce.emmerce.dto.CategoryProductDTO;
-import commerce.emmerce.dto.ProductDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.Arrays;
 
 @RequiredArgsConstructor
 @Repository
@@ -60,8 +57,9 @@ public class CategoryProductRepositoryImpl {
                         .discountPrice((Integer) row.get("discount_price"))
                         .discountRate((Integer) row.get("discount_rate"))
                         .starScore((Double) row.get("star_score"))
-                        .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
+                        .titleImg((String) row.get("title_img"))
                         .likeCount((Long) row.get("like_count"))
+                        .brand((String) row.get("brand"))
                         .build());
     }
 

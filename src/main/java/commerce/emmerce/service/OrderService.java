@@ -61,10 +61,12 @@ public class OrderService {
                         .build())
                 .doOnSuccess(savedOrder -> log.info("생성된 order_id: {}", savedOrder.getOrderId()))
                 .flatMap(savedOrder -> saveProductsForOrder(savedOrder, orderReq.getOrderProductList())
-                        .then(createDeliveryForOrder(savedOrder, orderReq.getDeliveryReq()))
-                        .then(createPaymentForOrder(savedOrder, orderReq.getPaymentReq()))
+                        .flatMap(totalPrice -> createDeliveryForOrder(savedOrder, orderReq.getDeliveryReq())
+                            .then(createPaymentForOrder(savedOrder, orderReq.getPaymentReq(), totalPrice))
+                        )
                 );
     }
+
 
     /**
      * 주문에 상품 정보 추가
@@ -72,7 +74,7 @@ public class OrderService {
      * @param orderProductReqList
      * @return
      */
-    private Flux<Void> saveProductsForOrder(Order order, List<OrderDTO.OrderProductReq> orderProductReqList) {
+    private Mono<Integer> saveProductsForOrder(Order order, List<OrderDTO.OrderProductReq> orderProductReqList) {
         return Flux.fromIterable(orderProductReqList)
                 .flatMap(orderProductReq -> customProductRepository.findById(orderProductReq.getProductId())
                         .flatMap(product -> {
@@ -83,17 +85,20 @@ public class OrderService {
                                 int stockQuantity = product.getStockQuantity() - orderProductReq.getTotalCount();
                                 product.updateStockQuantity(stockQuantity);
 
+                                // 각 상품의 구매 금액
+                                int eachTotalPrice = product.getDiscountPrice() * orderProductReq.getTotalCount();
+
                                 return orderProductRepository.save(OrderProduct.builder()
-                                        .totalPrice(orderProductReq.getTotalPrice())
-                                        .totalCount(orderProductReq.getTotalCount())
-                                        .orderId(order.getOrderId())
-                                        .productId(orderProductReq.getProductId())
-                                        .build())
+                                            .totalPrice(eachTotalPrice)
+                                            .totalCount(orderProductReq.getTotalCount())
+                                            .orderId(order.getOrderId())
+                                            .productId(orderProductReq.getProductId())
+                                            .build())
                                         .then(productRepository.save(product))
-                                        .then();
+                                        .thenReturn(eachTotalPrice);
                             }
                         })
-                );
+                ).reduce(Integer::sum);
     }
 
     /**
@@ -121,9 +126,9 @@ public class OrderService {
      * @param paymentReq
      * @return
      */
-    private Mono<Void> createPaymentForOrder(Order order, PaymentDTO.PaymentReq paymentReq) {
+    private Mono<Void> createPaymentForOrder(Order order, PaymentDTO.PaymentReq paymentReq, int totalPrice) {
         return customPaymentRepository.save(Payment.createPayment()
-                        .amount(paymentReq.getAmount())
+                        .amount(totalPrice)
                         .paymentStatus(PaymentStatus.PAID)
                         .paymentMethod(paymentReq.getPaymentMethod())
                         .orderId(order.getOrderId())
@@ -154,8 +159,8 @@ public class OrderService {
                         .map(product -> OrderDTO.OrderProductResp.builder()
                                 .productId(product.getProductId())
                                 .name(product.getName())
-                                .titleImgList(product.getTitleImgList())
-                                .seller(product.getSeller())
+                                .titleImg(product.getTitleImg())
+                                .brand(product.getBrand())
                                 .build()
                         ).collectList()
                         .map(orderProductResps -> OrderDTO.OrderResp.builder()

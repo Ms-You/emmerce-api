@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public class OrderDTO {
@@ -30,7 +29,6 @@ public class OrderDTO {
     public static class OrderProductReq {
         private Long productId;
         private Integer totalCount;
-        private Integer totalPrice;
     }
 
 
@@ -53,8 +51,8 @@ public class OrderDTO {
     public static class OrderProductResp {
         private Long productId;
         private String name;
-        private List<String> titleImgList = new ArrayList<>();
-        private String seller;  // 판매자
+        private String titleImg;
+        private String brand;
     }
 
 

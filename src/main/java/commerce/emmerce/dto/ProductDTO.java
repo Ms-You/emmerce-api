@@ -19,9 +19,9 @@ public class ProductDTO {
         private Integer originalPrice;
         private Integer discountPrice;
         private Integer stockQuantity;
-        private List<String> titleImgList = new ArrayList<>();
+        private String titleImg;
         private List<String> detailImgList = new ArrayList<>();
-        private String seller;
+        private String brand;
     }
 
     @Getter
@@ -32,7 +32,7 @@ public class ProductDTO {
         private Integer originalPrice;
         private Integer discountPrice;
         private Integer stockQuantity;
-        private List<String> titleImgList = new ArrayList<>();
+        private String titleImg;
         private List<String> detailImgList = new ArrayList<>();
     }
 
@@ -49,9 +49,9 @@ public class ProductDTO {
         private Integer discountRate;
         private Integer stockQuantity;
         private Double starScore;
-        private List<String> titleImgList;
+        private String titleImg;
         private List<String> detailImgList;
-        private String seller;
+        private String brand;
         private LocalDateTime enrollTime;
         private Long likeCount;
         // 리뷰 목록
@@ -72,7 +72,10 @@ public class ProductDTO {
         private Integer originalPrice;
         private Integer discountPrice;
         private Integer discountRate;
-        private List<String> titleImgList;
+        private Double starScore;
+        private String titleImg;
+        private Long likeCount;
+        private String brand;
     }
 
 }

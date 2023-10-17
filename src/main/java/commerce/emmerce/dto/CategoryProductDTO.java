@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 public class CategoryProductDTO {
 
     @Getter
@@ -20,7 +18,8 @@ public class CategoryProductDTO {
         private Integer discountPrice;
         private Integer discountRate;
         private Double starScore;
-        private List<String> titleImgList;
+        private String titleImg;
         private Long likeCount;
+        private String brand;
     }
 }

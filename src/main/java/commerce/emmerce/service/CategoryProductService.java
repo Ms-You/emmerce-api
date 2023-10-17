@@ -2,7 +2,6 @@ package commerce.emmerce.service;
 
 import commerce.emmerce.domain.CategoryProduct;
 import commerce.emmerce.dto.CategoryProductDTO;
-import commerce.emmerce.dto.ProductDTO;
 import commerce.emmerce.repository.CategoryProductRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

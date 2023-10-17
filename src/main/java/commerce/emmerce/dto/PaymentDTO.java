@@ -12,7 +12,6 @@ public class PaymentDTO {
     @Getter
     @NoArgsConstructor
     public static class PaymentReq {
-        private Double amount;
         private PaymentMethod paymentMethod;
     }
 
@@ -23,7 +22,7 @@ public class PaymentDTO {
     @Builder
     public static class PaymentResp {
         private Long paymentId;
-        private Double amount;
+        private Integer amount;
         private PaymentStatus paymentStatus;
         private PaymentMethod paymentMethod;
     }
