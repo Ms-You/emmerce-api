@@ -10,6 +10,7 @@ import commerce.emmerce.repository.ProductRepositoryImpl;
 import commerce.emmerce.repository.ReviewRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -146,6 +147,20 @@ public class ProductService {
      */
     public Flux<ProductDTO.ProductListResp> latest() {
         return customProductRepository.findLatestProducts();
+    }
+
+
+    /**
+     * 상품 검색
+     * @param keyword
+     * @param brand
+     * @param limit
+     * @param minPrice
+     * @param maxPrice
+     * @return
+     */
+    public Flux<ProductDTO.ProductListResp> search(String keyword, String brand, int limit, int minPrice, int maxPrice) {
+        return customProductRepository.searchProducts(keyword, brand, limit, minPrice, maxPrice);
     }
 
 }

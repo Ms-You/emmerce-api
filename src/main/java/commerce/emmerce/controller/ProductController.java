@@ -63,5 +63,10 @@ public class ProductController {
     }
 
 
+    @GetMapping("/search")
+    public Flux<ProductDTO.ProductListResp> searchProducts(@RequestParam String keyword, @RequestParam String brand, @RequestParam int limit,
+                                                           @RequestParam int minPrice, @RequestParam int maxPrice) {
+        return productService.search(keyword, brand, limit, minPrice, maxPrice);
+    }
 
 }

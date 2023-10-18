@@ -125,4 +125,37 @@ public class ProductRepositoryImpl {
     }
 
 
+    public Flux<ProductDTO.ProductListResp> searchProducts(String keyword, String brand, int limit, int minPrice, int maxPrice) {
+        String query = """
+                select p.*, count(l.*) as like_count
+                from product p
+                left join likes l on l.product_id = p.product_id
+                where (p.name like :keyword or p.detail like :keyword)
+                    and p.brand like :brand
+                    and p.discount_price between :minPrice and :maxPrice
+                group by p.product_id
+                limit :limit
+                """;
+
+        return databaseClient.sql(query)
+                .bind("keyword", '%' + keyword + '%')
+                .bind("brand", '%' + brand + '%')
+                .bind("limit", limit)
+                .bind("minPrice", minPrice)
+                .bind("maxPrice", maxPrice)
+                .fetch().all()
+                .map(row -> ProductDTO.ProductListResp.builder()
+                        .productId((Long) row.get("product_id"))
+                        .name((String) row.get("name"))
+                        .originalPrice((Integer) row.get("original_price"))
+                        .discountPrice((Integer) row.get("discount_price"))
+                        .discountRate((Integer) row.get("discount_rate"))
+                        .starScore((Double) row.get("star_score"))
+                        .titleImg((String) row.get("title_img"))
+                        .likeCount((Long) row.get("like_count"))
+                        .brand((String) row.get("brand"))
+                        .build());
+    }
+
+
 }
