@@ -41,4 +41,43 @@ public class CategoryRepositoryImpl {
                         .build());
     }
 
+    public Mono<Category> findById(Long categoryId) {
+        String query = """
+                select *
+                from category c
+                where c.category_id = :categoryId
+                """;
+
+        return databaseClient.sql(query)
+                .bind("categoryId", categoryId)
+                .fetch().one()
+                .map(row -> Category.createCategory()
+                        .categoryId((Long) row.get("category_id"))
+                        .tier((Integer) row.get("tier"))
+                        .name((String) row.get("name"))
+                        .code((String) row.get("code"))
+                        .parentCode((String) row.get("parent_code"))
+                        .build());
+    }
+
+
+    public Mono<Category> findByParentCode(String parentCode) {
+        String query = """
+                select *
+                from category c
+                where c.code = :parentCode
+                """;
+
+        return databaseClient.sql(query)
+                .bind("parentCode", parentCode)
+                .fetch().one()
+                .map(row -> Category.createCategory()
+                        .categoryId((Long) row.get("category_id"))
+                        .tier((Integer) row.get("tier"))
+                        .name((String) row.get("name"))
+                        .code((String) row.get("code"))
+                        .parentCode((String) row.get("parent_code"))
+                        .build());
+    }
+
 }

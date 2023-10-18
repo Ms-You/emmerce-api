@@ -2,15 +2,12 @@ package commerce.emmerce.service;
 
 import commerce.emmerce.domain.Product;
 import commerce.emmerce.domain.Review;
+import commerce.emmerce.dto.CategoryDTO;
 import commerce.emmerce.dto.ProductDTO;
 import commerce.emmerce.dto.ReviewDTO;
-import commerce.emmerce.repository.MemberRepositoryImpl;
-import commerce.emmerce.repository.ProductRepository;
-import commerce.emmerce.repository.ProductRepositoryImpl;
-import commerce.emmerce.repository.ReviewRepositoryImpl;
+import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -22,6 +19,8 @@ public class ProductService {
 
     private final ProductRepositoryImpl customProductRepository;
     private final ProductRepository productRepository;
+    private final CategoryProductRepositoryImpl categoryProductRepository;
+    private final CategoryRepositoryImpl categoryRepository;
     private final ReviewRepositoryImpl reviewRepository;
     private final MemberRepositoryImpl memberRepository;
 
@@ -52,33 +51,75 @@ public class ProductService {
 
 
     /**
-     * 상품 상세 정보 반환 (with review)
+     * 상품 상세 정보 반환 (with category & review)
      * @param productId
      * @return
      */
     public Mono<ProductDTO.ProductDetailResp> detail(Long productId) {
         return customProductRepository.findDetailById(productId)
-                .flatMap(productDetailResp -> reviewRepository.findAllByProductId(productId)
-                        .flatMap(review -> memberRepository.findById(review.getMemberId())
-                                .map(member -> ReviewDTO.ReviewResp.builder()
-                                        .reviewId(review.getReviewId())
-                                        .title(review.getTitle())
-                                        .description(review.getDescription())
-                                        .starScore(review.getStarScore())
-                                        .reviewImgList(review.getReviewImgList())
-                                        .writeDate(review.getWriteDate())
-                                        .memberId(review.getMemberId())
-                                        .writer(maskingMemberName(member.getName()))
-                                        .build()
-                                )
-                        ).collectList()
-                        .map(reviewRespList -> {
-                            productDetailResp.setReviewRespList(reviewRespList);
-                            return productDetailResp;
-                        })
+                .flatMap(productDetailResp -> attachCategoryInfo(productDetailResp, productId))
+                .flatMap(productDetailResp -> attachReviewInfo(productDetailResp, productId));
+    }
+
+
+    /**
+     * productDetailResp 에 categoryInfoResp 세팅
+     * @param productDetailResp
+     * @param productId
+     * @return
+     */
+    private Mono<ProductDTO.ProductDetailResp> attachCategoryInfo(ProductDTO.ProductDetailResp productDetailResp, Long productId) {
+        return getCategoryLayers(productId).collectList()
+                .map(categoryInfoResps -> {
+                    productDetailResp.setCategoryInfoRespList(categoryInfoResps);
+
+                    return productDetailResp;
+                });
+    }
+
+    /**
+     * 상품이 속한 카테고리 계층 반환
+     * @param productId
+     * @return
+     */
+    public Flux<CategoryDTO.CategoryInfoResp> getCategoryLayers(Long productId) {
+        return categoryProductRepository.findByProductId(productId)
+                .flatMap(categoryProduct -> categoryRepository.findById(categoryProduct.getCategoryId()))
+                .map(category -> CategoryDTO.CategoryInfoResp.builder()
+                        .categoryId(category.getCategoryId())
+                        .tier(category.getTier())
+                        .name(category.getName())
+                        .build()
                 );
     }
 
+    /**
+     * productDetailResp 에 reviewResp 세팅
+     * @param productDetailResp
+     * @param productId
+     * @return
+     */
+    private Mono<ProductDTO.ProductDetailResp> attachReviewInfo(ProductDTO.ProductDetailResp productDetailResp, Long productId) {
+        return reviewRepository.findAllByProductId(productId)
+                .flatMap(review -> memberRepository.findById(review.getMemberId())
+                        .map(member -> ReviewDTO.ReviewResp.builder()
+                                .reviewId(review.getReviewId())
+                                .title(review.getTitle())
+                                .description(review.getDescription())
+                                .starScore(review.getStarScore())
+                                .reviewImgList(review.getReviewImgList())
+                                .writeDate(review.getWriteDate())
+                                .memberId(review.getMemberId())
+                                .writer(maskingMemberName(member.getName()))
+                                .build()
+                        )
+                ).collectList()
+                .map(reviewResps -> {
+                    productDetailResp.setReviewRespList(reviewResps);
+
+                    return productDetailResp;
+                });
+    }
 
     /**
      * 사용자 이름 마스킹 처리

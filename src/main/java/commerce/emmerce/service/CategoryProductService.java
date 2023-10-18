@@ -3,6 +3,7 @@ package commerce.emmerce.service;
 import commerce.emmerce.domain.CategoryProduct;
 import commerce.emmerce.dto.CategoryProductDTO;
 import commerce.emmerce.repository.CategoryProductRepositoryImpl;
+import commerce.emmerce.repository.CategoryRepositoryImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -13,20 +14,32 @@ import reactor.core.publisher.Mono;
 public class CategoryProductService {
 
     private final CategoryProductRepositoryImpl categoryProductRepository;
+    private final CategoryRepositoryImpl categoryRepository;
 
     /**
-     * 카테고리에 상품 등록
+     * 카테고리에 상품 등록 (상위 카테고리에도 포함)
      * @param categoryId
      * @param productId
      * @return
      */
     public Mono<Void> enroll(Long categoryId, Long productId) {
-        CategoryProduct categoryProduct = CategoryProduct.builder()
+        return saveCategoryProduct(categoryId, productId)
+                .then(categoryRepository.findById(categoryId))
+                .flatMap(category -> {
+                    if(!category.getParentCode().equals("-")) {
+                        return categoryRepository.findByParentCode(category.getParentCode())
+                                .flatMap(parentCategory -> enroll(parentCategory.getCategoryId(), productId));
+                    } else {
+                        return Mono.empty();
+                    }
+                });
+    }
+
+    private Mono<Void> saveCategoryProduct(Long categoryId, Long productId) {
+        return categoryProductRepository.save(CategoryProduct.builder()
                 .categoryId(categoryId)
                 .productId(productId)
-                .build();
-
-        return categoryProductRepository.save(categoryProduct);
+                .build());
     }
 
 

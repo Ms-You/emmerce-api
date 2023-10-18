@@ -1,9 +1,6 @@
 package commerce.emmerce.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -41,6 +38,10 @@ public class ProductDTO {
     @AllArgsConstructor
     @Builder
     public static class ProductDetailResp {
+        // 상위 카테고리 정보
+        @Setter
+        private List<CategoryDTO.CategoryInfoResp> categoryInfoRespList;
+
         private Long productId;
         private String name;
         private String detail;
@@ -55,11 +56,8 @@ public class ProductDTO {
         private LocalDateTime enrollTime;
         private Long likeCount;
         // 리뷰 목록
+        @Setter
         private List<ReviewDTO.ReviewResp> reviewRespList;
-
-        public void setReviewRespList(List<ReviewDTO.ReviewResp> reviewRespList) {
-            this.reviewRespList = reviewRespList;
-        }
     }
 
     @Getter

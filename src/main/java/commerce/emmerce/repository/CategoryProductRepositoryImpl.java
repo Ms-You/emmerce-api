@@ -63,4 +63,22 @@ public class CategoryProductRepositoryImpl {
                         .build());
     }
 
+
+    public Flux<CategoryProduct> findByProductId(Long productId) {
+        String query = """
+                select * 
+                from category_product cp
+                where cp.product_id = :productId
+                """;
+
+        return databaseClient.sql(query)
+                .bind("productId", productId)
+                .fetch().all()
+                .map(row -> CategoryProduct.builder()
+                        .categoryProductId((Long) row.get("category_product_id"))
+                        .categoryId((Long) row.get("category_id"))
+                        .productId((Long) row.get("product_id"))
+                        .build());
+    }
+
 }

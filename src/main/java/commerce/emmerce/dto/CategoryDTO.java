@@ -11,11 +11,8 @@ public class CategoryDTO {
     @NoArgsConstructor
     public static class CategoryReq {
         private Integer tier;
-
         private String name;
-
         private String code;
-
         private String parentCode;
     }
 
@@ -25,14 +22,20 @@ public class CategoryDTO {
     @Builder
     public static class CategoryResp {
         private Long categoryId;
-
         private Integer tier;
-
         private String name;
-
         private String code;
-
         private String parentCode;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class CategoryInfoResp {
+        private Long categoryId;
+        private Integer tier;
+        private String name;
     }
 
 }
