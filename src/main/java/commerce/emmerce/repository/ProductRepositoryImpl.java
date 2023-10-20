@@ -158,4 +158,30 @@ public class ProductRepositoryImpl {
     }
 
 
+    public Flux<ProductDTO.ProductListResp> findHotDealProducts() {
+        String query = """
+                select p.*, count(l.*) as like_count
+                from product p
+                left join likes l on l.product_id = p.product_id
+                group by p.product_id
+                order by p.discount_rate desc
+                limit 15
+                """;
+
+        return databaseClient.sql(query)
+                .fetch().all()
+                .map(row -> ProductDTO.ProductListResp.builder()
+                        .productId((Long) row.get("product_id"))
+                        .name((String) row.get("name"))
+                        .originalPrice((Integer) row.get("original_price"))
+                        .discountPrice((Integer) row.get("discount_price"))
+                        .discountRate((Integer) row.get("discount_rate"))
+                        .starScore((Double) row.get("star_score"))
+                        .titleImg((String) row.get("title_img"))
+                        .likeCount((Long) row.get("like_count"))
+                        .brand((String) row.get("brand"))
+                        .build());
+    }
+
+
 }

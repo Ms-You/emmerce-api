@@ -63,10 +63,29 @@ public class ProductController {
     }
 
 
+    /**
+     * 상품 검색
+     * @param keyword
+     * @param brand
+     * @param limit
+     * @param minPrice
+     * @param maxPrice
+     * @return
+     */
     @GetMapping("/search")
     public Flux<ProductDTO.ProductListResp> searchProducts(@RequestParam String keyword, @RequestParam String brand, @RequestParam int limit,
                                                            @RequestParam int minPrice, @RequestParam int maxPrice) {
         return productService.search(keyword, brand, limit, minPrice, maxPrice);
+    }
+
+
+    /**
+     * 할인률 큰 상품 목록 조회
+     * @return
+     */
+    @GetMapping("/hot-deal")
+    public Flux<ProductDTO.ProductListResp> hotDeal() {
+        return productService.hotDeal();
     }
 
 }

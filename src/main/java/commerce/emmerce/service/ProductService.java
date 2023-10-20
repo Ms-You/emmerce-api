@@ -204,4 +204,13 @@ public class ProductService {
         return customProductRepository.searchProducts(keyword, brand, limit, minPrice, maxPrice);
     }
 
+
+    /**
+     * 핫 딜 - 할인률 큰 상품 목록 조회 (15개)
+     * @return
+     */
+    public Flux<ProductDTO.ProductListResp> hotDeal() {
+        return customProductRepository.findHotDealProducts();
+    }
+
 }
