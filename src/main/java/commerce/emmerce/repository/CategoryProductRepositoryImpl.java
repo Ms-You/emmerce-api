@@ -64,6 +64,21 @@ public class CategoryProductRepositoryImpl {
     }
 
 
+    public Mono<Long> findCountByCategoryId(Long categoryId) {
+        String query = """
+                select count(*) as count
+                from product p
+                inner join category_product cp on cp.product_id = p.product_id
+                where cp.category_id = :categoryId;
+                """;
+
+        return databaseClient.sql(query)
+                .bind("categoryId", categoryId)
+                .fetch().one()
+                .map(result -> (Long) result.get("count"));
+    }
+
+
     public Flux<CategoryProduct> findByProductId(Long productId) {
         String query = """
                 select * 

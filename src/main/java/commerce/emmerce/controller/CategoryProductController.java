@@ -1,11 +1,10 @@
 package commerce.emmerce.controller;
 
 import commerce.emmerce.dto.CategoryProductDTO;
-import commerce.emmerce.dto.ProductDTO;
+import commerce.emmerce.dto.PageResponseDTO;
 import commerce.emmerce.service.CategoryProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
@@ -42,11 +41,16 @@ public class CategoryProductController {
     /**
      * 카테고리에 속한 상품 목록 조회
      * @param categoryId
+     * @param page
+     * @param size
      * @return
      */
     @GetMapping("/list")
-    public Flux<CategoryProductDTO.CategoryProductListResp> findProductsByCategory(@PathVariable Long categoryId) {
-        return categoryProductService.findCategoryProductList(categoryId);
+    public Mono<PageResponseDTO<CategoryProductDTO.CategoryProductListResp>> findProductsByCategory(@PathVariable Long categoryId,
+                                                                                                   @RequestParam(defaultValue = "1") int page,
+                                                                                                   @RequestParam(defaultValue = "40") int size) {
+        if(page <= 0) page = 1;
+        return categoryProductService.findCategoryProductList(categoryId, page, size);
     }
 
 
