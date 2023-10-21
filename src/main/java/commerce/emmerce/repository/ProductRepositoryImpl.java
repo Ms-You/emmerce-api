@@ -157,6 +157,26 @@ public class ProductRepositoryImpl {
                         .build());
     }
 
+    public Mono<Long> searchProductsCount(String keyword, String brand, int limit, int minPrice, int maxPrice) {
+        String query = """
+                select count(*) as count
+                from product p
+                where (p.name like :keyword or p.detail like :keyword)
+                    and p.brand like :brand
+                    and p.discount_price between :minPrice and :maxPrice
+                limit :limit
+                """;
+
+        return databaseClient.sql(query)
+                .bind("keyword", '%' + keyword + '%')
+                .bind("brand", '%' + brand + '%')
+                .bind("limit", limit)
+                .bind("minPrice", minPrice)
+                .bind("maxPrice", maxPrice)
+                .fetch().one()
+                .map(result -> (Long) result.get("count"));
+    }
+
 
     public Flux<ProductDTO.ProductListResp> findHotDealProducts() {
         String query = """

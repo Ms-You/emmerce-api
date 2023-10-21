@@ -1,5 +1,6 @@
 package commerce.emmerce.controller;
 
+import commerce.emmerce.dto.PageResponseDTO;
 import commerce.emmerce.dto.ProductDTO;
 import commerce.emmerce.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -70,12 +71,17 @@ public class ProductController {
      * @param limit
      * @param minPrice
      * @param maxPrice
+     * @param page
+     * @param size
      * @return
      */
     @GetMapping("/search")
-    public Flux<ProductDTO.ProductListResp> searchProducts(@RequestParam String keyword, @RequestParam String brand, @RequestParam int limit,
-                                                           @RequestParam int minPrice, @RequestParam int maxPrice) {
-        return productService.search(keyword, brand, limit, minPrice, maxPrice);
+    public Mono<PageResponseDTO<ProductDTO.ProductListResp>> searchProducts(@RequestParam String keyword, @RequestParam String brand,
+                                                                           @RequestParam int limit, @RequestParam int minPrice,
+                                                                           @RequestParam int maxPrice, @RequestParam(defaultValue = "1") int page,
+                                                                           @RequestParam(defaultValue = "40") int size) {
+        if(page <= 0) page = 1;
+        return productService.search(keyword, brand, limit, minPrice, maxPrice, page, size);
     }
 
 

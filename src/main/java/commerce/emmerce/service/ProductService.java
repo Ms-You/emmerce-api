@@ -3,6 +3,7 @@ package commerce.emmerce.service;
 import commerce.emmerce.domain.Product;
 import commerce.emmerce.domain.Review;
 import commerce.emmerce.dto.CategoryDTO;
+import commerce.emmerce.dto.PageResponseDTO;
 import commerce.emmerce.dto.ProductDTO;
 import commerce.emmerce.dto.ReviewDTO;
 import commerce.emmerce.repository.*;
@@ -198,10 +199,18 @@ public class ProductService {
      * @param limit
      * @param minPrice
      * @param maxPrice
+     * @param page
+     * @param size
      * @return
      */
-    public Flux<ProductDTO.ProductListResp> search(String keyword, String brand, int limit, int minPrice, int maxPrice) {
-        return customProductRepository.searchProducts(keyword, brand, limit, minPrice, maxPrice);
+    public Mono<PageResponseDTO<ProductDTO.ProductListResp>> search(String keyword, String brand, int limit, int minPrice, int maxPrice, int page, int size) {
+        return customProductRepository.searchProductsCount(keyword, brand, limit, minPrice, maxPrice)
+                .flatMap(totalElements -> customProductRepository.searchProducts(keyword, brand, limit, minPrice, maxPrice)
+                        .skip((page-1) * size)
+                        .take(size)
+                        .collectList()
+                        .map(content -> new PageResponseDTO<>(content, page, size, totalElements.intValue()))
+                );
     }
 
 
