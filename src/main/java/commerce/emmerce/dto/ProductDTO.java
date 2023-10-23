@@ -23,7 +23,7 @@ public class ProductDTO {
 
     @Getter
     @NoArgsConstructor
-    public static class ProductUpdateReq {
+    public static class UpdateReq {
         private String name;
         private String detail;
         private Integer originalPrice;
@@ -37,10 +37,10 @@ public class ProductDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class ProductDetailResp {
+    public static class DetailResp {
         // 상위 카테고리 정보
         @Setter
-        private List<CategoryDTO.CategoryInfoResp> categoryInfoRespList;
+        private List<CategoryDTO.InfoResp> categoryInfoRespList;
 
         private Long productId;
         private String name;
@@ -64,7 +64,7 @@ public class ProductDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class ProductListResp {
+    public static class ListResp {
         private Long productId;
         private String name;
         private Integer originalPrice;

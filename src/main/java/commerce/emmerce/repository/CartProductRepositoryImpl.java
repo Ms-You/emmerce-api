@@ -73,7 +73,7 @@ public class CartProductRepositoryImpl {
     }
 
 
-    public Flux<CartProductDTO.CartProductListResp> findAllByCartId(Long cartId) {
+    public Flux<CartProductDTO.ListResp> findAllByCartId(Long cartId) {
         String query = """
                 select p.*, cp.quantity as quantity
                 from product p
@@ -84,7 +84,7 @@ public class CartProductRepositoryImpl {
         return databaseClient.sql(query)
                 .bind("cartId", cartId)
                 .fetch().all()
-                .map(row -> CartProductDTO.CartProductListResp.builder()
+                .map(row -> CartProductDTO.ListResp.builder()
                         .productId((Long) row.get("product_id"))
                         .name((String) row.get("name"))
                         .titleImg((String) row.get("title_img"))

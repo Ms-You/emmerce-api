@@ -44,7 +44,7 @@ public class ProductRepositoryImpl {
                         .build());
     }
 
-    public Mono<ProductDTO.ProductDetailResp> findDetailById(Long productId) {
+    public Mono<ProductDTO.DetailResp> findDetailById(Long productId) {
         String query = """
                 select p.*, count(l.*) as like_count
                 from product p
@@ -56,7 +56,7 @@ public class ProductRepositoryImpl {
         return databaseClient.sql(query)
                 .bind("productId", productId)
                 .fetch().one()
-                .map(row -> ProductDTO.ProductDetailResp.builder()
+                .map(row -> ProductDTO.DetailResp.builder()
                         .productId((Long) row.get("product_id"))
                         .name((String) row.get("name"))
                         .detail((String) row.get("detail"))
@@ -99,7 +99,7 @@ public class ProductRepositoryImpl {
     }
 
 
-    public Flux<ProductDTO.ProductListResp> findLatestProducts() {
+    public Flux<ProductDTO.ListResp> findLatestProducts() {
         String query = """
                 select p.*, count(l.*) as like_count
                 from product p
@@ -111,7 +111,7 @@ public class ProductRepositoryImpl {
 
         return databaseClient.sql(query)
                 .fetch().all()
-                .map(row -> ProductDTO.ProductListResp.builder()
+                .map(row -> ProductDTO.ListResp.builder()
                         .productId((Long) row.get("product_id"))
                         .name((String) row.get("name"))
                         .originalPrice((Integer) row.get("original_price"))
@@ -125,7 +125,7 @@ public class ProductRepositoryImpl {
     }
 
 
-    public Flux<ProductDTO.ProductListResp> searchProducts(String keyword, String brand, int limit, int minPrice, int maxPrice) {
+    public Flux<ProductDTO.ListResp> searchProducts(String keyword, String brand, int limit, int minPrice, int maxPrice) {
         String query = """
                 select p.*, count(l.*) as like_count
                 from product p
@@ -144,7 +144,7 @@ public class ProductRepositoryImpl {
                 .bind("minPrice", minPrice)
                 .bind("maxPrice", maxPrice)
                 .fetch().all()
-                .map(row -> ProductDTO.ProductListResp.builder()
+                .map(row -> ProductDTO.ListResp.builder()
                         .productId((Long) row.get("product_id"))
                         .name((String) row.get("name"))
                         .originalPrice((Integer) row.get("original_price"))
@@ -178,7 +178,7 @@ public class ProductRepositoryImpl {
     }
 
 
-    public Flux<ProductDTO.ProductListResp> findHotDealProducts() {
+    public Flux<ProductDTO.ListResp> findHotDealProducts() {
         String query = """
                 select p.*, count(l.*) as like_count
                 from product p
@@ -190,7 +190,7 @@ public class ProductRepositoryImpl {
 
         return databaseClient.sql(query)
                 .fetch().all()
-                .map(row -> ProductDTO.ProductListResp.builder()
+                .map(row -> ProductDTO.ListResp.builder()
                         .productId((Long) row.get("product_id"))
                         .name((String) row.get("name"))
                         .originalPrice((Integer) row.get("original_price"))

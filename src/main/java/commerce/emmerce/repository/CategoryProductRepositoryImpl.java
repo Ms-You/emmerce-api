@@ -37,7 +37,7 @@ public class CategoryProductRepositoryImpl {
     }
 
 
-    public Flux<CategoryProductDTO.CategoryProductListResp> findAllByCategoryId(Long categoryId) {
+    public Flux<CategoryProductDTO.ListResp> findAllByCategoryId(Long categoryId) {
         String query = """
                 select p.*, count(l.*) as like_count
                 from product p
@@ -50,7 +50,7 @@ public class CategoryProductRepositoryImpl {
         return databaseClient.sql(query)
                 .bind("categoryId", categoryId)
                 .fetch().all()
-                .map(row -> CategoryProductDTO.CategoryProductListResp.builder()
+                .map(row -> CategoryProductDTO.ListResp.builder()
                         .productId((Long) row.get("product_id"))
                         .name((String) row.get("name"))
                         .originalPrice((Integer) row.get("original_price"))

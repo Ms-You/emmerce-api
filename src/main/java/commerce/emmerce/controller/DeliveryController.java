@@ -18,13 +18,13 @@ public class DeliveryController {
     /**
      * 배달 상태 수정 (관리자)
      * @param deliveryId
-     * @param deliveryStatusReq
+     * @param statusReq
      * @return
      */
     @PutMapping("/{deliveryId}")
     public Mono<ResponseEntity> updateDeliveryStatus(@PathVariable Long deliveryId,
-                                                     @RequestBody DeliveryDTO.DeliveryStatusReq deliveryStatusReq) {
-        return deliveryService.changeStatus(deliveryId, deliveryStatusReq)
+                                                     @RequestBody DeliveryDTO.StatusReq statusReq) {
+        return deliveryService.changeStatus(deliveryId, statusReq)
                 .then(Mono.just(new ResponseEntity(HttpStatus.OK)))
                 .onErrorReturn(new ResponseEntity(HttpStatus.BAD_REQUEST));
     }

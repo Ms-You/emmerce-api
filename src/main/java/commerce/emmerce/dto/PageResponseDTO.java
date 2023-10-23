@@ -10,7 +10,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PageResponseDTO<T> {
-
     private List<T> content;
     private int pageNumber;
     private int totalPages;

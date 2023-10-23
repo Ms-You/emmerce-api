@@ -37,16 +37,16 @@ public class CartProductService {
 
     /**
      * 장바구니에 상품 추가
-     * @param cartProductReq
+     * @param enrollReq
      * @return
      */
     @Transactional
-    public Mono<Void> putInCart(CartProductDTO.CartProductReq cartProductReq) {
+    public Mono<Void> putInCart(CartProductDTO.EnrollReq enrollReq) {
         return getCurrentMemberCart()
                 .flatMap(cart -> cartProductRepository.save(CartProduct.builder()
                         .cartId(cart.getCartId())
-                        .productId(cartProductReq.getProductId())
-                        .quantity(cartProductReq.getQuantity())
+                        .productId(enrollReq.getProductId())
+                        .quantity(enrollReq.getQuantity())
                         .build())
                 );
     }
@@ -56,7 +56,7 @@ public class CartProductService {
      * 상품 목록 조회
      * @return
      */
-    public Flux<CartProductDTO.CartProductListResp> productList() {
+    public Flux<CartProductDTO.ListResp> productList() {
         return getCurrentMemberCart()
                 .flatMapMany(cart -> cartProductRepository.findAllByCartId(cart.getCartId()));
     }

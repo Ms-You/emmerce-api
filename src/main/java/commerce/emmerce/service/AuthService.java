@@ -1,5 +1,7 @@
 package commerce.emmerce.service;
 
+import commerce.emmerce.config.exception.ErrorCode;
+import commerce.emmerce.config.exception.GlobalException;
 import commerce.emmerce.config.jwt.TokenDTO;
 import commerce.emmerce.config.jwt.TokenProvider;
 import commerce.emmerce.domain.Member;
@@ -25,18 +27,18 @@ public class AuthService {
 
     /**
      * 회원가입
-     * @param memberRegisterReq
+     * @param registerReq
      * @return
      */
-    public Mono<Void> register(MemberDTO.MemberRegisterReq memberRegisterReq) {
-        passwordCorrect(memberRegisterReq.getPassword(), memberRegisterReq.getPasswordConfirm());
+    public Mono<Void> register(MemberDTO.RegisterReq registerReq) {
+        passwordCorrect(registerReq.getPassword(), registerReq.getPasswordConfirm());
 
         Member member = Member.createMember()
-                .name(memberRegisterReq.getName())
-                .email(memberRegisterReq.getEmail())
-                .password(passwordEncoder.encode(memberRegisterReq.getPassword()))
-                .tel(memberRegisterReq.getTel())
-                .birth(memberRegisterReq.getBirth())
+                .name(registerReq.getName())
+                .email(registerReq.getEmail())
+                .password(passwordEncoder.encode(registerReq.getPassword()))
+                .tel(registerReq.getTel())
+                .birth(registerReq.getBirth())
                 .profileImg("default_img")
                 .point(0)
                 .role(RoleType.ROLE_USER)
@@ -50,25 +52,38 @@ public class AuthService {
 
 
     /**
+     * 사용자 이름 중복 체크
+     * @param duplicateCheckReq
+     * @return
+     */
+    public Mono<Void> duplicateCheck(MemberDTO.DuplicateCheckReq duplicateCheckReq) {
+        return memberRepository.findByName(duplicateCheckReq.getName())
+                .flatMap(existingMember ->
+                        Mono.error(new GlobalException(ErrorCode.NAME_ALREADY_EXIST))
+                );
+    }
+
+
+    /**
      * 비밀번호 일치 여부 확인
      * @param password
      * @param passwordConfirm
      * @return
      */
-    private boolean passwordCorrect(String password, String passwordConfirm) {
-        // 추후 예외 처리
-        return password.equals(passwordConfirm) ? true : false;
+    private void passwordCorrect(String password, String passwordConfirm) {
+        if(!password.equals(passwordConfirm))
+            throw new GlobalException(ErrorCode.PASSWORD_NOT_MATCH);
     }
 
 
     /**
      * 로그인
-     * @param memberLoginReq
+     * @param loginReq
      * @return
      */
-    public Mono<TokenDTO> login(MemberDTO.MemberLoginReq memberLoginReq) {
+    public Mono<TokenDTO> login(MemberDTO.LoginReq loginReq) {
         Authentication authentication =
-        new UsernamePasswordAuthenticationToken(memberLoginReq.getLoginId(), memberLoginReq.getPassword());
+        new UsernamePasswordAuthenticationToken(loginReq.getLoginId(), loginReq.getPassword());
 
         return authenticationManager.authenticate(authentication)
                 .map(tokenProvider::generateToken)

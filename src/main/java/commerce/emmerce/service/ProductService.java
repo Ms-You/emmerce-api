@@ -56,25 +56,25 @@ public class ProductService {
      * @param productId
      * @return
      */
-    public Mono<ProductDTO.ProductDetailResp> detail(Long productId) {
+    public Mono<ProductDTO.DetailResp> detail(Long productId) {
         return customProductRepository.findDetailById(productId)
-                .flatMap(productDetailResp -> attachCategoryInfo(productDetailResp, productId))
-                .flatMap(productDetailResp -> attachReviewInfo(productDetailResp, productId));
+                .flatMap(detailResp -> attachCategoryInfo(detailResp, productId))
+                .flatMap(detailResp -> attachReviewInfo(detailResp, productId));
     }
 
 
     /**
      * productDetailResp 에 categoryInfoResp 세팅
-     * @param productDetailResp
+     * @param detailResp
      * @param productId
      * @return
      */
-    private Mono<ProductDTO.ProductDetailResp> attachCategoryInfo(ProductDTO.ProductDetailResp productDetailResp, Long productId) {
+    private Mono<ProductDTO.DetailResp> attachCategoryInfo(ProductDTO.DetailResp detailResp, Long productId) {
         return getCategoryLayers(productId).collectList()
                 .map(categoryInfoResps -> {
-                    productDetailResp.setCategoryInfoRespList(categoryInfoResps);
+                    detailResp.setCategoryInfoRespList(categoryInfoResps);
 
-                    return productDetailResp;
+                    return detailResp;
                 });
     }
 
@@ -83,10 +83,10 @@ public class ProductService {
      * @param productId
      * @return
      */
-    public Flux<CategoryDTO.CategoryInfoResp> getCategoryLayers(Long productId) {
+    public Flux<CategoryDTO.InfoResp> getCategoryLayers(Long productId) {
         return categoryProductRepository.findByProductId(productId)
                 .flatMap(categoryProduct -> categoryRepository.findById(categoryProduct.getCategoryId()))
-                .map(category -> CategoryDTO.CategoryInfoResp.builder()
+                .map(category -> CategoryDTO.InfoResp.builder()
                         .categoryId(category.getCategoryId())
                         .tier(category.getTier())
                         .name(category.getName())
@@ -96,11 +96,11 @@ public class ProductService {
 
     /**
      * productDetailResp 에 reviewResp 세팅
-     * @param productDetailResp
+     * @param detailResp
      * @param productId
      * @return
      */
-    private Mono<ProductDTO.ProductDetailResp> attachReviewInfo(ProductDTO.ProductDetailResp productDetailResp, Long productId) {
+    private Mono<ProductDTO.DetailResp> attachReviewInfo(ProductDTO.DetailResp detailResp, Long productId) {
         return reviewRepository.findAllByProductId(productId)
                 .flatMap(review -> memberRepository.findById(review.getMemberId())
                         .map(member -> ReviewDTO.ReviewResp.builder()
@@ -116,9 +116,9 @@ public class ProductService {
                         )
                 ).collectList()
                 .map(reviewResps -> {
-                    productDetailResp.setReviewRespList(reviewResps);
+                    detailResp.setReviewRespList(reviewResps);
 
-                    return productDetailResp;
+                    return detailResp;
                 });
     }
 
@@ -167,16 +167,17 @@ public class ProductService {
     /**
      * 상품 정보 수정
      * @param productId
+     * @param updateReq
      * @return
      */
-    public Mono<Void> update(Long productId, ProductDTO.ProductUpdateReq productUpdateReq) {
+    public Mono<Void> update(Long productId, ProductDTO.UpdateReq updateReq) {
         return customProductRepository.findById(productId)
                 .flatMap(product -> {
                     // 할인률 계산
-                    int discountRate = (int) Math.round((double) (productUpdateReq.getOriginalPrice() - productUpdateReq.getDiscountPrice()) / productUpdateReq.getOriginalPrice() * 100);
+                    int discountRate = (int) Math.round((double) (updateReq.getOriginalPrice() - updateReq.getDiscountPrice()) / updateReq.getOriginalPrice() * 100);
 
-                    product.updateProduct(productUpdateReq.getName(), productUpdateReq.getDetail(), productUpdateReq.getOriginalPrice(), productUpdateReq.getDiscountPrice(),
-                            discountRate, productUpdateReq.getStockQuantity(), productUpdateReq.getTitleImg(), productUpdateReq.getDetailImgList());
+                    product.updateProduct(updateReq.getName(), updateReq.getDetail(), updateReq.getOriginalPrice(), updateReq.getDiscountPrice(),
+                            discountRate, updateReq.getStockQuantity(), updateReq.getTitleImg(), updateReq.getDetailImgList());
 
                     return productRepository.save(product).then();
                 });
@@ -187,7 +188,7 @@ public class ProductService {
      * 최신 상품 12개 조회
      * @return
      */
-    public Flux<ProductDTO.ProductListResp> latest() {
+    public Flux<ProductDTO.ListResp> latest() {
         return customProductRepository.findLatestProducts();
     }
 
@@ -203,7 +204,7 @@ public class ProductService {
      * @param size
      * @return
      */
-    public Mono<PageResponseDTO<ProductDTO.ProductListResp>> search(String keyword, String brand, int limit, int minPrice, int maxPrice, int page, int size) {
+    public Mono<PageResponseDTO<ProductDTO.ListResp>> search(String keyword, String brand, int limit, int minPrice, int maxPrice, int page, int size) {
         return customProductRepository.searchProductsCount(keyword, brand, limit, minPrice, maxPrice)
                 .flatMap(totalElements -> customProductRepository.searchProducts(keyword, brand, limit, minPrice, maxPrice)
                         .skip((page-1) * size)
@@ -218,7 +219,7 @@ public class ProductService {
      * 핫 딜 - 할인률 큰 상품 목록 조회 (15개)
      * @return
      */
-    public Flux<ProductDTO.ProductListResp> hotDeal() {
+    public Flux<ProductDTO.ListResp> hotDeal() {
         return customProductRepository.findHotDealProducts();
     }
 

@@ -15,7 +15,7 @@ public enum ErrorCode {
 
     // Member
     MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "존재하지 않는 사용자입니다."),
-    ID_ALREADY_EXIST(HttpStatus.BAD_REQUEST.value(), "이미 존재하는 아이디입니다."),
+    NAME_ALREADY_EXIST(HttpStatus.BAD_REQUEST.value(), "이미 존재하는 아이디입니다."),
     PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST.value(), "비밀번호가 일치하지 않습니다."),
     ;
 

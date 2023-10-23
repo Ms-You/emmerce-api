@@ -61,7 +61,7 @@ public class CategoryProductService {
      * @param size
      * @return
      */
-    public Mono<PageResponseDTO<CategoryProductDTO.CategoryProductListResp>> findCategoryProductList(Long categoryId, int page, int size) {
+    public Mono<PageResponseDTO<CategoryProductDTO.ListResp>> findCategoryProductList(Long categoryId, int page, int size) {
         return categoryProductRepository.findCountByCategoryId(categoryId)
                 .flatMap(totalElements -> categoryProductRepository.findAllByCategoryId(categoryId)
                         .skip((page-1) * size)

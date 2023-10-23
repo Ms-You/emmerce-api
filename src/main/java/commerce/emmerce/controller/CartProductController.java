@@ -18,12 +18,12 @@ public class CartProductController {
 
     /**
      * 장바구니에 상품 추가
-     * @param cartProductReq
+     * @param enrollReq
      * @return
      */
     @PostMapping("/product")
-    public Mono<ResponseEntity> putProductInCart(@RequestBody CartProductDTO.CartProductReq cartProductReq) {
-        return cartProductService.putInCart(cartProductReq)
+    public Mono<ResponseEntity> putProductInCart(@RequestBody CartProductDTO.EnrollReq enrollReq) {
+        return cartProductService.putInCart(enrollReq)
                 .then(Mono.just(new ResponseEntity(HttpStatus.CREATED)))
                 .onErrorReturn(new ResponseEntity(HttpStatus.BAD_REQUEST));
     }
@@ -34,7 +34,7 @@ public class CartProductController {
      * @return
      */
     @GetMapping("/product")
-    public ResponseEntity<Flux<CartProductDTO.CartProductListResp>> cartProductList() {
+    public ResponseEntity<Flux<CartProductDTO.ListResp>> cartProductList() {
         return ResponseEntity.ok().body(cartProductService.productList());
     }
 

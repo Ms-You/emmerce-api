@@ -34,7 +34,7 @@ public class ProductController {
      * @return
      */
     @GetMapping("/{productId}")
-    public Mono<ResponseEntity<ProductDTO.ProductDetailResp>> productDetail(@PathVariable Long productId) {
+    public Mono<ResponseEntity<ProductDTO.DetailResp>> productDetail(@PathVariable Long productId) {
         return productService.detail(productId)
                 .map(resp -> ResponseEntity.ok(resp))
                 .defaultIfEmpty(ResponseEntity.notFound().build());
@@ -44,11 +44,12 @@ public class ProductController {
     /**
      * 상품 정보 수정 (관리자)
      * @param productId
+     * @param updateReq
      * @return
      */
     @PutMapping("/{productId}")
-    public Mono<ResponseEntity> updateProduct(@PathVariable Long productId, @RequestBody ProductDTO.ProductUpdateReq productUpdateReq) {
-        return productService.update(productId, productUpdateReq)
+    public Mono<ResponseEntity> updateProduct(@PathVariable Long productId, @RequestBody ProductDTO.UpdateReq updateReq) {
+        return productService.update(productId, updateReq)
                 .then(Mono.just(new ResponseEntity(HttpStatus.ACCEPTED)))
                 .onErrorReturn(new ResponseEntity(HttpStatus.BAD_REQUEST));
     }
@@ -59,7 +60,7 @@ public class ProductController {
      * @return
      */
     @GetMapping("/latest")
-    public Flux<ProductDTO.ProductListResp> latestProducts() {
+    public Flux<ProductDTO.ListResp> latestProducts() {
         return productService.latest();
     }
 
@@ -76,7 +77,7 @@ public class ProductController {
      * @return
      */
     @GetMapping("/search")
-    public Mono<PageResponseDTO<ProductDTO.ProductListResp>> searchProducts(@RequestParam String keyword, @RequestParam String brand,
+    public Mono<PageResponseDTO<ProductDTO.ListResp>> searchProducts(@RequestParam String keyword, @RequestParam String brand,
                                                                            @RequestParam int limit, @RequestParam int minPrice,
                                                                            @RequestParam int maxPrice, @RequestParam(defaultValue = "1") int page,
                                                                            @RequestParam(defaultValue = "40") int size) {
@@ -90,7 +91,7 @@ public class ProductController {
      * @return
      */
     @GetMapping("/hot-deal")
-    public Flux<ProductDTO.ProductListResp> hotDeal() {
+    public Flux<ProductDTO.ListResp> hotDeal() {
         return productService.hotDeal();
     }
 

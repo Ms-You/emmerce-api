@@ -34,7 +34,7 @@ public class SecurityConfig {
         http.csrf(csrfSpec -> csrfSpec.disable())
                 .cors(corsSpec -> corsSpec.configurationSource(corsConfigurationSource()))  // cors
                 .authorizeExchange((authorizeExchangeSpec ->
-                        authorizeExchangeSpec.pathMatchers("/auth/register", "auth/login")
+                        authorizeExchangeSpec.pathMatchers("auth/**")
                                 .permitAll()
                                 .anyExchange()
                                 .authenticated()))

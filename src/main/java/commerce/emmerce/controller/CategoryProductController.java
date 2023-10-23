@@ -46,7 +46,7 @@ public class CategoryProductController {
      * @return
      */
     @GetMapping("/list")
-    public Mono<PageResponseDTO<CategoryProductDTO.CategoryProductListResp>> findProductsByCategory(@PathVariable Long categoryId,
+    public Mono<PageResponseDTO<CategoryProductDTO.ListResp>> findProductsByCategory(@PathVariable Long categoryId,
                                                                                                    @RequestParam(defaultValue = "1") int page,
                                                                                                    @RequestParam(defaultValue = "40") int size) {
         if(page <= 0) page = 1;

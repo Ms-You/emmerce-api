@@ -1,6 +1,5 @@
 package commerce.emmerce.controller;
 
-import commerce.emmerce.domain.Member;
 import commerce.emmerce.dto.MemberDTO;
 import commerce.emmerce.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -23,23 +22,34 @@ public class AuthController {
 
     /**
      * 회원가입
-     * @param memberRegisterReq
+     * @param registerReq
      * @return
      */
     @PostMapping("/register")
-    public Mono<Void> signup(@RequestBody MemberDTO.MemberRegisterReq memberRegisterReq) {
-        return authService.register(memberRegisterReq);
+    public Mono<Void> signup(@RequestBody MemberDTO.RegisterReq registerReq) {
+        return authService.register(registerReq);
+    }
+
+
+    /**
+     * 사용자 이름 중복 체크
+     * @param duplicateCheckReq
+     * @return
+     */
+    @PostMapping("/duplicate-check")
+    public Mono<Void> duplicateCheckName(@RequestBody MemberDTO.DuplicateCheckReq duplicateCheckReq) {
+        return authService.duplicateCheck(duplicateCheckReq);
     }
 
 
     /**
      * 로그인
-     * @param memberLoginReq
+     * @param loginReq
      * @return
      */
     @PostMapping("/login")
-    public Mono<ResponseEntity<?>> login(@RequestBody MemberDTO.MemberLoginReq memberLoginReq) {
-        return authService.login(memberLoginReq)
+    public Mono<ResponseEntity<?>> login(@RequestBody MemberDTO.LoginReq loginReq) {
+        return authService.login(loginReq)
                 .map(tokenDTO -> {
                     HttpHeaders httpHeaders = new HttpHeaders();
                     httpHeaders.add("Authorization", "Bearer " + tokenDTO.getAccessToken());

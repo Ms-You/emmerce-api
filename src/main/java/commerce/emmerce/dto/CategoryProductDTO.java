@@ -11,7 +11,7 @@ public class CategoryProductDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class CategoryProductListResp {
+    public static class ListResp {
         private Long productId;
         private String name;
         private Integer originalPrice;

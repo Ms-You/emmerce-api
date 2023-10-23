@@ -16,12 +16,12 @@ public class CategoryController {
 
     /**
      * 카테고리 추가
-     * @param categoryReq
+     * @param createReq
      * @return
      */
     @PostMapping
-    public Mono<Void> createCategory(@RequestBody CategoryDTO.CategoryReq categoryReq) {
-        return categoryService.create(categoryReq);
+    public Mono<Void> createCategory(@RequestBody CategoryDTO.CreateReq createReq) {
+        return categoryService.create(createReq);
     }
 
     /**

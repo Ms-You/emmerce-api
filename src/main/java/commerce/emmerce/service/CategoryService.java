@@ -16,15 +16,15 @@ public class CategoryService {
 
     /**
      * 카테고리 추가
-     * @param categoryReq
+     * @param createReq
      * @return
      */
-    public Mono<Void> create(CategoryDTO.CategoryReq categoryReq) {
+    public Mono<Void> create(CategoryDTO.CreateReq createReq) {
         Category category = Category.createCategory()
-                .tier(categoryReq.getTier())
-                .name(categoryReq.getName())
-                .code(categoryReq.getCode())
-                .parentCode(categoryReq.getParentCode())
+                .tier(createReq.getTier())
+                .name(createReq.getName())
+                .code(createReq.getCode())
+                .parentCode(createReq.getParentCode())
                 .build();
 
         return categoryRepository.save(category);
