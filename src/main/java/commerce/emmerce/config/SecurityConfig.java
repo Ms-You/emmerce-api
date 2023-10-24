@@ -29,12 +29,23 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomReactiveUserDetailsService userDetailsService;
 
+    private static final String[] AUTH_WHITELIST = {
+            "/auth/**",
+            "/swagger/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/swagger-resources/**",
+            "/webjars/**",
+            "/v3/api-docs/**",
+            "/v3/**"
+    };
+
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http.csrf(csrfSpec -> csrfSpec.disable())
                 .cors(corsSpec -> corsSpec.configurationSource(corsConfigurationSource()))  // cors
                 .authorizeExchange((authorizeExchangeSpec ->
-                        authorizeExchangeSpec.pathMatchers("auth/**")
+                        authorizeExchangeSpec.pathMatchers(AUTH_WHITELIST)
                                 .permitAll()
                                 .anyExchange()
                                 .authenticated()))
