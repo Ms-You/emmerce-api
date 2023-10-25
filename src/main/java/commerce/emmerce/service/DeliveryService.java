@@ -17,15 +17,14 @@ public class DeliveryService {
     /**
      * 배송 상태 수정
      * @param deliveryId
-     * @param deliveryStatusReq
+     * @param statusReq
      * @return
      */
-    public Mono<Long> changeStatus(Long deliveryId, DeliveryDTO.DeliveryStatusReq deliveryStatusReq) {
-        return deliveryRepository.updateStatus(deliveryId, deliveryStatusReq.getDeliveryStatus())
+    public Mono<Void> changeStatus(Long deliveryId, DeliveryDTO.StatusReq statusReq) {
+        return deliveryRepository.updateStatus(deliveryId, statusReq.getDeliveryStatus())
                 .doOnNext(rowsUpdated ->
                         log.info("변경된 행 개수: {}", rowsUpdated)
-                );
+                ).then();
     }
-
 
 }

@@ -2,14 +2,11 @@ package commerce.emmerce.repository;
 
 import commerce.emmerce.domain.CategoryProduct;
 import commerce.emmerce.dto.CategoryProductDTO;
-import commerce.emmerce.dto.ProductDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.Arrays;
 
 @RequiredArgsConstructor
 @Repository
@@ -40,7 +37,7 @@ public class CategoryProductRepositoryImpl {
     }
 
 
-    public Flux<CategoryProductDTO.CategoryProductListResp> findAllByCategoryId(Long categoryId) {
+    public Flux<CategoryProductDTO.ListResp> findAllByCategoryId(Long categoryId) {
         String query = """
                 select p.*, count(l.*) as like_count
                 from product p
@@ -53,15 +50,49 @@ public class CategoryProductRepositoryImpl {
         return databaseClient.sql(query)
                 .bind("categoryId", categoryId)
                 .fetch().all()
-                .map(row -> CategoryProductDTO.CategoryProductListResp.builder()
+                .map(row -> CategoryProductDTO.ListResp.builder()
                         .productId((Long) row.get("product_id"))
                         .name((String) row.get("name"))
                         .originalPrice((Integer) row.get("original_price"))
                         .discountPrice((Integer) row.get("discount_price"))
                         .discountRate((Integer) row.get("discount_rate"))
                         .starScore((Double) row.get("star_score"))
-                        .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
+                        .titleImg((String) row.get("title_img"))
                         .likeCount((Long) row.get("like_count"))
+                        .brand((String) row.get("brand"))
+                        .build());
+    }
+
+
+    public Mono<Long> findCountByCategoryId(Long categoryId) {
+        String query = """
+                select count(*) as count
+                from product p
+                inner join category_product cp on cp.product_id = p.product_id
+                where cp.category_id = :categoryId;
+                """;
+
+        return databaseClient.sql(query)
+                .bind("categoryId", categoryId)
+                .fetch().one()
+                .map(result -> (Long) result.get("count"));
+    }
+
+
+    public Flux<CategoryProduct> findByProductId(Long productId) {
+        String query = """
+                select * 
+                from category_product cp
+                where cp.product_id = :productId
+                """;
+
+        return databaseClient.sql(query)
+                .bind("productId", productId)
+                .fetch().all()
+                .map(row -> CategoryProduct.builder()
+                        .categoryProductId((Long) row.get("category_product_id"))
+                        .categoryId((Long) row.get("category_id"))
+                        .productId((Long) row.get("product_id"))
                         .build());
     }
 

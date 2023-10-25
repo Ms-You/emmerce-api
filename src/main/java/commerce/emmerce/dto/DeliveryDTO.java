@@ -22,7 +22,7 @@ public class DeliveryDTO {
 
     @Getter
     @NoArgsConstructor
-    public static class DeliveryStatusReq {
+    public static class StatusReq {
         private DeliveryStatus deliveryStatus;
     }
 

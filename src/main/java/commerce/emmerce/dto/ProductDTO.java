@@ -1,9 +1,6 @@
 package commerce.emmerce.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,20 +16,20 @@ public class ProductDTO {
         private Integer originalPrice;
         private Integer discountPrice;
         private Integer stockQuantity;
-        private List<String> titleImgList = new ArrayList<>();
+        private String titleImg;
         private List<String> detailImgList = new ArrayList<>();
-        private String seller;
+        private String brand;
     }
 
     @Getter
     @NoArgsConstructor
-    public static class ProductUpdateReq {
+    public static class UpdateReq {
         private String name;
         private String detail;
         private Integer originalPrice;
         private Integer discountPrice;
         private Integer stockQuantity;
-        private List<String> titleImgList = new ArrayList<>();
+        private String titleImg;
         private List<String> detailImgList = new ArrayList<>();
     }
 
@@ -40,7 +37,11 @@ public class ProductDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class ProductDetailResp {
+    public static class DetailResp {
+        // 상위 카테고리 정보
+        @Setter
+        private List<CategoryDTO.InfoResp> categoryInfoRespList;
+
         private Long productId;
         private String name;
         private String detail;
@@ -49,30 +50,30 @@ public class ProductDTO {
         private Integer discountRate;
         private Integer stockQuantity;
         private Double starScore;
-        private List<String> titleImgList;
+        private String titleImg;
         private List<String> detailImgList;
-        private String seller;
+        private String brand;
         private LocalDateTime enrollTime;
         private Long likeCount;
         // 리뷰 목록
+        @Setter
         private List<ReviewDTO.ReviewResp> reviewRespList;
-
-        public void setReviewRespList(List<ReviewDTO.ReviewResp> reviewRespList) {
-            this.reviewRespList = reviewRespList;
-        }
     }
 
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class ProductListResp {
+    public static class ListResp {
         private Long productId;
         private String name;
         private Integer originalPrice;
         private Integer discountPrice;
         private Integer discountRate;
-        private List<String> titleImgList;
+        private Double starScore;
+        private String titleImg;
+        private Long likeCount;
+        private String brand;
     }
 
 }

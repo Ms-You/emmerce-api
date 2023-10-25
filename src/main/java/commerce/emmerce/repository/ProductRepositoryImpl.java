@@ -37,14 +37,14 @@ public class ProductRepositoryImpl {
                         .discountRate((Integer) row.get("discount_rate"))
                         .stockQuantity((Integer) row.get("stock_quantity"))
                         .starScore((Double) row.get("star_score"))
-                        .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
+                        .titleImg((String) row.get("title_img"))
                         .detailImgList(Arrays.asList((String[]) row.get("detail_img_list")))
-                        .seller((String) row.get("seller"))
+                        .brand((String) row.get("brand"))
                         .enrollTime((LocalDateTime) row.get("enroll_time"))
                         .build());
     }
 
-    public Mono<ProductDTO.ProductDetailResp> findDetailById(Long productId) {
+    public Mono<ProductDTO.DetailResp> findDetailById(Long productId) {
         String query = """
                 select p.*, count(l.*) as like_count
                 from product p
@@ -56,7 +56,7 @@ public class ProductRepositoryImpl {
         return databaseClient.sql(query)
                 .bind("productId", productId)
                 .fetch().one()
-                .map(row -> ProductDTO.ProductDetailResp.builder()
+                .map(row -> ProductDTO.DetailResp.builder()
                         .productId((Long) row.get("product_id"))
                         .name((String) row.get("name"))
                         .detail((String) row.get("detail"))
@@ -65,9 +65,9 @@ public class ProductRepositoryImpl {
                         .discountRate((Integer) row.get("discount_rate"))
                         .stockQuantity((Integer) row.get("stock_quantity"))
                         .starScore((Double) row.get("star_score"))
-                        .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
+                        .titleImg((String) row.get("title_img"))
                         .detailImgList(Arrays.asList((String[]) row.get("detail_img_list")))
-                        .seller((String) row.get("seller"))
+                        .brand((String) row.get("brand"))
                         .enrollTime((LocalDateTime) row.get("enroll_time"))
                         .likeCount((Long) row.get("like_count"))
                         .build());
@@ -91,37 +91,117 @@ public class ProductRepositoryImpl {
                         .discountRate((Integer) row.get("discount_rate"))
                         .stockQuantity((Integer) row.get("stock_quantity"))
                         .starScore((Double) row.get("star_score"))
-                        .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
+                        .titleImg((String) row.get("title_img"))
                         .detailImgList(Arrays.asList((String[]) row.get("detail_img_list")))
-                        .seller((String) row.get("seller"))
+                        .brand((String) row.get("brand"))
                         .enrollTime((LocalDateTime) row.get("enroll_time"))
                         .build());
     }
 
 
-    public Flux<Product> findLatestProducts() {
+    public Flux<ProductDTO.ListResp> findLatestProducts(int size) {
         String query = """
-                select *
+                select p.*, count(l.*) as like_count
                 from product p
+                left join likes l on l.product_id = p.product_id
+                group by p.product_id
                 order by p.enroll_time desc
-                limit 12
+                limit :size
                 """;
 
         return databaseClient.sql(query)
+                .bind("size", size)
                 .fetch().all()
-                .map(row -> Product.createProduct()
+                .map(row -> ProductDTO.ListResp.builder()
                         .productId((Long) row.get("product_id"))
                         .name((String) row.get("name"))
-                        .detail((String) row.get("detail"))
                         .originalPrice((Integer) row.get("original_price"))
                         .discountPrice((Integer) row.get("discount_price"))
                         .discountRate((Integer) row.get("discount_rate"))
-                        .stockQuantity((Integer) row.get("stock_quantity"))
                         .starScore((Double) row.get("star_score"))
-                        .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
-                        .detailImgList(Arrays.asList((String[]) row.get("detail_img_list")))
-                        .seller((String) row.get("seller"))
-                        .enrollTime((LocalDateTime) row.get("enroll_time"))
+                        .titleImg((String) row.get("title_img"))
+                        .likeCount((Long) row.get("like_count"))
+                        .brand((String) row.get("brand"))
+                        .build());
+    }
+
+
+    public Flux<ProductDTO.ListResp> searchProducts(String keyword, String brand, int limit, int minPrice, int maxPrice) {
+        String query = """
+                select p.*, count(l.*) as like_count
+                from product p
+                left join likes l on l.product_id = p.product_id
+                where (p.name like :keyword or p.detail like :keyword)
+                    and p.brand like :brand
+                    and p.discount_price between :minPrice and :maxPrice
+                group by p.product_id
+                limit :limit
+                """;
+
+        return databaseClient.sql(query)
+                .bind("keyword", '%' + keyword + '%')
+                .bind("brand", '%' + brand + '%')
+                .bind("limit", limit)
+                .bind("minPrice", minPrice)
+                .bind("maxPrice", maxPrice)
+                .fetch().all()
+                .map(row -> ProductDTO.ListResp.builder()
+                        .productId((Long) row.get("product_id"))
+                        .name((String) row.get("name"))
+                        .originalPrice((Integer) row.get("original_price"))
+                        .discountPrice((Integer) row.get("discount_price"))
+                        .discountRate((Integer) row.get("discount_rate"))
+                        .starScore((Double) row.get("star_score"))
+                        .titleImg((String) row.get("title_img"))
+                        .likeCount((Long) row.get("like_count"))
+                        .brand((String) row.get("brand"))
+                        .build());
+    }
+
+    public Mono<Long> searchProductsCount(String keyword, String brand, int limit, int minPrice, int maxPrice) {
+        String query = """
+                select count(*) as count
+                from product p
+                where (p.name like :keyword or p.detail like :keyword)
+                    and p.brand like :brand
+                    and p.discount_price between :minPrice and :maxPrice
+                limit :limit
+                """;
+
+        return databaseClient.sql(query)
+                .bind("keyword", '%' + keyword + '%')
+                .bind("brand", '%' + brand + '%')
+                .bind("limit", limit)
+                .bind("minPrice", minPrice)
+                .bind("maxPrice", maxPrice)
+                .fetch().one()
+                .map(result -> (Long) result.get("count"));
+    }
+
+
+    public Flux<ProductDTO.ListResp> findHotDealProducts(int size) {
+        String query = """
+                select p.*, count(l.*) as like_count
+                from product p
+                left join likes l on l.product_id = p.product_id
+                group by p.product_id
+                order by p.discount_rate desc
+                limit :size
+                """;
+
+        return databaseClient.sql(query)
+                .bind("size", size)
+                .fetch().all()
+                .map(row -> ProductDTO.ListResp.builder()
+                        .productId((Long) row.get("product_id"))
+                        .name((String) row.get("name"))
+                        .originalPrice((Integer) row.get("original_price"))
+                        .discountPrice((Integer) row.get("discount_price"))
+                        .discountRate((Integer) row.get("discount_rate"))
+                        .starScore((Double) row.get("star_score"))
+                        .titleImg((String) row.get("title_img"))
+                        .likeCount((Long) row.get("like_count"))
+                        .brand((String) row.get("brand"))
                         .build());
     }
 

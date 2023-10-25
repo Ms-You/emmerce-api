@@ -92,6 +92,7 @@ public class ReviewService {
      */
     @Transactional
     public Mono<Void> remove(Long reviewId) {
+        // 예외 처리
         return reviewRepository.deleteById(reviewId)
                 .doOnNext(rowsUpdated ->
                         log.info("삭제된 리뷰 수: {}", rowsUpdated)

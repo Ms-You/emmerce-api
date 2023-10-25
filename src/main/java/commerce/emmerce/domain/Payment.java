@@ -17,7 +17,7 @@ public class Payment {
     @Column(value = "payment_id")
     private Long paymentId;
 
-    private Double amount;
+    private Integer amount;
 
     private PaymentStatus paymentStatus;
 
@@ -27,7 +27,7 @@ public class Payment {
 
 
     @Builder(builderMethodName = "createPayment")
-    public Payment(Long paymentId, Double amount, PaymentStatus paymentStatus, PaymentMethod paymentMethod, Long orderId) {
+    public Payment(Long paymentId, Integer amount, PaymentStatus paymentStatus, PaymentMethod paymentMethod, Long orderId) {
         this.paymentId = paymentId;
         this.amount = amount;
         this.paymentStatus = paymentStatus;
