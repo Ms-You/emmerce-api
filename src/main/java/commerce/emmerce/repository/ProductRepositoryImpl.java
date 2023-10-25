@@ -99,17 +99,18 @@ public class ProductRepositoryImpl {
     }
 
 
-    public Flux<ProductDTO.ListResp> findLatestProducts() {
+    public Flux<ProductDTO.ListResp> findLatestProducts(int size) {
         String query = """
                 select p.*, count(l.*) as like_count
                 from product p
                 left join likes l on l.product_id = p.product_id
                 group by p.product_id
                 order by p.enroll_time desc
-                limit 12
+                limit :size
                 """;
 
         return databaseClient.sql(query)
+                .bind("size", size)
                 .fetch().all()
                 .map(row -> ProductDTO.ListResp.builder()
                         .productId((Long) row.get("product_id"))
@@ -178,17 +179,18 @@ public class ProductRepositoryImpl {
     }
 
 
-    public Flux<ProductDTO.ListResp> findHotDealProducts() {
+    public Flux<ProductDTO.ListResp> findHotDealProducts(int size) {
         String query = """
                 select p.*, count(l.*) as like_count
                 from product p
                 left join likes l on l.product_id = p.product_id
                 group by p.product_id
                 order by p.discount_rate desc
-                limit 15
+                limit :size
                 """;
 
         return databaseClient.sql(query)
+                .bind("size", size)
                 .fetch().all()
                 .map(row -> ProductDTO.ListResp.builder()
                         .productId((Long) row.get("product_id"))

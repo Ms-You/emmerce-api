@@ -50,6 +50,7 @@ public class CategoryProductService {
      * @return
      */
     public Mono<Void> cancel(Long categoryId, Long productId) {
+        // 예외 처리
         return categoryProductRepository.deleteByCategoryIdAndProductId(categoryId, productId);
     }
 

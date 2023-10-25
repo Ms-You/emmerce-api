@@ -23,11 +23,6 @@ public class AuthController {
 
     private final AuthService authService;
 
-    /**
-     * 회원가입
-     * @param registerReq
-     * @return
-     */
     @Operation(summary = "회원가입", description = "필요한 정보를 받아 회원가입을 진행합니다.\n비밀번호 확인 일치 여부도 체크합니다.")
     @Parameter(name = "registerReq", description = "회원가입 시 필요한 데이터")
     @PostMapping("/register")
@@ -36,31 +31,25 @@ public class AuthController {
     }
 
 
-    /**
-     * 사용자 이름 중복 체크
-     * @param duplicateCheckReq
-     * @return
-     */
+    @Operation(summary = "사용자 명 중복 체크", description = "사용자 이름을 받아 중복 여부를 체크합니다.")
+    @Parameter(name = "duplicateCheckReq", description = "새로 가입할 사용자 명")
     @PostMapping("/duplicate-check")
     public Mono<Void> duplicateCheckName(@RequestBody MemberDTO.DuplicateCheckReq duplicateCheckReq) {
         return authService.duplicateCheck(duplicateCheckReq);
     }
 
 
-    /**
-     * 로그인
-     * @param loginReq
-     * @return
-     */
+    @Operation(summary = "로그인", description = "로그인 성공하면 인증 토큰과 리프레시 토큰을 응답 헤더에 담아 전달합니다.")
+    @Parameter(name = "loginReq", description = "사용자 이름과 비밀번호")
     @PostMapping("/login")
-    public Mono<ResponseEntity<?>> login(@RequestBody MemberDTO.LoginReq loginReq) {
+    public Mono<ResponseEntity> login(@RequestBody MemberDTO.LoginReq loginReq) {
         return authService.login(loginReq)
                 .map(tokenDTO -> {
                     HttpHeaders httpHeaders = new HttpHeaders();
                     httpHeaders.add("Authorization", "Bearer " + tokenDTO.getAccessToken());
                     httpHeaders.add("RefreshToken", tokenDTO.getAccessToken());
 
-                    return new ResponseEntity<>(httpHeaders, HttpStatus.OK);
+                    return new ResponseEntity(httpHeaders, HttpStatus.OK);
                 });
 
     }

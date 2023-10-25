@@ -81,11 +81,11 @@ public class CartProductService {
      * @return
      */
     @Transactional
-    public Mono<Long> clear() {
+    public Mono<Void> clear() {
         return getCurrentMemberCart()
                 .flatMap(cart -> cartProductRepository.deleteAll(cart.getCartId())
                         .doOnNext(rowsUpdated -> log.info("삭제된 상품 개수: {}", rowsUpdated))
-                );
+                ).then();
     }
 
 }

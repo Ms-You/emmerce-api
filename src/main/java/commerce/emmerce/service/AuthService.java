@@ -83,7 +83,7 @@ public class AuthService {
      */
     public Mono<TokenDTO> login(MemberDTO.LoginReq loginReq) {
         Authentication authentication =
-        new UsernamePasswordAuthenticationToken(loginReq.getLoginId(), loginReq.getPassword());
+        new UsernamePasswordAuthenticationToken(loginReq.getName(), loginReq.getPassword());
 
         return authenticationManager.authenticate(authentication)
                 .map(tokenProvider::generateToken)

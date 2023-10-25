@@ -185,11 +185,12 @@ public class ProductService {
 
 
     /**
-     * 최신 상품 12개 조회
+     * 최신 상품 목록 조회
+     * @param size
      * @return
      */
-    public Flux<ProductDTO.ListResp> latest() {
-        return customProductRepository.findLatestProducts();
+    public Flux<ProductDTO.ListResp> latest(int size) {
+        return customProductRepository.findLatestProducts(size);
     }
 
 
@@ -216,11 +217,12 @@ public class ProductService {
 
 
     /**
-     * 핫 딜 - 할인률 큰 상품 목록 조회 (15개)
+     * 핫 딜 - 할인률 큰 상품 목록 조회
+     * @Param size
      * @return
      */
-    public Flux<ProductDTO.ListResp> hotDeal() {
-        return customProductRepository.findHotDealProducts();
+    public Flux<ProductDTO.ListResp> hotDeal(int size) {
+        return customProductRepository.findHotDealProducts(size);
     }
 
 }

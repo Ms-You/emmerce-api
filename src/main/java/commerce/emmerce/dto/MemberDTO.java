@@ -27,7 +27,7 @@ public class MemberDTO {
     @Getter
     @NoArgsConstructor
     public static class LoginReq {
-        private String loginId;
+        private String name;
         private String password;
     }
 

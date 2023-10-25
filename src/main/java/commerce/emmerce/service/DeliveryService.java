@@ -20,12 +20,11 @@ public class DeliveryService {
      * @param statusReq
      * @return
      */
-    public Mono<Long> changeStatus(Long deliveryId, DeliveryDTO.StatusReq statusReq) {
+    public Mono<Void> changeStatus(Long deliveryId, DeliveryDTO.StatusReq statusReq) {
         return deliveryRepository.updateStatus(deliveryId, statusReq.getDeliveryStatus())
                 .doOnNext(rowsUpdated ->
                         log.info("변경된 행 개수: {}", rowsUpdated)
-                );
+                ).then();
     }
-
 
 }
