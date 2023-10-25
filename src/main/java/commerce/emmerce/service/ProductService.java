@@ -225,4 +225,14 @@ public class ProductService {
         return customProductRepository.findHotDealProducts(size);
     }
 
+
+    /**
+     * 랭킹 - 많이 팔린 상품 목록 조회
+     * @param size
+     * @return
+     */
+    public Flux<ProductDTO.ListResp> ranking(int size) {
+        return customProductRepository.findRankingProducts(size);
+    }
+
 }

@@ -79,4 +79,13 @@ public class ProductController {
     public Flux<ProductDTO.ListResp> hotDeal(@RequestParam(defaultValue = "15") int size) {
         return productService.hotDeal(size);
     }
+
+
+    @Operation(summary = "많이 팔린 상품 목록 조회 - 랭킹", description = "가장 많이 팔린 인기 상품 목록을 조회합니다.")
+    @Parameter(name = "size", description = "조회할 상품 개수 (기본 값: 30)")
+    @GetMapping("/ranking")
+    public Flux<ProductDTO.ListResp> ranking(@RequestParam(defaultValue = "30") int size) {
+        return productService.ranking(size);
+    }
+
 }
