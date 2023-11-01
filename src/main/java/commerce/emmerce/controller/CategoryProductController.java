@@ -39,14 +39,20 @@ public class CategoryProductController {
 
     @Operation(summary = "카테고리에 속한 상품 목록 조회", description = "특정 카테고리에 등록된 모든 상품 목록을 조회합니다.")
     @Parameters({ @Parameter(name = "categoryId", description = "상품을 목록을 조회할 카테고리 id"),
+                @Parameter(name = "keyword", description = "상품 명 또는 상세 정보에 포함되는 키워드"),
+                @Parameter(name = "brand", description = "조회하고 싶은 브랜드"),
+                @Parameter(name = "limit", description = "조회 할 상품 수"),
+                @Parameter(name = "minPrice", description = "상품 최소 가격"),
+                @Parameter(name = "maxPrice", description = "상품 최대 가격"),
                 @Parameter(name = "page", description = "페이지 번호 (기본 값: 1)"),
                 @Parameter(name = "size", description = "한 페이지에 조회할 상품 수 (기본 값: 40)") })
     @GetMapping("/list")
-    public Mono<PageResponseDTO<CategoryProductDTO.ListResp>> findProductsByCategory(@PathVariable Long categoryId,
-                                                                                                   @RequestParam(defaultValue = "1") int page,
-                                                                                                   @RequestParam(defaultValue = "40") int size) {
+    public Mono<PageResponseDTO<CategoryProductDTO.ListResp>> findProductsByCategory(@PathVariable Long categoryId, @RequestParam String keyword,
+                                                                                     @RequestParam String brand, @RequestParam int limit,
+                                                                                     @RequestParam int minPrice, @RequestParam int maxPrice,
+                                                                                     @RequestParam(defaultValue = "1") int page, @RequestParam(defaultValue = "40") int size) {
         if(page <= 0) page = 1;
-        return categoryProductService.findCategoryProductList(categoryId, page, size);
+        return categoryProductService.findCategoryProductList(categoryId, keyword, brand, limit, minPrice, maxPrice, page, size);
     }
 
 

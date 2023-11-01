@@ -58,13 +58,19 @@ public class CategoryProductService {
     /**
      * 카테고리에 속한 상품 목록 조회
      * @param categoryId
+     * @param keyword
+     * @param brand
+     * @param limit
+     * @param minPrice
+     * @param maxPrice
      * @param page
      * @param size
      * @return
      */
-    public Mono<PageResponseDTO<CategoryProductDTO.ListResp>> findCategoryProductList(Long categoryId, int page, int size) {
-        return categoryProductRepository.findCountByCategoryId(categoryId)
-                .flatMap(totalElements -> categoryProductRepository.findAllByCategoryId(categoryId)
+    public Mono<PageResponseDTO<CategoryProductDTO.ListResp>> findCategoryProductList(Long categoryId, String keyword, String brand, int limit,
+                                                                                      int minPrice, int maxPrice, int page, int size) {
+        return categoryProductRepository.findCountByCategoryId(categoryId, keyword, brand, limit, minPrice, maxPrice)
+                .flatMap(totalElements -> categoryProductRepository.findAllByCategoryId(categoryId, keyword, brand, limit, minPrice, maxPrice)
                         .skip((page-1) * size)
                         .take(size)
                         .collectList()

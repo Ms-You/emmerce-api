@@ -37,18 +37,27 @@ public class CategoryProductRepositoryImpl {
     }
 
 
-    public Flux<CategoryProductDTO.ListResp> findAllByCategoryId(Long categoryId) {
+    public Flux<CategoryProductDTO.ListResp> findAllByCategoryId(Long categoryId, String keyword, String brand, int limit, int minPrice, int maxPrice) {
         String query = """
                 select p.*, count(l.*) as like_count
                 from product p
                 inner join category_product cp on cp.product_id = p.product_id
                 left join likes l on l.product_id = p.product_id
                 where cp.category_id = :categoryId
+                    and (p.name like :keyword or p.detail like :keyword)
+                    and p.brand like :brand
+                    and p.discount_price between :minPrice and :maxPrice
                 group by p.product_id
+                limit :limit
                 """;
 
         return databaseClient.sql(query)
                 .bind("categoryId", categoryId)
+                .bind("keyword", '%' + keyword + '%')
+                .bind("brand", '%' + brand + '%')
+                .bind("limit", limit)
+                .bind("minPrice", minPrice)
+                .bind("maxPrice", maxPrice)
                 .fetch().all()
                 .map(row -> CategoryProductDTO.ListResp.builder()
                         .productId((Long) row.get("product_id"))
@@ -64,16 +73,25 @@ public class CategoryProductRepositoryImpl {
     }
 
 
-    public Mono<Long> findCountByCategoryId(Long categoryId) {
+    public Mono<Long> findCountByCategoryId(Long categoryId, String keyword, String brand, int limit, int minPrice, int maxPrice) {
         String query = """
                 select count(*) as count
                 from product p
                 inner join category_product cp on cp.product_id = p.product_id
-                where cp.category_id = :categoryId;
+                where cp.category_id = :categoryId
+                    and (p.name like :keyword or p.detail like :keyword)
+                    and p.brand like :brand
+                    and p.discount_price between :minPrice and :maxPrice
+                limit :limit
                 """;
 
         return databaseClient.sql(query)
                 .bind("categoryId", categoryId)
+                .bind("keyword", '%' + keyword + '%')
+                .bind("brand", '%' + brand + '%')
+                .bind("limit", limit)
+                .bind("minPrice", minPrice)
+                .bind("maxPrice", maxPrice)
                 .fetch().one()
                 .map(result -> (Long) result.get("count"));
     }
