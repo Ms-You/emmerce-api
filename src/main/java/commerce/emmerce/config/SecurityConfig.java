@@ -1,6 +1,7 @@
 package commerce.emmerce.config;
 
 import commerce.emmerce.config.jwt.JwtAuthenticationFilter;
+import commerce.emmerce.domain.RoleType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -29,7 +30,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomReactiveUserDetailsService userDetailsService;
 
-    private static final String[] AUTH_WHITELIST = {
+    private static final String[] AUTH_WHITE_LIST = {
             "/auth/**",
             "/swagger/**",
             "/swagger-ui/**",
@@ -37,7 +38,14 @@ public class SecurityConfig {
             "/swagger-resources/**",
             "/webjars/**",
             "/v3/api-docs/**",
-            "/v3/**"
+            "/v3/**",
+            "/category/**",
+            "/product/**"
+    };
+
+    private static final String[] AUTH_ADMIN_LIST = {
+            // 관리자 권한
+            "/admin/**"
     };
 
     @Bean
@@ -45,8 +53,10 @@ public class SecurityConfig {
         http.csrf(csrfSpec -> csrfSpec.disable())
                 .cors(corsSpec -> corsSpec.configurationSource(corsConfigurationSource()))  // cors
                 .authorizeExchange((authorizeExchangeSpec ->
-                        authorizeExchangeSpec.pathMatchers(AUTH_WHITELIST)
+                        authorizeExchangeSpec.pathMatchers(AUTH_WHITE_LIST)
                                 .permitAll()
+                                .pathMatchers(AUTH_ADMIN_LIST)
+                                .hasAuthority(RoleType.ROLE_ADMIN.toString())
                                 .anyExchange()
                                 .authenticated()))
                 .authenticationManager(authenticationManager())

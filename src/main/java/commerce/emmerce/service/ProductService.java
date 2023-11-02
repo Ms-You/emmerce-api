@@ -2,10 +2,7 @@ package commerce.emmerce.service;
 
 import commerce.emmerce.domain.Product;
 import commerce.emmerce.domain.Review;
-import commerce.emmerce.dto.CategoryDTO;
-import commerce.emmerce.dto.PageResponseDTO;
-import commerce.emmerce.dto.ProductDTO;
-import commerce.emmerce.dto.ReviewDTO;
+import commerce.emmerce.dto.*;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -196,18 +193,15 @@ public class ProductService {
 
     /**
      * 상품 검색
-     * @param keyword
-     * @param brand
-     * @param limit
-     * @param minPrice
-     * @param maxPrice
-     * @param page
-     * @param size
+     * @param searchParamDTO
      * @return
      */
-    public Mono<PageResponseDTO<ProductDTO.ListResp>> search(String keyword, String brand, int limit, int minPrice, int maxPrice, int page, int size) {
-        return customProductRepository.searchProductsCount(keyword, brand, limit, minPrice, maxPrice)
-                .flatMap(totalElements -> customProductRepository.searchProducts(keyword, brand, limit, minPrice, maxPrice)
+    public Mono<PageResponseDTO<ProductDTO.ListResp>> search(SearchParamDTO searchParamDTO) {
+        int page = searchParamDTO.getPage();
+        int size = searchParamDTO.getSize();
+
+        return customProductRepository.searchProductsCount(searchParamDTO)
+                .flatMap(totalElements -> customProductRepository.searchProducts(searchParamDTO)
                         .skip((page-1) * size)
                         .take(size)
                         .collectList()

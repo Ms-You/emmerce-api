@@ -2,6 +2,7 @@ package commerce.emmerce.repository;
 
 import commerce.emmerce.domain.CategoryProduct;
 import commerce.emmerce.dto.CategoryProductDTO;
+import commerce.emmerce.dto.SearchParamDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
@@ -37,7 +38,7 @@ public class CategoryProductRepositoryImpl {
     }
 
 
-    public Flux<CategoryProductDTO.ListResp> findAllByCategoryId(Long categoryId, String keyword, String brand, int limit, int minPrice, int maxPrice) {
+    public Flux<CategoryProductDTO.ListResp> findAllByCategoryId(Long categoryId, SearchParamDTO searchParamDTO) {
         String query = """
                 select p.*, count(l.*) as like_count
                 from product p
@@ -53,11 +54,11 @@ public class CategoryProductRepositoryImpl {
 
         return databaseClient.sql(query)
                 .bind("categoryId", categoryId)
-                .bind("keyword", '%' + keyword + '%')
-                .bind("brand", '%' + brand + '%')
-                .bind("limit", limit)
-                .bind("minPrice", minPrice)
-                .bind("maxPrice", maxPrice)
+                .bind("keyword", searchParamDTO.getKeyword())
+                .bind("brand", searchParamDTO.getBrand())
+                .bind("limit", searchParamDTO.getLimit())
+                .bind("minPrice", searchParamDTO.getMinPrice())
+                .bind("maxPrice", searchParamDTO.getMaxPrice())
                 .fetch().all()
                 .map(row -> CategoryProductDTO.ListResp.builder()
                         .productId((Long) row.get("product_id"))
@@ -73,7 +74,7 @@ public class CategoryProductRepositoryImpl {
     }
 
 
-    public Mono<Long> findCountByCategoryId(Long categoryId, String keyword, String brand, int limit, int minPrice, int maxPrice) {
+    public Mono<Long> findCountByCategoryId(Long categoryId, SearchParamDTO searchParamDTO) {
         String query = """
                 select count(*) as count
                 from product p
@@ -87,11 +88,11 @@ public class CategoryProductRepositoryImpl {
 
         return databaseClient.sql(query)
                 .bind("categoryId", categoryId)
-                .bind("keyword", '%' + keyword + '%')
-                .bind("brand", '%' + brand + '%')
-                .bind("limit", limit)
-                .bind("minPrice", minPrice)
-                .bind("maxPrice", maxPrice)
+                .bind("keyword", searchParamDTO.getKeyword())
+                .bind("brand", searchParamDTO.getBrand())
+                .bind("limit", searchParamDTO.getLimit())
+                .bind("minPrice", searchParamDTO.getMinPrice())
+                .bind("maxPrice", searchParamDTO.getMaxPrice())
                 .fetch().one()
                 .map(result -> (Long) result.get("count"));
     }

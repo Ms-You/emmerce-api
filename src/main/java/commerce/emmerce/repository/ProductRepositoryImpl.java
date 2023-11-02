@@ -2,6 +2,7 @@ package commerce.emmerce.repository;
 
 import commerce.emmerce.domain.Product;
 import commerce.emmerce.dto.ProductDTO;
+import commerce.emmerce.dto.SearchParamDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
@@ -126,7 +127,7 @@ public class ProductRepositoryImpl {
     }
 
 
-    public Flux<ProductDTO.ListResp> searchProducts(String keyword, String brand, int limit, int minPrice, int maxPrice) {
+    public Flux<ProductDTO.ListResp> searchProducts(SearchParamDTO searchParamDTO) {
         String query = """
                 select p.*, count(l.*) as like_count
                 from product p
@@ -139,11 +140,11 @@ public class ProductRepositoryImpl {
                 """;
 
         return databaseClient.sql(query)
-                .bind("keyword", '%' + keyword + '%')
-                .bind("brand", '%' + brand + '%')
-                .bind("limit", limit)
-                .bind("minPrice", minPrice)
-                .bind("maxPrice", maxPrice)
+                .bind("keyword", searchParamDTO.getKeyword())
+                .bind("brand", searchParamDTO.getBrand())
+                .bind("limit", searchParamDTO.getLimit())
+                .bind("minPrice", searchParamDTO.getMinPrice())
+                .bind("maxPrice", searchParamDTO.getMaxPrice())
                 .fetch().all()
                 .map(row -> ProductDTO.ListResp.builder()
                         .productId((Long) row.get("product_id"))
@@ -158,7 +159,7 @@ public class ProductRepositoryImpl {
                         .build());
     }
 
-    public Mono<Long> searchProductsCount(String keyword, String brand, int limit, int minPrice, int maxPrice) {
+    public Mono<Long> searchProductsCount(SearchParamDTO searchParamDTO) {
         String query = """
                 select count(*) as count
                 from product p
@@ -169,11 +170,11 @@ public class ProductRepositoryImpl {
                 """;
 
         return databaseClient.sql(query)
-                .bind("keyword", '%' + keyword + '%')
-                .bind("brand", '%' + brand + '%')
-                .bind("limit", limit)
-                .bind("minPrice", minPrice)
-                .bind("maxPrice", maxPrice)
+                .bind("keyword", searchParamDTO.getKeyword())
+                .bind("brand", searchParamDTO.getBrand())
+                .bind("limit", searchParamDTO.getLimit())
+                .bind("minPrice", searchParamDTO.getMinPrice())
+                .bind("maxPrice", searchParamDTO.getMaxPrice())
                 .fetch().one()
                 .map(result -> (Long) result.get("count"));
     }

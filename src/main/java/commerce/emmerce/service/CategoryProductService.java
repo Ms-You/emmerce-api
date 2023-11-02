@@ -3,6 +3,7 @@ package commerce.emmerce.service;
 import commerce.emmerce.domain.CategoryProduct;
 import commerce.emmerce.dto.CategoryProductDTO;
 import commerce.emmerce.dto.PageResponseDTO;
+import commerce.emmerce.dto.SearchParamDTO;
 import commerce.emmerce.repository.CategoryProductRepositoryImpl;
 import commerce.emmerce.repository.CategoryRepositoryImpl;
 import lombok.RequiredArgsConstructor;
@@ -58,19 +59,15 @@ public class CategoryProductService {
     /**
      * 카테고리에 속한 상품 목록 조회
      * @param categoryId
-     * @param keyword
-     * @param brand
-     * @param limit
-     * @param minPrice
-     * @param maxPrice
-     * @param page
-     * @param size
+     * @param searchParamDTO
      * @return
      */
-    public Mono<PageResponseDTO<CategoryProductDTO.ListResp>> findCategoryProductList(Long categoryId, String keyword, String brand, int limit,
-                                                                                      int minPrice, int maxPrice, int page, int size) {
-        return categoryProductRepository.findCountByCategoryId(categoryId, keyword, brand, limit, minPrice, maxPrice)
-                .flatMap(totalElements -> categoryProductRepository.findAllByCategoryId(categoryId, keyword, brand, limit, minPrice, maxPrice)
+    public Mono<PageResponseDTO<CategoryProductDTO.ListResp>> findCategoryProductList(Long categoryId, SearchParamDTO searchParamDTO) {
+        int page = searchParamDTO.getPage();
+        int size = searchParamDTO.getSize();
+
+        return categoryProductRepository.findCountByCategoryId(categoryId, searchParamDTO)
+                .flatMap(totalElements -> categoryProductRepository.findAllByCategoryId(categoryId, searchParamDTO)
                         .skip((page-1) * size)
                         .take(size)
                         .collectList()
