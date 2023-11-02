@@ -3,6 +3,7 @@ package commerce.emmerce.service;
 import commerce.emmerce.domain.CategoryProduct;
 import commerce.emmerce.dto.CategoryProductDTO;
 import commerce.emmerce.dto.PageResponseDTO;
+import commerce.emmerce.dto.SearchParamDTO;
 import commerce.emmerce.repository.CategoryProductRepositoryImpl;
 import commerce.emmerce.repository.CategoryRepositoryImpl;
 import lombok.RequiredArgsConstructor;
@@ -58,13 +59,15 @@ public class CategoryProductService {
     /**
      * 카테고리에 속한 상품 목록 조회
      * @param categoryId
-     * @param page
-     * @param size
+     * @param searchParamDTO
      * @return
      */
-    public Mono<PageResponseDTO<CategoryProductDTO.ListResp>> findCategoryProductList(Long categoryId, int page, int size) {
-        return categoryProductRepository.findCountByCategoryId(categoryId)
-                .flatMap(totalElements -> categoryProductRepository.findAllByCategoryId(categoryId)
+    public Mono<PageResponseDTO<CategoryProductDTO.ListResp>> findCategoryProductList(Long categoryId, SearchParamDTO searchParamDTO) {
+        int page = searchParamDTO.getPage();
+        int size = searchParamDTO.getSize();
+
+        return categoryProductRepository.findCountByCategoryId(categoryId, searchParamDTO)
+                .flatMap(totalElements -> categoryProductRepository.findAllByCategoryId(categoryId, searchParamDTO)
                         .skip((page-1) * size)
                         .take(size)
                         .collectList()

@@ -2,6 +2,7 @@ package commerce.emmerce.repository;
 
 import commerce.emmerce.domain.Product;
 import commerce.emmerce.dto.ProductDTO;
+import commerce.emmerce.dto.SearchParamDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
@@ -126,7 +127,7 @@ public class ProductRepositoryImpl {
     }
 
 
-    public Flux<ProductDTO.ListResp> searchProducts(String keyword, String brand, int limit, int minPrice, int maxPrice) {
+    public Flux<ProductDTO.ListResp> searchProducts(SearchParamDTO searchParamDTO) {
         String query = """
                 select p.*, count(l.*) as like_count
                 from product p
@@ -139,11 +140,11 @@ public class ProductRepositoryImpl {
                 """;
 
         return databaseClient.sql(query)
-                .bind("keyword", '%' + keyword + '%')
-                .bind("brand", '%' + brand + '%')
-                .bind("limit", limit)
-                .bind("minPrice", minPrice)
-                .bind("maxPrice", maxPrice)
+                .bind("keyword", searchParamDTO.getKeyword())
+                .bind("brand", searchParamDTO.getBrand())
+                .bind("limit", searchParamDTO.getLimit())
+                .bind("minPrice", searchParamDTO.getMinPrice())
+                .bind("maxPrice", searchParamDTO.getMaxPrice())
                 .fetch().all()
                 .map(row -> ProductDTO.ListResp.builder()
                         .productId((Long) row.get("product_id"))
@@ -158,7 +159,7 @@ public class ProductRepositoryImpl {
                         .build());
     }
 
-    public Mono<Long> searchProductsCount(String keyword, String brand, int limit, int minPrice, int maxPrice) {
+    public Mono<Long> searchProductsCount(SearchParamDTO searchParamDTO) {
         String query = """
                 select count(*) as count
                 from product p
@@ -169,11 +170,11 @@ public class ProductRepositoryImpl {
                 """;
 
         return databaseClient.sql(query)
-                .bind("keyword", '%' + keyword + '%')
-                .bind("brand", '%' + brand + '%')
-                .bind("limit", limit)
-                .bind("minPrice", minPrice)
-                .bind("maxPrice", maxPrice)
+                .bind("keyword", searchParamDTO.getKeyword())
+                .bind("brand", searchParamDTO.getBrand())
+                .bind("limit", searchParamDTO.getLimit())
+                .bind("minPrice", searchParamDTO.getMinPrice())
+                .bind("maxPrice", searchParamDTO.getMaxPrice())
                 .fetch().one()
                 .map(result -> (Long) result.get("count"));
     }
@@ -186,6 +187,50 @@ public class ProductRepositoryImpl {
                 left join likes l on l.product_id = p.product_id
                 group by p.product_id
                 order by p.discount_rate desc
+                limit :size
+                """;
+
+        return databaseClient.sql(query)
+                .bind("size", size)
+                .fetch().all()
+                .map(row -> ProductDTO.ListResp.builder()
+                        .productId((Long) row.get("product_id"))
+                        .name((String) row.get("name"))
+                        .originalPrice((Integer) row.get("original_price"))
+                        .discountPrice((Integer) row.get("discount_price"))
+                        .discountRate((Integer) row.get("discount_rate"))
+                        .starScore((Double) row.get("star_score"))
+                        .titleImg((String) row.get("title_img"))
+                        .likeCount((Long) row.get("like_count"))
+                        .brand((String) row.get("brand"))
+                        .build());
+    }
+
+
+    public Flux<ProductDTO.ListResp> findRankingProducts(int size) {
+        String query = """
+                select p.product_id as product_id,
+                        p.name as name,
+                        p.original_price as original_price,
+                        p.discount_price as discount_price,
+                        p.discount_rate as discount_rate,
+                        p.star_score as star_score,
+                        p.title_img as title_img,
+                        p.brand as brand,
+                        count(l.*) as like_count
+                from order_product op
+                left join product p on p.product_id = op.product_id
+                left join likes l on l.product_id = op.product_id
+                group by p.product_id, 
+                        p.name, 
+                        p.original_price, 
+                        p.discount_price, 
+                        p.discount_rate, 
+                        p.star_score, 
+                        p.title_img, 
+                        p.brand
+                order by sum(op.total_count) desc,
+                        p.enroll_time asc
                 limit :size
                 """;
 
