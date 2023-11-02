@@ -5,13 +5,11 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 public class CartProductDTO {
 
     @Getter
     @NoArgsConstructor
-    public static class CartProductReq {
+    public static class EnrollReq {
         private Long productId;
         private Integer quantity;
     }
@@ -20,10 +18,10 @@ public class CartProductDTO {
     @NoArgsConstructor
     @AllArgsConstructor
     @Builder
-    public static class CartProductListResp {
+    public static class ListResp {
         private Long productId;
         private String name;
-        private List<String> titleImgList;
+        private String titleImg;
         private Integer discountPrice;
         private Integer totalCount;
         private Integer totalPrice;

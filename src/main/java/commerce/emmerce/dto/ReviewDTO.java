@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ReviewDTO {
@@ -32,7 +31,7 @@ public class ReviewDTO {
         private String title;
         private String description;
         private Double starScore;
-        private List<String> reviewImgList = new ArrayList<>();
+        private List<String> reviewImgList;
         private LocalDate writeDate;
         private Long memberId;
         private String writer;

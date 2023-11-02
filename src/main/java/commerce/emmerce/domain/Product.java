@@ -32,19 +32,18 @@ public class Product {
 
     private Double starScore;   // 별점
 
-    // text[] 자료형으로 저장
-    private List<String> titleImgList = new ArrayList<>();   // 대표 이미지 목록
+    private String titleImg;
 
     private List<String> detailImgList = new ArrayList<>();   // 상세 이미지 목록
 
-    private String seller;  // 판매자
+    private String brand;
 
-    private LocalDateTime enrollTime;  // 등록 시간
+    private LocalDateTime enrollTime;
 
 
     @Builder(builderMethodName = "createProduct")
     private Product(Long productId, String name, String detail, Integer originalPrice, Integer discountPrice, Integer discountRate, Integer stockQuantity,
-                    Double starScore, List<String> titleImgList, List<String> detailImgList, String seller, LocalDateTime enrollTime) {
+                    Double starScore, String titleImg, List<String> detailImgList, String brand, LocalDateTime enrollTime) {
         this.productId = productId;
         this.name = name;
         this.detail = detail;
@@ -53,9 +52,9 @@ public class Product {
         this.discountRate = discountRate;
         this.stockQuantity = stockQuantity;
         this.starScore = starScore;
-        this.titleImgList = titleImgList;
+        this.titleImg = titleImg;
         this.detailImgList = detailImgList;
-        this.seller = seller;
+        this.brand = brand;
         this.enrollTime = enrollTime;
     }
 
@@ -69,14 +68,14 @@ public class Product {
     }
 
     public void updateProduct(String name, String detail, int originalPrice, int discountPrice, int discountRate,
-                              int stockQuantity, List<String> titleImgList, List<String> detailImgList) {
+                              int stockQuantity, String titleImg, List<String> detailImgList) {
         this.name = name;
         this.detail = detail;
         this.originalPrice = originalPrice;
         this.discountPrice = discountPrice;
         this.discountRate = discountRate;
         this.stockQuantity = stockQuantity;
-        this.titleImgList = titleImgList;
+        this.titleImg = titleImg;
         this.detailImgList = detailImgList;
     }
 

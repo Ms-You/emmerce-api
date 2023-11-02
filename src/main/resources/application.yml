@@ -20,3 +20,8 @@ jwt:
 server:
   port: 8088
 
+spring-doc:
+  swagger-ui:
+    tags-sorter: alpha
+    operations-sorter : method
+    doc-expansion : none

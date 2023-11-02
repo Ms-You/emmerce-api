@@ -1,6 +1,7 @@
 package commerce.emmerce.config;
 
 import commerce.emmerce.config.jwt.JwtAuthenticationFilter;
+import commerce.emmerce.domain.RoleType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -29,13 +30,33 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomReactiveUserDetailsService userDetailsService;
 
+    private static final String[] AUTH_WHITE_LIST = {
+            "/auth/**",
+            "/swagger/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/swagger-resources/**",
+            "/webjars/**",
+            "/v3/api-docs/**",
+            "/v3/**",
+            "/category/**",
+            "/product/**"
+    };
+
+    private static final String[] AUTH_ADMIN_LIST = {
+            // 관리자 권한
+            "/admin/**"
+    };
+
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http.csrf(csrfSpec -> csrfSpec.disable())
                 .cors(corsSpec -> corsSpec.configurationSource(corsConfigurationSource()))  // cors
                 .authorizeExchange((authorizeExchangeSpec ->
-                        authorizeExchangeSpec.pathMatchers("/auth/register", "auth/login")
+                        authorizeExchangeSpec.pathMatchers(AUTH_WHITE_LIST)
                                 .permitAll()
+                                .pathMatchers(AUTH_ADMIN_LIST)
+                                .hasAuthority(RoleType.ROLE_ADMIN.toString())
                                 .anyExchange()
                                 .authenticated()))
                 .authenticationManager(authenticationManager())
@@ -66,6 +87,13 @@ public class SecurityConfig {
     }
 
 
+    /**
+     * AuthenticationManager는 authentication() 이라는 메서드를 가지고 있는데
+     * 필터를 통해 넘어온 Authentication 객체가 존재하고 성공적으로 넘어왔다면
+     * onAuthenticationSuccess를 이용해 성공한 인증에 대한 처리 로직을 실행하고,
+     * 실패한다면 authenticationFailureHandler를 이용해 실패 로직을 처리함
+     * @return
+     */
     @Bean
     public ReactiveAuthenticationManager authenticationManager() {
         UserDetailsRepositoryReactiveAuthenticationManager authenticationManager =

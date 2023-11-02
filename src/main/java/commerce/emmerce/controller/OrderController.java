@@ -2,12 +2,15 @@ package commerce.emmerce.controller;
 
 import commerce.emmerce.dto.OrderDTO;
 import commerce.emmerce.service.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-
+@Tag(name = "Order", description = "주문 관련 컨트롤러")
 @RequiredArgsConstructor
 @RequestMapping("/order")
 @RestController
@@ -15,32 +18,23 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    /**
-     * 상품 주문
-     * @param orderReq
-     * @return
-     */
+    @Operation(summary = "상품 주문", description = "현재 로그인 한 사용자에 대해 새로운 주문 정보를 생성합니다.")
+    @Parameter(name = "orderReq", description = "주문할 상품 목록, 배송 정보, 결제 정보")
     @PostMapping
     public Mono<Void> orderProducts(@RequestBody OrderDTO.OrderReq orderReq) {
         return orderService.startOrder(orderReq);
     }
 
 
-    /**
-     * 주문 목록 조회
-     * @return
-     */
+    @Operation(summary = "주문 내역 조회", description = "현재 로그인 한 사용자의 주문 내역을 조회합니다.")
     @GetMapping
     public Flux<OrderDTO.OrderResp> orderList() {
         return orderService.getOrderList();
     }
 
 
-    /**
-     * 주문 취소
-     * @param orderId
-     * @return
-     */
+    @Operation(summary = "주문 취소", description = "현재 로그인 한 사용자의 특정 주문을 취소합니다.")
+    @Parameter(name = "orderId", description = "취소할 주문 id")
     @PutMapping("/{orderId}/cancel")
     public Mono<Void> orderCancel(@PathVariable Long orderId) {
         return orderService.cancel(orderId);

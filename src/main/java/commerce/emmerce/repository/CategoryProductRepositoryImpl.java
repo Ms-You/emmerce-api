@@ -2,14 +2,12 @@ package commerce.emmerce.repository;
 
 import commerce.emmerce.domain.CategoryProduct;
 import commerce.emmerce.dto.CategoryProductDTO;
-import commerce.emmerce.dto.ProductDTO;
+import commerce.emmerce.dto.SearchParamDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.Arrays;
 
 @RequiredArgsConstructor
 @Repository
@@ -40,28 +38,80 @@ public class CategoryProductRepositoryImpl {
     }
 
 
-    public Flux<CategoryProductDTO.CategoryProductListResp> findAllByCategoryId(Long categoryId) {
+    public Flux<CategoryProductDTO.ListResp> findAllByCategoryId(Long categoryId, SearchParamDTO searchParamDTO) {
         String query = """
                 select p.*, count(l.*) as like_count
                 from product p
                 inner join category_product cp on cp.product_id = p.product_id
                 left join likes l on l.product_id = p.product_id
                 where cp.category_id = :categoryId
+                    and (p.name like :keyword or p.detail like :keyword)
+                    and p.brand like :brand
+                    and p.discount_price between :minPrice and :maxPrice
                 group by p.product_id
+                limit :limit
                 """;
 
         return databaseClient.sql(query)
                 .bind("categoryId", categoryId)
+                .bind("keyword", searchParamDTO.getKeyword())
+                .bind("brand", searchParamDTO.getBrand())
+                .bind("limit", searchParamDTO.getLimit())
+                .bind("minPrice", searchParamDTO.getMinPrice())
+                .bind("maxPrice", searchParamDTO.getMaxPrice())
                 .fetch().all()
-                .map(row -> CategoryProductDTO.CategoryProductListResp.builder()
+                .map(row -> CategoryProductDTO.ListResp.builder()
                         .productId((Long) row.get("product_id"))
                         .name((String) row.get("name"))
                         .originalPrice((Integer) row.get("original_price"))
                         .discountPrice((Integer) row.get("discount_price"))
                         .discountRate((Integer) row.get("discount_rate"))
                         .starScore((Double) row.get("star_score"))
-                        .titleImgList(Arrays.asList((String[]) row.get("title_img_list")))
+                        .titleImg((String) row.get("title_img"))
                         .likeCount((Long) row.get("like_count"))
+                        .brand((String) row.get("brand"))
+                        .build());
+    }
+
+
+    public Mono<Long> findCountByCategoryId(Long categoryId, SearchParamDTO searchParamDTO) {
+        String query = """
+                select count(*) as count
+                from product p
+                inner join category_product cp on cp.product_id = p.product_id
+                where cp.category_id = :categoryId
+                    and (p.name like :keyword or p.detail like :keyword)
+                    and p.brand like :brand
+                    and p.discount_price between :minPrice and :maxPrice
+                limit :limit
+                """;
+
+        return databaseClient.sql(query)
+                .bind("categoryId", categoryId)
+                .bind("keyword", searchParamDTO.getKeyword())
+                .bind("brand", searchParamDTO.getBrand())
+                .bind("limit", searchParamDTO.getLimit())
+                .bind("minPrice", searchParamDTO.getMinPrice())
+                .bind("maxPrice", searchParamDTO.getMaxPrice())
+                .fetch().one()
+                .map(result -> (Long) result.get("count"));
+    }
+
+
+    public Flux<CategoryProduct> findByProductId(Long productId) {
+        String query = """
+                select * 
+                from category_product cp
+                where cp.product_id = :productId
+                """;
+
+        return databaseClient.sql(query)
+                .bind("productId", productId)
+                .fetch().all()
+                .map(row -> CategoryProduct.builder()
+                        .categoryProductId((Long) row.get("category_product_id"))
+                        .categoryId((Long) row.get("category_id"))
+                        .productId((Long) row.get("product_id"))
                         .build());
     }
 

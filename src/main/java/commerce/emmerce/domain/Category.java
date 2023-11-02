@@ -7,7 +7,6 @@ import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Table
 public class Category {
 
@@ -25,7 +24,8 @@ public class Category {
 
 
     @Builder(builderMethodName = "createCategory")
-    private Category(Integer tier, String name, String code, String parentCode) {
+    private Category(Long categoryId, Integer tier, String name, String code, String parentCode) {
+        this.categoryId = categoryId;
         this.tier = tier;
         this.name = name;
         this.code = code;
