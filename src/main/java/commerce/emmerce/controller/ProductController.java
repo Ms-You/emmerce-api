@@ -22,7 +22,7 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @Operation(summary = "상품 상세 정보 조회", description = "상품의 상세 정보 및 작성된 리뷰를 조회합니다.")
+    @Operation(summary = "상품 상세 정보 조회", description = "상품의 상세 정보를 조회합니다.")
     @Parameter(name = "productId", description = "조회할 상품 id")
     @GetMapping("/{productId}")
     public Mono<ProductDTO.DetailResp> productDetail(@PathVariable Long productId) {
@@ -33,7 +33,7 @@ public class ProductController {
     @Operation(summary = "최신 상품 목록 조회", description = "가장 최근에 등록된 상품 목록을 조회합니다.")
     @Parameter(name = "size", description = "조회할 최신 상품 개수 (기본 값: 12)")
     @GetMapping("/latest")
-    public Flux<ProductDTO.ListResp> latestProducts(@RequestParam(defaultValue = "12") int size) {
+    public Flux<ProductDTO.ListResp> latestProducts(@RequestParam(defaultValue = "12") Integer size) {
         return productService.latest(size);
     }
 
@@ -60,7 +60,7 @@ public class ProductController {
                 .limit(limit != null ? limit : Integer.MAX_VALUE)
                 .minPrice(minPrice != null ? minPrice : 0)
                 .maxPrice(maxPrice != null ? maxPrice : Integer.MAX_VALUE)
-                .page(page <= 0 ? 1 : page)
+                .page(Math.max(1, page))
                 .size(size)
                 .build();
 
@@ -71,7 +71,7 @@ public class ProductController {
     @Operation(summary = "할인률 큰 상품 목록 조회", description = "할인률이 가장 큰 상품 목록을 조회합니다.")
     @Parameter(name = "size", description = "조회할 상품 개수 (기본 값: 15)")
     @GetMapping("/hot-deal")
-    public Flux<ProductDTO.ListResp> hotDeal(@RequestParam(defaultValue = "15") int size) {
+    public Flux<ProductDTO.ListResp> hotDeal(@RequestParam(defaultValue = "15") Integer size) {
         return productService.hotDeal(size);
     }
 
@@ -79,7 +79,7 @@ public class ProductController {
     @Operation(summary = "많이 팔린 상품 목록 조회 - 랭킹", description = "가장 많이 팔린 인기 상품 목록을 조회합니다.")
     @Parameter(name = "size", description = "조회할 상품 개수 (기본 값: 30)")
     @GetMapping("/ranking")
-    public Flux<ProductDTO.ListResp> ranking(@RequestParam(defaultValue = "30") int size) {
+    public Flux<ProductDTO.ListResp> ranking(@RequestParam(defaultValue = "30") Integer size) {
         return productService.ranking(size);
     }
 

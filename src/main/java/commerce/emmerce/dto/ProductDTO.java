@@ -38,10 +38,6 @@ public class ProductDTO {
     @AllArgsConstructor
     @Builder
     public static class DetailResp {
-        // 상위 카테고리 정보
-        @Setter
-        private List<CategoryDTO.InfoResp> categoryInfoRespList;
-
         private Long productId;
         private String name;
         private String detail;
@@ -55,9 +51,6 @@ public class ProductDTO {
         private String brand;
         private LocalDateTime enrollTime;
         private Long likeCount;
-        // 리뷰 목록
-        @Setter
-        private List<ReviewDTO.ReviewResp> reviewRespList;
     }
 
     @Getter

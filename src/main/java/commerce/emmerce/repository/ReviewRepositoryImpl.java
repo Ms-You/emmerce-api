@@ -57,28 +57,6 @@ public class ReviewRepositoryImpl {
     }
 
 
-    /*public Mono<Review> findById(Long reviewId) {
-        String query = """
-                select *
-                from review r
-                where r.review_id = :reviewId
-                """;
-
-        return databaseClient.sql(query)
-                .bind("reviewId", reviewId)
-                .fetch().one()
-                .map(row -> Review.createReview()
-                        .reviewId((Long) row.get("review_id"))
-                        .title((String) row.get("title"))
-                        .description((String) row.get("description"))
-                        .startScore((Double) row.get("star_score"))
-                        .reviewImgList(Arrays.asList((String[]) row.get("review_img_list")))
-                        .writeDate((LocalDate) row.get("write_date"))
-                        .memberId((Long) row.get("member_id"))
-                        .productId((Long) row.get("product_id"))
-                        .build());
-    }*/
-
     public Mono<Long> deleteById(Long reviewId) {
         String query = """
                 delete
@@ -91,4 +69,40 @@ public class ReviewRepositoryImpl {
                 .fetch().rowsUpdated();
     }
 
+
+    public Mono<Long> reviewCountByProduct(Long productId) {
+        String query = """
+                select count(*) as count
+                from review r
+                where r.product_id = :productId
+                """;
+
+        return databaseClient.sql(query)
+                .bind("productId", productId)
+                .fetch().one()
+                .map(result -> (Long) result.get("count"));
+    }
+
+
+    public Flux<Review> reviewsByProduct(Long productId) {
+        String query = """
+                select *
+                from review r
+                where r.product_id = :productId
+                """;
+
+        return databaseClient.sql(query)
+                .bind("productId", productId)
+                .fetch().all()
+                .map(row -> Review.createReview()
+                        .reviewId((Long) row.get("review_id"))
+                        .title((String) row.get("title"))
+                        .description((String) row.get("description"))
+                        .startScore((Double) row.get("star_score"))
+                        .reviewImgList(Arrays.asList((String[]) row.get("review_img_list")))
+                        .writeDate((LocalDate) row.get("write_date"))
+                        .memberId((Long) row.get("member_id"))
+                        .productId((Long) row.get("product_id"))
+                        .build());
+    }
 }

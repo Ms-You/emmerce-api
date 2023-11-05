@@ -33,6 +33,8 @@ public class OrderService {
     private final PaymentRepository paymentRepository;
 
 
+    //== 주문 생성 로직 시작 ==//
+
     /**
      * 주문 시작
      * @param orderReq
@@ -137,6 +139,10 @@ public class OrderService {
     }
 
 
+    //== 주문 생성 로직 끝 ==//
+
+    //== 주문 조회 로직 시작 ==//
+
     /**
      * 주문 목록 조회
      * @return
@@ -191,6 +197,10 @@ public class OrderService {
         return customProductRepository.findById(orderProduct.getProductId());
     }
 
+
+    //== 주문 조회 로직 끝 ==//
+
+    //== 주문 취소 로직 시작 ==//
 
     /**
      * 주문 취소
@@ -266,5 +276,7 @@ public class OrderService {
                     return paymentRepository.save(payment);
                 }).then();
     }
+
+    //== 주문 취소 로직 끝 ==//
 
 }
