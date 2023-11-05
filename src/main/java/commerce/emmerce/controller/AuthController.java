@@ -42,14 +42,14 @@ public class AuthController {
     @Operation(summary = "로그인", description = "로그인 성공하면 인증 토큰과 리프레시 토큰을 응답 헤더에 담아 전달합니다.")
     @Parameter(name = "loginReq", description = "사용자 이름과 비밀번호")
     @PostMapping("/login")
-    public Mono<ResponseEntity> login(@RequestBody MemberDTO.LoginReq loginReq) {
+    public Mono<HttpHeaders> login(@RequestBody MemberDTO.LoginReq loginReq) {
         return authService.login(loginReq)
                 .map(tokenDTO -> {
                     HttpHeaders httpHeaders = new HttpHeaders();
                     httpHeaders.add("Authorization", "Bearer " + tokenDTO.getAccessToken());
                     httpHeaders.add("RefreshToken", tokenDTO.getAccessToken());
 
-                    return new ResponseEntity(httpHeaders, HttpStatus.OK);
+                    return httpHeaders;
                 });
 
     }

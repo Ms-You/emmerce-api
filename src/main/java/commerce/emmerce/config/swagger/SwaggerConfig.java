@@ -5,6 +5,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -39,4 +40,69 @@ public class SwaggerConfig {
                 .components(components)
                 .info(info);
     }
+
+    @Bean
+    public GroupedOpenApi adminOpenApi() {
+        return GroupedOpenApi.builder()
+                .group("Admin")
+                .pathsToMatch("/admin/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi categoryOpenApi() {
+        return GroupedOpenApi.builder()
+                .group("Category")
+                .pathsToMatch("/category/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi cartOpenApi() {
+        return GroupedOpenApi.builder()
+                .group("Cart")
+                .pathsToMatch("/cart/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi orderOpenApi() {
+        return GroupedOpenApi.builder()
+                .group("Order")
+                .pathsToMatch("/order/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi paymentOpenApi() {
+        return GroupedOpenApi.builder()
+                .group("Payment")
+                .pathsToMatch("/payment/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi productOpenApi() {
+        return GroupedOpenApi.builder()
+                .group("Product")
+                .pathsToMatch("/product/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi reviewOpenApi() {
+        return GroupedOpenApi.builder()
+                .group("Review")
+                .pathsToMatch("/review/**")
+                .build();
+    }
+
+    @Bean
+    public GroupedOpenApi authOpenApi() {
+        return GroupedOpenApi.builder()
+                .group("Auth")
+                .pathsToMatch("/auth/**")
+                .build();
+    }
+
 }
