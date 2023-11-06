@@ -16,11 +16,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 @Service
@@ -134,6 +132,38 @@ public class AuthService {
                                 ))
                         )
                 ).then();
+    }
+
+
+    /**
+     * 토큰 만료 시 재발행
+     * @param accessToken
+     * @param refreshToken
+     * @return
+     */
+    public Mono<TokenDTO> reissue(String accessToken, String refreshToken) {
+        return tokenProvider.validateToken(refreshToken)
+                .flatMap(valid -> {
+                    if(!valid) {
+                        return Mono.error(new GlobalException(ErrorCode.REFRESH_TOKEN_NOT_VALIDATE));
+                    }
+
+                    return tokenProvider.getAuthentication(accessToken);
+                }).flatMap(authentication -> reactiveRedisTemplate.opsForValue().get(authentication.getName())
+                        .flatMap(savedRefreshToken -> {
+                            if(!savedRefreshToken.equals(refreshToken)) {
+                                return Mono.error(new GlobalException(ErrorCode.REFRESH_TOKEN_NOT_MATCHED));
+                            }
+
+                            TokenDTO tokenDTO = tokenProvider.generateToken(authentication);
+
+                            return reactiveRedisTemplate.opsForValue().set(
+                                    authentication.getName(),
+                                    tokenDTO.getRefreshToken(),
+                                    Duration.ofMillis(refreshTokenExpiresIn)
+                            ).thenReturn(tokenDTO);
+                        })
+                );
     }
 
 }

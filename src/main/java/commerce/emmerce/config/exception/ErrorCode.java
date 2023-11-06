@@ -13,6 +13,8 @@ public enum ErrorCode {
 
     // Auth
     ACCESS_TOKEN_NOT_VALIDATE(HttpStatus.BAD_REQUEST.value(), "토큰이 유효하지 않습니다."),
+    REFRESH_TOKEN_NOT_VALIDATE(HttpStatus.BAD_REQUEST.value(), "리프레시 토큰이 유효하지 않습니다."),
+    REFRESH_TOKEN_NOT_MATCHED(HttpStatus.BAD_REQUEST.value(), "리프레시 토큰이 일치하지 않습니다."),
 
     // Member
     MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "존재하지 않는 사용자입니다."),

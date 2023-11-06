@@ -49,7 +49,7 @@ public class AuthController {
                 .map(tokenDTO -> {
                     HttpHeaders httpHeaders = new HttpHeaders();
                     httpHeaders.add("Authorization", "Bearer " + tokenDTO.getAccessToken());
-                    httpHeaders.add("RefreshToken", tokenDTO.getAccessToken());
+                    httpHeaders.add("RefreshToken", tokenDTO.getRefreshToken());
 
                     return httpHeaders;
                 });
@@ -68,6 +68,22 @@ public class AuthController {
         }
 
         return Mono.just(new ResponseEntity(HttpStatus.OK));
+    }
+
+
+    @PostMapping("/reissue")
+    public Mono<HttpHeaders> reissueToken(ServerWebExchange exchange) {
+        String accessToken = exchange.getRequest().getHeaders().getFirst("Authorization").substring(7);
+        String refreshToken = exchange.getRequest().getHeaders().getFirst("RefreshToken");
+
+        return authService.reissue(accessToken, refreshToken)
+                .map(tokenDTO -> {
+                    HttpHeaders httpHeaders = new HttpHeaders();
+                    httpHeaders.add("Authorization", "Bearer " + tokenDTO.getAccessToken());
+                    httpHeaders.add("RefreshToken", tokenDTO.getRefreshToken());
+
+                    return httpHeaders;
+                });
     }
 
 }
