@@ -9,6 +9,11 @@ spring:
     username: postgres
     password: root
 
+  # redis
+  redis:
+    host: localhost
+    port: 6379
+
 # R2DBC에서 Database로 나가는 쿼리를 보고 싶을 때
 logging:
   level:
@@ -16,6 +21,9 @@ logging:
 
 jwt:
   secret: VlwEyVBsYt9V7zq57TejMnVUyzblYcfPQye08f7MGVA9XkHa
+  live:
+    # 7일
+    rtk: 604800000
 
 server:
   port: 8088

@@ -5,6 +5,7 @@ import commerce.emmerce.domain.DeliveryStatus;
 import commerce.emmerce.domain.Member;
 import commerce.emmerce.domain.OrderProduct;
 import commerce.emmerce.domain.Review;
+import commerce.emmerce.dto.PageResponseDTO;
 import commerce.emmerce.dto.ReviewDTO;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
@@ -99,5 +101,49 @@ public class ReviewService {
                 ).then();
     }
 
+
+    /**
+     * 상품에 속한 리뷰 목록 조회 (페이징)
+     * @param productId
+     * @param page
+     * @param size
+     * @return
+     */
+    public Mono<PageResponseDTO<ReviewDTO.ReviewResp>> reviewsByProduct(Long productId, Integer page, Integer size) {
+        Mono<Long> totalReviews = reviewRepository.reviewCountByProduct(productId);
+        Flux<ReviewDTO.ReviewResp> reviewRespFlux = reviewRepository.reviewsByProduct(productId)
+                .skip((page-1) * size)
+                .take(size)
+                .flatMap(review -> memberRepository.findById(review.getMemberId())
+                        .map(member -> ReviewDTO.ReviewResp.builder()
+                                .reviewId(review.getReviewId())
+                                .title(review.getTitle())
+                                .description(review.getDescription())
+                                .starScore(review.getStarScore())
+                                .reviewImgList(review.getReviewImgList())
+                                .writeDate(review.getWriteDate())
+                                .memberId(review.getMemberId())
+                                .writer(maskingMemberName(member.getName()))
+                                .build())
+                );
+
+        return Mono.zip(reviewRespFlux.collectList(), totalReviews)
+                .map(t -> new PageResponseDTO<>(t.getT1(), page, size, t.getT2().intValue()));
+    }
+
+
+    /**
+     * 사용자 이름 마스킹 처리
+     * @param existsName
+     * @return
+     */
+    private String maskingMemberName(String existsName) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(existsName.substring(0,1));
+        sb.append("********");
+        sb.append(existsName.substring(existsName.length() - 1));
+
+        return sb.toString();
+    }
 
 }

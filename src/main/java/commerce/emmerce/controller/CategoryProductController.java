@@ -45,7 +45,7 @@ public class CategoryProductController {
                 .limit(limit != null ? limit : Integer.MAX_VALUE)
                 .minPrice(minPrice != null ? minPrice : 0)
                 .maxPrice(maxPrice != null ? maxPrice : Integer.MAX_VALUE)
-                .page(page <= 0 ? 1 : page)
+                .page(Math.max(1, page))
                 .size(size)
                 .build();
 
