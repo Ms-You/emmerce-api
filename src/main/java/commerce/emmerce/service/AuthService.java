@@ -9,12 +9,18 @@ import commerce.emmerce.domain.RoleType;
 import commerce.emmerce.dto.MemberDTO;
 import commerce.emmerce.repository.MemberRepositoryImpl;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
+
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 @Service
@@ -24,6 +30,10 @@ public class AuthService {
     private final ReactiveAuthenticationManager authenticationManager;
     private final TokenProvider tokenProvider;
     private final MemberRepositoryImpl memberRepository;
+    private final ReactiveRedisTemplate<String, String> reactiveRedisTemplate;
+
+    @Value("${jwt.live.rtk}")
+    private long refreshTokenExpiresIn;
 
     /**
      * 회원가입
@@ -87,7 +97,43 @@ public class AuthService {
 
         return authenticationManager.authenticate(authentication)
                 .map(tokenProvider::generateToken)
-                .map(token -> TokenDTO.builder().accessToken(token.getAccessToken()).refreshToken(token.getRefreshToken()).build());
+                .flatMap(token -> {
+                    TokenDTO tokenDTO = TokenDTO.builder()
+                            .accessToken(token.getAccessToken())
+                            .refreshToken(token.getRefreshToken())
+                            .build();
+
+                    return reactiveRedisTemplate.opsForValue().set(
+                            authentication.getName(),
+                            tokenDTO.getRefreshToken(),
+                            Duration.ofMillis(refreshTokenExpiresIn)
+                    ).thenReturn(tokenDTO);
+                });
+    }
+
+
+    /**
+     * 로그아웃 (jwt token redis 에서 관리)
+     * @param token
+     * @return
+     */
+    public Mono<Void> logout(String token) {
+        return tokenProvider.validateToken(token)
+                .flatMap(valid -> {
+                    if(!valid) {
+                        return Mono.error(new GlobalException(ErrorCode.ACCESS_TOKEN_NOT_VALIDATE));
+                    }
+
+                    return tokenProvider.getAuthentication(token);
+                }).flatMap(authentication -> reactiveRedisTemplate.opsForValue().get(authentication.getName())
+                        .flatMap(refreshToken -> reactiveRedisTemplate.delete(authentication.getName()) // refreshToken 은 삭제
+                                .then(reactiveRedisTemplate.opsForValue().set(  // accessToken 은 블랙리스트로 관리
+                                        token,
+                                        "logout",
+                                        Duration.ofMillis(tokenProvider.getExpiration(token))
+                                ))
+                        )
+                ).then();
     }
 
 }

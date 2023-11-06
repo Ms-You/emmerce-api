@@ -7,10 +7,14 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Tag(name = "Auth", description = "사용자 인증 관련 API")
@@ -49,7 +53,21 @@ public class AuthController {
 
                     return httpHeaders;
                 });
+    }
 
+
+    @Operation(summary = "로그아웃", description = "로그아웃 시 jwt 토큰을 redis 에서 블랙리스트로 관리")
+    @Parameter(name = "exchange", description = "사용자 요청")
+    @PostMapping("/logout")
+    public Mono<ResponseEntity> logout(ServerWebExchange exchange) {
+        String token = exchange.getRequest().getHeaders().getFirst("Authorization");
+
+        if(StringUtils.hasText(token) && token.startsWith("Bearer")) {
+            return authService.logout(token.substring(7))
+                    .thenReturn(new ResponseEntity(HttpStatus.OK));
+        }
+
+        return Mono.just(new ResponseEntity(HttpStatus.OK));
     }
 
 }
