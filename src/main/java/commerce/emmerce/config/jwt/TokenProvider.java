@@ -142,4 +142,16 @@ public class TokenProvider {
         });
     }
 
+
+    /**
+     * 토큰 만료 시간 반환
+     * @param accessToken
+     * @return
+     */
+    public Long getExpiration(String accessToken) {
+        Claims claims = parseClaims(accessToken);
+
+        return claims.getExpiration().getTime();
+    }
+
 }

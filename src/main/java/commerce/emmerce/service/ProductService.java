@@ -17,10 +17,7 @@ public class ProductService {
 
     private final ProductRepositoryImpl customProductRepository;
     private final ProductRepository productRepository;
-    private final CategoryProductRepositoryImpl categoryProductRepository;
-    private final CategoryRepositoryImpl categoryRepository;
     private final ReviewRepositoryImpl reviewRepository;
-    private final MemberRepositoryImpl memberRepository;
 
     /**
      * 상품 추가
@@ -49,88 +46,12 @@ public class ProductService {
 
 
     /**
-     * 상품 상세 정보 반환 (with category & review)
+     * 상품 상세 정보 반환
      * @param productId
      * @return
      */
     public Mono<ProductDTO.DetailResp> detail(Long productId) {
-        return customProductRepository.findDetailById(productId)
-                .flatMap(detailResp -> attachCategoryInfo(detailResp, productId))
-                .flatMap(detailResp -> attachReviewInfo(detailResp, productId));
-    }
-
-
-    /**
-     * productDetailResp 에 categoryInfoResp 세팅
-     * @param detailResp
-     * @param productId
-     * @return
-     */
-    private Mono<ProductDTO.DetailResp> attachCategoryInfo(ProductDTO.DetailResp detailResp, Long productId) {
-        return getCategoryLayers(productId).collectList()
-                .map(categoryInfoResps -> {
-                    detailResp.setCategoryInfoRespList(categoryInfoResps);
-
-                    return detailResp;
-                });
-    }
-
-    /**
-     * 상품이 속한 카테고리 계층 반환
-     * @param productId
-     * @return
-     */
-    public Flux<CategoryDTO.InfoResp> getCategoryLayers(Long productId) {
-        return categoryProductRepository.findByProductId(productId)
-                .flatMap(categoryProduct -> categoryRepository.findById(categoryProduct.getCategoryId()))
-                .map(category -> CategoryDTO.InfoResp.builder()
-                        .categoryId(category.getCategoryId())
-                        .tier(category.getTier())
-                        .name(category.getName())
-                        .build()
-                );
-    }
-
-    /**
-     * productDetailResp 에 reviewResp 세팅
-     * @param detailResp
-     * @param productId
-     * @return
-     */
-    private Mono<ProductDTO.DetailResp> attachReviewInfo(ProductDTO.DetailResp detailResp, Long productId) {
-        return reviewRepository.findAllByProductId(productId)
-                .flatMap(review -> memberRepository.findById(review.getMemberId())
-                        .map(member -> ReviewDTO.ReviewResp.builder()
-                                .reviewId(review.getReviewId())
-                                .title(review.getTitle())
-                                .description(review.getDescription())
-                                .starScore(review.getStarScore())
-                                .reviewImgList(review.getReviewImgList())
-                                .writeDate(review.getWriteDate())
-                                .memberId(review.getMemberId())
-                                .writer(maskingMemberName(member.getName()))
-                                .build()
-                        )
-                ).collectList()
-                .map(reviewResps -> {
-                    detailResp.setReviewRespList(reviewResps);
-
-                    return detailResp;
-                });
-    }
-
-    /**
-     * 사용자 이름 마스킹 처리
-     * @param existsName
-     * @return
-     */
-    private String maskingMemberName(String existsName) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(existsName.substring(0,1));
-        sb.append("********");
-        sb.append(existsName.substring(existsName.length() - 1));
-
-        return sb.toString();
+        return customProductRepository.findDetailById(productId);
     }
 
 
@@ -186,7 +107,7 @@ public class ProductService {
      * @param size
      * @return
      */
-    public Flux<ProductDTO.ListResp> latest(int size) {
+    public Flux<ProductDTO.ListResp> latest(Integer size) {
         return customProductRepository.findLatestProducts(size);
     }
 
@@ -215,7 +136,7 @@ public class ProductService {
      * @Param size
      * @return
      */
-    public Flux<ProductDTO.ListResp> hotDeal(int size) {
+    public Flux<ProductDTO.ListResp> hotDeal(Integer size) {
         return customProductRepository.findHotDealProducts(size);
     }
 
@@ -225,7 +146,7 @@ public class ProductService {
      * @param size
      * @return
      */
-    public Flux<ProductDTO.ListResp> ranking(int size) {
+    public Flux<ProductDTO.ListResp> ranking(Integer size) {
         return customProductRepository.findRankingProducts(size);
     }
 

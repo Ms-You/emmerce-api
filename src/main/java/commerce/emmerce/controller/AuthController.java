@@ -9,10 +9,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 @Tag(name = "Auth", description = "사용자 인증 관련 API")
@@ -42,16 +44,46 @@ public class AuthController {
     @Operation(summary = "로그인", description = "로그인 성공하면 인증 토큰과 리프레시 토큰을 응답 헤더에 담아 전달합니다.")
     @Parameter(name = "loginReq", description = "사용자 이름과 비밀번호")
     @PostMapping("/login")
-    public Mono<ResponseEntity> login(@RequestBody MemberDTO.LoginReq loginReq) {
+    public Mono<HttpHeaders> login(@RequestBody MemberDTO.LoginReq loginReq) {
         return authService.login(loginReq)
                 .map(tokenDTO -> {
                     HttpHeaders httpHeaders = new HttpHeaders();
                     httpHeaders.add("Authorization", "Bearer " + tokenDTO.getAccessToken());
-                    httpHeaders.add("RefreshToken", tokenDTO.getAccessToken());
+                    httpHeaders.add("RefreshToken", tokenDTO.getRefreshToken());
 
-                    return new ResponseEntity(httpHeaders, HttpStatus.OK);
+                    return httpHeaders;
                 });
+    }
 
+
+    @Operation(summary = "로그아웃", description = "로그아웃 시 jwt 토큰을 redis 에서 블랙리스트로 관리")
+    @Parameter(name = "exchange", description = "사용자 요청")
+    @PostMapping("/logout")
+    public Mono<ResponseEntity> logout(ServerWebExchange exchange) {
+        String token = exchange.getRequest().getHeaders().getFirst("Authorization");
+
+        if(StringUtils.hasText(token) && token.startsWith("Bearer")) {
+            return authService.logout(token.substring(7))
+                    .thenReturn(new ResponseEntity(HttpStatus.OK));
+        }
+
+        return Mono.just(new ResponseEntity(HttpStatus.OK));
+    }
+
+
+    @PostMapping("/reissue")
+    public Mono<HttpHeaders> reissueToken(ServerWebExchange exchange) {
+        String accessToken = exchange.getRequest().getHeaders().getFirst("Authorization").substring(7);
+        String refreshToken = exchange.getRequest().getHeaders().getFirst("RefreshToken");
+
+        return authService.reissue(accessToken, refreshToken)
+                .map(tokenDTO -> {
+                    HttpHeaders httpHeaders = new HttpHeaders();
+                    httpHeaders.add("Authorization", "Bearer " + tokenDTO.getAccessToken());
+                    httpHeaders.add("RefreshToken", tokenDTO.getRefreshToken());
+
+                    return httpHeaders;
+                });
     }
 
 }
