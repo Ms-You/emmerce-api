@@ -29,6 +29,12 @@ public class KakaoPayController {
     }
 
 
+    @PostMapping("/order")
+    public Mono<KakaoPayDTO.OrderResp> lookUpOrder(@RequestBody KakaoPayDTO.PayReq payReq) {
+        return kakaoPayService.kakaoPayOrdered(payReq);
+    }
+
+
     @GetMapping("/cancel")
     public Mono<ResponseEntity> cancel() {
         return Mono.error(new GlobalException(ErrorCode.PAYMENT_CANCELED));

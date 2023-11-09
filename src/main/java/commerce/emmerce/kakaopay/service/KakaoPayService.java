@@ -5,6 +5,7 @@ import commerce.emmerce.config.exception.ErrorCode;
 import commerce.emmerce.config.exception.GlobalException;
 import commerce.emmerce.domain.Member;
 import commerce.emmerce.domain.OrderProduct;
+import commerce.emmerce.domain.OrderStatus;
 import commerce.emmerce.kakaopay.dto.KakaoPayDTO;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -121,7 +122,7 @@ public class KakaoPayService {
     }
 
 
-    public Mono<KakaoPayDTO.CancelResp> kakaoPayCancel(KakaoPayDTO.PayReq payReq) {
+    public Mono<KakaoPayDTO.OrderResp> kakaoPayOrdered(KakaoPayDTO.PayReq payReq) {
         return findCurrentMember()
                 .flatMap(member -> orderRepository.findById(payReq.getOrderId())
                         .flatMap(order -> {
@@ -130,31 +131,50 @@ public class KakaoPayService {
                             }
 
                             return reactiveRedisTemplate.opsForValue().get("tid:" + member.getMemberId() + ":" + order.getOrderId())
-                                    .flatMap(tid -> {
-                                        return orderProductRepository.findByOrderId(order.getOrderId()).collectList()
-                                                .flatMap(orderProductList -> {
-                                                    int cancelAmount = orderProductList.stream()
-                                                            .mapToInt(OrderProduct::getTotalPrice)
-                                                            .sum();
+                                    .flatMap(tid -> webClient.get()
+                                            .uri(uriBuilder -> uriBuilder.path("/v1/payment/order")
+                                                    .queryParam("cid", cid)
+                                                    .queryParam("tid", tid)
+                                                    .build())
+                                            .retrieve()
+                                            .bodyToMono(KakaoPayDTO.OrderResp.class));
+                        })
+                );
+    }
 
-                                                    MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-                                                    params.add("cid", cid);
-                                                    params.add("tid", tid);
-                                                    params.add("cancel_amount", String.valueOf(cancelAmount));
-                                                    params.add("cancel_tax_free_amount", String.valueOf(0));
 
-                                                    return webClient.post()
-                                                            .uri(uriBuilder -> uriBuilder.path("/v1/payment/cancel")
-                                                                    .queryParams(params)
-                                                                    .build())
-                                                            .retrieve()
-                                                            .bodyToMono(KakaoPayDTO.CancelResp.class)
-                                                            .flatMap(cancelResp -> {
-                                                                return reactiveRedisTemplate.opsForValue().delete("tid:" + member.getMemberId() + ":" + order.getOrderId())
-                                                                        .thenReturn(cancelResp);
-                                                            });
-                                                });
-                                    });
+    public Mono<KakaoPayDTO.CancelResp> kakaoPayCancel(KakaoPayDTO.PayReq payReq) {
+        return findCurrentMember()
+                .flatMap(member -> orderRepository.findById(payReq.getOrderId())
+                        .flatMap(order -> {
+                            if(!order.getMemberId().equals(member.getMemberId())) {
+                                return Mono.error(new GlobalException(ErrorCode.ORDER_MEMBER_NOT_MATCHED));
+                            }
+
+                            if(order.getOrderStatus().equals(OrderStatus.CANCEL)) {
+                                return Mono.error(new GlobalException(ErrorCode.CANCELED_ORDER));
+                            }
+
+                            return reactiveRedisTemplate.opsForValue().get("tid:" + member.getMemberId() + ":" + order.getOrderId())
+                                    .flatMap(tid -> orderProductRepository.findByOrderId(order.getOrderId()).collectList()
+                                            .flatMap(orderProductList -> {
+                                                int cancelAmount = orderProductList.stream()
+                                                        .mapToInt(OrderProduct::getTotalPrice)
+                                                        .sum();
+
+                                                MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+                                                params.add("cid", cid);
+                                                params.add("tid", tid);
+                                                params.add("cancel_amount", String.valueOf(cancelAmount));
+                                                params.add("cancel_tax_free_amount", String.valueOf(0));
+
+                                                return webClient.post()
+                                                        .uri(uriBuilder -> uriBuilder.path("/v1/payment/cancel")
+                                                                .queryParams(params)
+                                                                .build())
+                                                        .retrieve()
+                                                        .bodyToMono(KakaoPayDTO.CancelResp.class);
+                                            }));
 
                         })
                 );
