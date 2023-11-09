@@ -1,11 +1,10 @@
-package commerce.emmerce.controller;
+package commerce.emmerce.kakaopay.controller;
 
 import commerce.emmerce.config.exception.ErrorCode;
 import commerce.emmerce.config.exception.GlobalException;
-import commerce.emmerce.dto.KakaoPayDTO;
-import commerce.emmerce.service.KakaoPayService;
+import commerce.emmerce.kakaopay.dto.KakaoPayDTO;
+import commerce.emmerce.kakaopay.service.KakaoPayService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -25,8 +24,8 @@ public class KakaoPayController {
 
 
     @GetMapping("/success")
-    public Mono<ResponseEntity> success(@RequestParam("pg_token") String pgToken) {
-        return Mono.just(new ResponseEntity(HttpStatus.OK));
+    public Mono<KakaoPayDTO.ApproveResp> success(@RequestParam("pg_token") String pgToken) {
+        return kakaoPayService.kakaoPayApprove(pgToken);
     }
 
 
