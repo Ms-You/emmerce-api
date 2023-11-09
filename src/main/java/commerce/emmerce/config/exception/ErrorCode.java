@@ -24,6 +24,7 @@ public enum ErrorCode {
     // Payment
     PAYMENT_CANCELED(HttpStatus.BAD_REQUEST.value(), "결제가 취소되었습니다."),
     PAYMENT_FAILED(HttpStatus.BAD_REQUEST.value(), "결제에 실패하였습니다."),
+    ORDER_MEMBER_NOT_MATCHED(HttpStatus.BAD_REQUEST.value(), "주문자가 일치하지 않습니다."),
     ;
 
     private final int status;

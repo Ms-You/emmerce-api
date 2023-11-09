@@ -18,14 +18,14 @@ public class KakaoPayController {
 
 
     @PostMapping("/ready")
-    public Mono<KakaoPayDTO.ReadyResp> readyToPay(@RequestBody KakaoPayDTO.ReadyReq readyReq) {
-        return kakaoPayService.kakaoPayReady(readyReq);
+    public Mono<KakaoPayDTO.ReadyResp> readyToPay(@RequestBody KakaoPayDTO.PayReq payReq) {
+        return kakaoPayService.kakaoPayReady(payReq);
     }
 
 
     @GetMapping("/success")
-    public Mono<KakaoPayDTO.ApproveResp> success(@RequestParam("pg_token") String pgToken) {
-        return kakaoPayService.kakaoPayApprove(pgToken);
+    public Mono<KakaoPayDTO.ApproveResp> success(@RequestParam("pg_token") String pgToken, @RequestParam("orderId") Long orderId) {
+        return kakaoPayService.kakaoPayApprove(pgToken, orderId);
     }
 
 
@@ -38,6 +38,12 @@ public class KakaoPayController {
     @GetMapping("/fail")
     public Mono<ResponseEntity> fail() {
         return Mono.error(new GlobalException(ErrorCode.PAYMENT_FAILED));
+    }
+
+
+    @PostMapping("/refund")
+    public Mono<KakaoPayDTO.CancelResp> refund(@RequestBody KakaoPayDTO.PayReq payReq) {
+        return kakaoPayService.kakaoPayCancel(payReq);
     }
 
 }

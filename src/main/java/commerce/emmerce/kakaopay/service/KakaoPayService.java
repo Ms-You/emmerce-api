@@ -1,6 +1,8 @@
 package commerce.emmerce.kakaopay.service;
 
 import commerce.emmerce.config.SecurityUtil;
+import commerce.emmerce.config.exception.ErrorCode;
+import commerce.emmerce.config.exception.GlobalException;
 import commerce.emmerce.domain.Member;
 import commerce.emmerce.domain.OrderProduct;
 import commerce.emmerce.kakaopay.dto.KakaoPayDTO;
@@ -32,16 +34,16 @@ public class KakaoPayService {
     private final WebClient webClient;
     private final ReactiveRedisTemplate<String, String> reactiveRedisTemplate;
 
-    public Mono<KakaoPayDTO.ReadyResp> kakaoPayReady(KakaoPayDTO.ReadyReq readyReq) {
+    public Mono<KakaoPayDTO.ReadyResp> kakaoPayReady(KakaoPayDTO.PayReq payReq) {
         // 카카오페이 요청 양식
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("cid", cid);
         params.add("tax_free_amount", String.valueOf(0));    // 상품 비과세 금액
-        params.add("approval_url", "http://localhost:8088/payment/success");   // 성공 시 redirect url
+        params.add("approval_url", "http://localhost:8088/payment/success?orderId=" + payReq.getOrderId());   // 성공 시 redirect url
         params.add("cancel_url", "http://localhost:8088/payment/cancel"); // 취소 시 redirect url
         params.add("fail_url", "http://localhost:8088/payment/fail");   // 실패 시 redirect url
 
-        return orderRepository.findById(readyReq.getOrderId())
+        return orderRepository.findById(payReq.getOrderId())
                 .flatMap(order -> {
                     params.add("partner_order_id", String.valueOf(order.getOrderId()));   // 가맹점 주문 번호
                     return orderProductRepository.findByOrderId(order.getOrderId()).collectList();
@@ -81,7 +83,7 @@ public class KakaoPayService {
                             .retrieve()
                             .bodyToMono(KakaoPayDTO.ReadyResp.class)
                             .flatMap(readyResp -> Mono.when(
-                                    reactiveRedisTemplate.opsForValue().set("tid:" + member.getMemberId(), readyResp.getTid()),
+                                    reactiveRedisTemplate.opsForValue().set("tid:" + member.getMemberId() + ":" + payReq.getOrderId(), readyResp.getTid()),
                                     reactiveRedisTemplate.opsForValue().set("partner_order_id:" + member.getMemberId(), params.getFirst("partner_order_id")),
                                     reactiveRedisTemplate.opsForValue().set("partner_user_id:" + member.getMemberId(), params.getFirst("partner_user_id"))
                             ).thenReturn(readyResp));
@@ -89,10 +91,10 @@ public class KakaoPayService {
     }
 
 
-    public Mono<KakaoPayDTO.ApproveResp> kakaoPayApprove(String pgToken) {
+    public Mono<KakaoPayDTO.ApproveResp> kakaoPayApprove(String pgToken, Long orderId) {
         return findCurrentMember()
                 .flatMap(member -> Mono.zip(
-                                reactiveRedisTemplate.opsForValue().get("tid:" + member.getMemberId()),
+                                reactiveRedisTemplate.opsForValue().get("tid:" + member.getMemberId() + ":" + orderId),
                                 reactiveRedisTemplate.opsForValue().get("partner_order_id:" + member.getMemberId()),
                                 reactiveRedisTemplate.opsForValue().get("partner_user_id:" + member.getMemberId())
                         )
@@ -111,12 +113,51 @@ public class KakaoPayService {
                                     .retrieve()
                                     .bodyToMono(KakaoPayDTO.ApproveResp.class)
                                     .flatMap(approveResp -> Mono.when(
-                                                reactiveRedisTemplate.opsForValue().delete("tid:" + member.getMemberId()),
                                                 reactiveRedisTemplate.opsForValue().delete("partner_order_id:" + member.getMemberId()),
                                                 reactiveRedisTemplate.opsForValue().delete("partner_user_id:" + member.getMemberId())
                                         ).thenReturn(approveResp)
                                     );
                         }));
+    }
+
+
+    public Mono<KakaoPayDTO.CancelResp> kakaoPayCancel(KakaoPayDTO.PayReq payReq) {
+        return findCurrentMember()
+                .flatMap(member -> orderRepository.findById(payReq.getOrderId())
+                        .flatMap(order -> {
+                            if(!order.getMemberId().equals(member.getMemberId())) {
+                                return Mono.error(new GlobalException(ErrorCode.ORDER_MEMBER_NOT_MATCHED));
+                            }
+
+                            return reactiveRedisTemplate.opsForValue().get("tid:" + member.getMemberId() + ":" + order.getOrderId())
+                                    .flatMap(tid -> {
+                                        return orderProductRepository.findByOrderId(order.getOrderId()).collectList()
+                                                .flatMap(orderProductList -> {
+                                                    int cancelAmount = orderProductList.stream()
+                                                            .mapToInt(OrderProduct::getTotalPrice)
+                                                            .sum();
+
+                                                    MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+                                                    params.add("cid", cid);
+                                                    params.add("tid", tid);
+                                                    params.add("cancel_amount", String.valueOf(cancelAmount));
+                                                    params.add("cancel_tax_free_amount", String.valueOf(0));
+
+                                                    return webClient.post()
+                                                            .uri(uriBuilder -> uriBuilder.path("/v1/payment/cancel")
+                                                                    .queryParams(params)
+                                                                    .build())
+                                                            .retrieve()
+                                                            .bodyToMono(KakaoPayDTO.CancelResp.class)
+                                                            .flatMap(cancelResp -> {
+                                                                return reactiveRedisTemplate.opsForValue().delete("tid:" + member.getMemberId() + ":" + order.getOrderId())
+                                                                        .thenReturn(cancelResp);
+                                                            });
+                                                });
+                                    });
+
+                        })
+                );
     }
 
 
