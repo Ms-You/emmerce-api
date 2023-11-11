@@ -9,23 +9,37 @@ import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 @Repository
-public class OrderProductRepositoryImpl {
+public class OrderProductRepository {
 
     private final DatabaseClient databaseClient;
 
     public Mono<Void> save(OrderProduct orderProduct) {
-        String query = """
-                insert into order_product (total_price, total_count, order_id, product_id) values (:totalPrice, :totalCount, :orderId, :productId)
+        String insertQuery = """
+                insert into order_product (total_price, total_count, order_id, product_id)
+                values (:totalPrice, :totalCount, :orderId, :productId)
                 """;
 
-        return databaseClient.sql(query)
+        String updateQuery = """
+                update order_product
+                set total_price = :totalPrice, total_count = :totalCount,
+                    order_id = :orderId, product_id = :productId
+                where order_product_id = :orderProductId
+                """;
+
+        String query = orderProduct.getOrderProductId() == null ? insertQuery : updateQuery;
+
+        DatabaseClient.GenericExecuteSpec executeSpec = databaseClient.sql(query)
                 .bind("totalPrice", orderProduct.getTotalPrice())
                 .bind("totalCount", orderProduct.getTotalCount())
                 .bind("orderId", orderProduct.getOrderId())
-                .bind("productId", orderProduct.getProductId())
-                .then();
-    }
+                .bind("productId", orderProduct.getProductId());
 
+        if(orderProduct.getOrderProductId() != null) {
+            executeSpec = executeSpec.bind("orderProductId", orderProduct.getOrderProductId());
+        }
+
+        return executeSpec.then();
+    }
 
     public Flux<OrderProduct> findAllByOrderId(Long orderId) {
         String query = """
@@ -46,12 +60,12 @@ public class OrderProductRepositoryImpl {
                         .build());
     }
 
-
     public Mono<OrderProduct> findByOrderIdAndProductId(Long orderId, Long productId) {
         String query = """
                 select *
                 from order_product op
-                where op.order_id = :orderId and op.product_id = :productId
+                where op.order_id = :orderId 
+                    and op.product_id = :productId
                 """;
 
         return databaseClient.sql(query)
@@ -66,7 +80,6 @@ public class OrderProductRepositoryImpl {
                         .productId((Long) row.get("product_id"))
                         .build());
     }
-
 
     public Flux<OrderProduct> findByOrderId(Long orderId) {
         String query = """
@@ -86,6 +99,5 @@ public class OrderProductRepositoryImpl {
                         .productId((Long) row.get("product_id"))
                         .build());
     }
-
 
 }

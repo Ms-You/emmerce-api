@@ -1,7 +1,7 @@
 package commerce.emmerce.service;
 
 import commerce.emmerce.dto.DeliveryDTO;
-import commerce.emmerce.repository.DeliveryRepositoryImpl;
+import commerce.emmerce.repository.DeliveryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 @Service
 public class DeliveryService {
 
-    private final DeliveryRepositoryImpl deliveryRepository;
+    private final DeliveryRepository deliveryRepository;
 
     /**
      * 배송 상태 수정

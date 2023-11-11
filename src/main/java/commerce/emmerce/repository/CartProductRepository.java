@@ -10,28 +10,42 @@ import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 @Repository
-public class CartProductRepositoryImpl {
+public class CartProductRepository {
 
     private final DatabaseClient databaseClient;
 
     public Mono<Void> save(CartProduct cartProduct) {
-        String query = """
-                insert into cart_product (cart_id, product_id, quantity) values (:cartId, :productId, :quantity)
+        String insertQuery = """
+                insert into cart_product (cart_id, product_id, quantity) 
+                values (:cartId, :productId, :quantity)
                 """;
 
-        return databaseClient.sql(query)
+        String updateQuery = """
+                update cart_product
+                set cart_id = :cartId, product_id = :productId, quantity = :quantity
+                where cart_product_id = :cartProductId
+                """;
+
+        String query = cartProduct.getCartId() == null ? insertQuery : updateQuery;
+
+        DatabaseClient.GenericExecuteSpec executeSpec = databaseClient.sql(query)
                 .bind("cartId", cartProduct.getCartId())
                 .bind("productId", cartProduct.getProductId())
-                .bind("quantity", cartProduct.getQuantity())
-                .then();
-    }
+                .bind("quantity", cartProduct.getQuantity());
 
+        if(cartProduct.getCartProductId() != null) {
+            executeSpec = executeSpec.bind("cartProductId", cartProduct.getCartProductId());
+        }
+
+        return executeSpec.then();
+    }
 
     public Mono<CartProduct> findByCartIdAndProductId(Long cartId, Long productId) {
         String query = """
                 select * 
                 from cart_product cp
-                where cp.cart_id = :cartId and cp.product_id = :productId
+                where cp.cart_id = :cartId 
+                    and cp.product_id = :productId
                 """;
 
         return databaseClient.sql(query)
@@ -46,7 +60,6 @@ public class CartProductRepositoryImpl {
                         .build());
     }
 
-
     public Mono<Void> delete(CartProduct cartProduct) {
         String query = """
                 delete
@@ -59,7 +72,6 @@ public class CartProductRepositoryImpl {
                 .then();
     }
 
-
     public Mono<Long> deleteAll(Long cartId) {
         String query = """
                 delete
@@ -71,7 +83,6 @@ public class CartProductRepositoryImpl {
                 .bind("cartId", cartId)
                 .fetch().rowsUpdated();
     }
-
 
     public Flux<CartProductDTO.ListResp> findAllByCartId(Long cartId) {
         String query = """

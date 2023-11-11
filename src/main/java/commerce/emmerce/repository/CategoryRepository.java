@@ -1,7 +1,6 @@
 package commerce.emmerce.repository;
 
 import commerce.emmerce.domain.Category;
-import commerce.emmerce.dto.CategoryDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
@@ -10,29 +9,47 @@ import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 @Repository
-public class CategoryRepositoryImpl {
+public class CategoryRepository {
 
     private final DatabaseClient databaseClient;
 
     public Mono<Void> save(Category category) {
-        String query = """
-                insert into category (tier, name, code, parent_code) values(:tier, :name, :code, :parentCode)
+        String insertQuery = """
+                insert into category (tier, name, code, parent_code) 
+                values (:tier, :name, :code, :parentCode)
+                on conflict (code) do update
+                set tier = :tier, name = :name, parent_code = :parentCode
                 """;
-        return databaseClient.sql(query)
+
+        String updateQuery = """
+                update category
+                set tier = :tier, name = :name, code = :code, parent_code = :parentCode
+                where category_id = :categoryId
+                """;
+
+        String query = category.getCategoryId() == null ? insertQuery : updateQuery;
+
+        DatabaseClient.GenericExecuteSpec executeSpec = databaseClient.sql(query)
                 .bind("tier", category.getTier())
                 .bind("name", category.getName())
                 .bind("code", category.getCode())
-                .bind("parentCode", category.getParentCode())
-                .then();
+                .bind("parentCode", category.getParentCode());
+
+        if(category.getCategoryId() != null) {
+            executeSpec = executeSpec.bind("categoryId", category.getCategoryId());
+        }
+
+        return executeSpec.then();
     }
 
-    public Flux<CategoryDTO.CategoryResp> findAll() {
+    public Flux<Category> findAll() {
         String query = """
-                select * from category c
+                select * 
+                from category c
                 """;
         return databaseClient.sql(query)
                 .fetch().all()
-                .map(row -> CategoryDTO.CategoryResp.builder()
+                .map(row -> Category.createCategory()
                         .categoryId((Long) row.get("category_id"))
                         .tier((Integer) row.get("tier"))
                         .name((String) row.get("name"))
@@ -59,7 +76,6 @@ public class CategoryRepositoryImpl {
                         .parentCode((String) row.get("parent_code"))
                         .build());
     }
-
 
     public Mono<Category> findByParentCode(String parentCode) {
         String query = """

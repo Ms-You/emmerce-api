@@ -24,10 +24,10 @@ import java.time.LocalDate;
 @Service
 public class ReviewService {
 
-    private final MemberRepositoryImpl memberRepository;
-    private final OrderProductRepositoryImpl orderProductRepository;
-    private final ReviewRepositoryImpl reviewRepository;
-    private final DeliveryRepositoryImpl deliveryRepository;
+    private final MemberRepository memberRepository;
+    private final OrderProductRepository orderProductRepository;
+    private final ReviewRepository reviewRepository;
+    private final DeliveryRepository deliveryRepository;
 
     /**
      * 리뷰 작성
@@ -86,7 +86,6 @@ public class ReviewService {
                 .build());
     }
 
-
     /**
      * 리뷰 삭제
      * @param reviewId
@@ -101,7 +100,6 @@ public class ReviewService {
                 ).then();
     }
 
-
     /**
      * 상품에 속한 리뷰 목록 조회 (페이징)
      * @param productId
@@ -111,7 +109,7 @@ public class ReviewService {
      */
     public Mono<PageResponseDTO<ReviewDTO.ReviewResp>> reviewsByProduct(Long productId, Integer page, Integer size) {
         Mono<Long> totalReviews = reviewRepository.reviewCountByProduct(productId);
-        Flux<ReviewDTO.ReviewResp> reviewRespFlux = reviewRepository.reviewsByProduct(productId)
+        Flux<ReviewDTO.ReviewResp> reviewRespFlux = reviewRepository.findAllByProductId(productId)
                 .skip((page-1) * size)
                 .take(size)
                 .flatMap(review -> memberRepository.findById(review.getMemberId())
@@ -130,7 +128,6 @@ public class ReviewService {
         return Mono.zip(reviewRespFlux.collectList(), totalReviews)
                 .map(t -> new PageResponseDTO<>(t.getT1(), page, size, t.getT2().intValue()));
     }
-
 
     /**
      * 사용자 이름 마스킹 처리

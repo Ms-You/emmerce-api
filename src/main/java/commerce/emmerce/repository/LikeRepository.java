@@ -8,26 +8,41 @@ import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 @Repository
-public class LikeRepositoryImpl {
+public class LikeRepository {
 
     private final DatabaseClient databaseClient;
 
     public Mono<Void> save(Like like) {
-        String query = """
-                insert into likes (member_id, product_id) values (:memberId, :productId)
+        String insertQuery = """
+                insert into likes (member_id, product_id)
+                values (:memberId, :productId)
                 """;
 
-        return databaseClient.sql(query)
+        String updateQuery = """
+                update likes
+                set member_id = :memberId, product_id = :productId
+                where like_id = :likeId
+                """;
+
+        String query = like.getLikeId() == null ? insertQuery : updateQuery;
+
+        DatabaseClient.GenericExecuteSpec executeSpec = databaseClient.sql(query)
                 .bind("memberId", like.getMemberId())
-                .bind("productId", like.getProductId())
-                .then();
+                .bind("productId", like.getProductId());
+
+        if(like.getLikeId() != null) {
+            executeSpec = executeSpec.bind("likeId", like.getLikeId());
+        }
+
+        return executeSpec.then();
     }
 
     public Mono<Like> findByMemberIdAndProductId(Long memberId, Long productId) {
         String query = """
                 select *
                 from likes l
-                where l.member_id = :memberId and l.product_id = :productId
+                where l.member_id = :memberId 
+                    and l.product_id = :productId
                 """;
 
         return databaseClient.sql(query)
@@ -41,23 +56,12 @@ public class LikeRepositoryImpl {
                         .build());
     }
 
-    public Mono<Void> delete(Like like) {
-        String query = """
-                delete
-                from likes l
-                where l.like_id = :likeId
-                """;
-
-        return databaseClient.sql(query)
-                .bind("likeId", like.getLikeId())
-                .then();
-    }
-
     public Mono<Void> deleteByMemberIdAndProductId(Long memberId, Long productId) {
         String query = """
                 delete
                 from likes l
-                where l.member_id = :memberId and l.product_id = :productId
+                where l.member_id = :memberId 
+                    and l.product_id = :productId
                 """;
 
         return databaseClient.sql(query)

@@ -12,27 +12,40 @@ import java.util.Arrays;
 
 @RequiredArgsConstructor
 @Repository
-public class ReviewRepositoryImpl {
+public class ReviewRepository {
 
     private final DatabaseClient databaseClient;
 
     public Mono<Void> save(Review review) {
-        String query = """
-                insert into review (title, description, star_score, review_img_list, write_date, member_id, product_id) 
+        String insertQuery = """
+                insert into review (title, description, star_score, review_img_list, write_date, member_id, product_id)
                 values (:title, :description, :starScore, :reviewImgList, :writeDate, :memberId, :productId)
                 """;
 
-        return databaseClient.sql(query)
+        String updateQuery = """
+                update review
+                set title = :title, description = :description, star_score = :starScore,
+                    review_img_list = :reviewImgList, write_date = :writeDate
+                where review_id = :reviewId
+                """;
+
+        String query = review.getReviewId() == null ? insertQuery : updateQuery;
+
+        DatabaseClient.GenericExecuteSpec executeSpec = databaseClient.sql(query)
                 .bind("title", review.getTitle())
                 .bind("description", review.getDescription())
                 .bind("starScore", review.getStarScore())
                 .bind("reviewImgList", review.getReviewImgList().toArray())
                 .bind("writeDate", review.getWriteDate())
                 .bind("memberId", review.getMemberId())
-                .bind("productId", review.getProductId())
-                .then();
-    }
+                .bind("productId", review.getProductId());
 
+        if(review.getReviewId() != null) {
+            executeSpec = executeSpec.bind("reviewId", review.getReviewId());
+        }
+
+        return executeSpec.then();
+    }
 
     public Flux<Review> findAllByProductId(Long productId) {
         String query = """
@@ -56,7 +69,6 @@ public class ReviewRepositoryImpl {
                         .build());
     }
 
-
     public Mono<Long> deleteById(Long reviewId) {
         String query = """
                 delete
@@ -68,7 +80,6 @@ public class ReviewRepositoryImpl {
                 .bind("reviewId", reviewId)
                 .fetch().rowsUpdated();
     }
-
 
     public Mono<Long> reviewCountByProduct(Long productId) {
         String query = """
@@ -83,26 +94,4 @@ public class ReviewRepositoryImpl {
                 .map(result -> (Long) result.get("count"));
     }
 
-
-    public Flux<Review> reviewsByProduct(Long productId) {
-        String query = """
-                select *
-                from review r
-                where r.product_id = :productId
-                """;
-
-        return databaseClient.sql(query)
-                .bind("productId", productId)
-                .fetch().all()
-                .map(row -> Review.createReview()
-                        .reviewId((Long) row.get("review_id"))
-                        .title((String) row.get("title"))
-                        .description((String) row.get("description"))
-                        .startScore((Double) row.get("star_score"))
-                        .reviewImgList(Arrays.asList((String[]) row.get("review_img_list")))
-                        .writeDate((LocalDate) row.get("write_date"))
-                        .memberId((Long) row.get("member_id"))
-                        .productId((Long) row.get("product_id"))
-                        .build());
-    }
 }

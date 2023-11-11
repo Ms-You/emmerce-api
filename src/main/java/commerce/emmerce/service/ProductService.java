@@ -15,9 +15,8 @@ import java.time.LocalDateTime;
 @Service
 public class ProductService {
 
-    private final ProductRepositoryImpl customProductRepository;
     private final ProductRepository productRepository;
-    private final ReviewRepositoryImpl reviewRepository;
+    private final ReviewRepository reviewRepository;
 
     /**
      * 상품 추가
@@ -40,10 +39,8 @@ public class ProductService {
                         .detailImgList(productReq.getDetailImgList())
                         .brand(productReq.getBrand())
                         .enrollTime(LocalDateTime.now())
-                        .build())
-                .then();
+                        .build());
     }
-
 
     /**
      * 상품 상세 정보 반환
@@ -51,16 +48,15 @@ public class ProductService {
      * @return
      */
     public Mono<ProductDTO.DetailResp> detail(Long productId) {
-        return customProductRepository.findDetailById(productId);
+        return productRepository.findDetailById(productId);
     }
-
 
     /**
      * 모든 상품 별점 업데이트
      * @return
      */
     public Mono<Void> updateAllProductStarScore() {
-        return customProductRepository.findAll()
+        return productRepository.findAll()
                 .flatMap(product -> reviewRepository.findAllByProductId(product.getProductId())
                         .collectList()
                         .filter(reviews -> !reviews.isEmpty())
@@ -81,7 +77,6 @@ public class ProductService {
                 .then();
     }
 
-
     /**
      * 상품 정보 수정
      * @param productId
@@ -89,7 +84,7 @@ public class ProductService {
      * @return
      */
     public Mono<Void> update(Long productId, ProductDTO.UpdateReq updateReq) {
-        return customProductRepository.findById(productId)
+        return productRepository.findById(productId)
                 .flatMap(product -> {
                     // 할인률 계산
                     int discountRate = (int) Math.round((double) (updateReq.getOriginalPrice() - updateReq.getDiscountPrice()) / updateReq.getOriginalPrice() * 100);
@@ -101,16 +96,14 @@ public class ProductService {
                 });
     }
 
-
     /**
      * 최신 상품 목록 조회
      * @param size
      * @return
      */
     public Flux<ProductDTO.ListResp> latest(Integer size) {
-        return customProductRepository.findLatestProducts(size);
+        return productRepository.findLatestProducts(size);
     }
-
 
     /**
      * 상품 검색
@@ -121,8 +114,8 @@ public class ProductService {
         int page = searchParamDTO.getPage();
         int size = searchParamDTO.getSize();
 
-        return customProductRepository.searchProductsCount(searchParamDTO)
-                .flatMap(totalElements -> customProductRepository.searchProducts(searchParamDTO)
+        return productRepository.searchProductsCount(searchParamDTO)
+                .flatMap(totalElements -> productRepository.searchProducts(searchParamDTO)
                         .skip((page-1) * size)
                         .take(size)
                         .collectList()
@@ -130,16 +123,14 @@ public class ProductService {
                 );
     }
 
-
     /**
      * 핫 딜 - 할인률 큰 상품 목록 조회
      * @Param size
      * @return
      */
     public Flux<ProductDTO.ListResp> hotDeal(Integer size) {
-        return customProductRepository.findHotDealProducts(size);
+        return productRepository.findHotDealProducts(size);
     }
-
 
     /**
      * 랭킹 - 많이 팔린 상품 목록 조회
@@ -147,7 +138,7 @@ public class ProductService {
      * @return
      */
     public Flux<ProductDTO.ListResp> ranking(Integer size) {
-        return customProductRepository.findRankingProducts(size);
+        return productRepository.findRankingProducts(size);
     }
 
 }
