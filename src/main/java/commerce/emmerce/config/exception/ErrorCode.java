@@ -23,6 +23,7 @@ public enum ErrorCode {
 
     // ORDER
     CANCELED_ORDER(HttpStatus.BAD_REQUEST.value(), "이미 취소된 주문입니다."),
+    ING_ORDER(HttpStatus.BAD_REQUEST.value(), "진행중인 주문입니다."),
 
     // Payment
     PAYMENT_CANCELED(HttpStatus.BAD_REQUEST.value(), "결제가 취소되었습니다."),
