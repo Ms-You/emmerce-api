@@ -33,3 +33,6 @@ spring-doc:
     tags-sorter: alpha
     operations-sorter : method
     doc-expansion : none
+
+kakao:
+  admin-key: 1417e655bc9cc9c93e3d089f4d9b652e

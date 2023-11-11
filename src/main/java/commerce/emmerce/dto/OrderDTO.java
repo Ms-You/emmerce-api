@@ -19,8 +19,6 @@ public class OrderDTO {
         private List<OrderProductReq> orderProductList;
         // 배송 정보
         private DeliveryDTO.DeliveryReq deliveryReq;
-        // 결제 정보
-        private PaymentDTO.PaymentReq paymentReq;
     }
 
 
@@ -29,6 +27,14 @@ public class OrderDTO {
     public static class OrderProductReq {
         private Long productId;
         private Integer totalCount;
+    }
+
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class OrderInfoResp {
+        private Long orderId;
     }
 
 

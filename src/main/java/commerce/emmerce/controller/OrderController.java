@@ -21,7 +21,7 @@ public class OrderController {
     @Operation(summary = "상품 주문", description = "현재 로그인 한 사용자에 대해 새로운 주문 정보를 생성합니다.")
     @Parameter(name = "orderReq", description = "주문할 상품 목록, 배송 정보, 결제 정보")
     @PostMapping
-    public Mono<Void> orderProducts(@RequestBody OrderDTO.OrderReq orderReq) {
+    public Mono<OrderDTO.OrderInfoResp> orderProducts(@RequestBody OrderDTO.OrderReq orderReq) {
         return orderService.startOrder(orderReq);
     }
 
@@ -30,13 +30,5 @@ public class OrderController {
     @GetMapping
     public Flux<OrderDTO.OrderResp> orderList() {
         return orderService.getOrderList();
-    }
-
-
-    @Operation(summary = "주문 취소", description = "현재 로그인 한 사용자의 특정 주문을 취소합니다.")
-    @Parameter(name = "orderId", description = "취소할 주문 id")
-    @PutMapping("/{orderId}/cancel")
-    public Mono<Void> orderCancel(@PathVariable Long orderId) {
-        return orderService.cancel(orderId);
     }
 }

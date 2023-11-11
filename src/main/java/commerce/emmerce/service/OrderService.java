@@ -4,7 +4,6 @@ import commerce.emmerce.config.SecurityUtil;
 import commerce.emmerce.domain.*;
 import commerce.emmerce.dto.DeliveryDTO;
 import commerce.emmerce.dto.OrderDTO;
-import commerce.emmerce.dto.PaymentDTO;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,15 +22,16 @@ public class OrderService {
 
     private final MemberRepositoryImpl memberRepository;
     private final OrderRepositoryImpl customOrderRepository;
-    private final OrderRepository orderRepository;
     private final OrderProductRepositoryImpl orderProductRepository;
     private final ProductRepositoryImpl customProductRepository;
     private final ProductRepository productRepository;
     private final DeliveryRepositoryImpl customDeliveryRepository;
-    private final DeliveryRepository deliveryRepository;
-    private final PaymentRepositoryImpl customPaymentRepository;
-    private final PaymentRepository paymentRepository;
 
+
+    private Mono<Member> findCurrentMember() {
+        return SecurityUtil.getCurrentMemberName()
+                .flatMap(name -> memberRepository.findByName(name));
+    }
 
     //== 주문 생성 로직 시작 ==//
 
@@ -41,12 +41,9 @@ public class OrderService {
      * @return
      */
     @Transactional
-    public Mono<Void> startOrder(OrderDTO.OrderReq orderReq) {
-        return SecurityUtil.getCurrentMemberName()
-                .flatMap(name -> memberRepository.findByName(name)
-                        .flatMap(member -> makeOrder(member, orderReq)
-                        )
-                );
+    public Mono<OrderDTO.OrderInfoResp> startOrder(OrderDTO.OrderReq orderReq) {
+        return findCurrentMember()
+                .flatMap(member -> makeOrder(member, orderReq));
     }
 
     /**
@@ -55,17 +52,16 @@ public class OrderService {
      * @param orderReq
      * @return
      */
-    private Mono<Void> makeOrder(Member member, OrderDTO.OrderReq orderReq) {
+    private Mono<OrderDTO.OrderInfoResp> makeOrder(Member member, OrderDTO.OrderReq orderReq) {
         return customOrderRepository.save(Order.createOrder()
                         .orderDate(LocalDateTime.now())
-                        .orderStatus(OrderStatus.COMPLETE)
+                        .orderStatus(OrderStatus.ING)
                         .memberId(member.getMemberId())
                         .build())
                 .doOnSuccess(savedOrder -> log.info("생성된 order_id: {}", savedOrder.getOrderId()))
                 .flatMap(savedOrder -> saveProductsForOrder(savedOrder, orderReq.getOrderProductList())
-                        .flatMap(totalPrice -> createDeliveryForOrder(savedOrder, orderReq.getDeliveryReq())
-                            .then(createPaymentForOrder(savedOrder, orderReq.getPaymentReq(), totalPrice))
-                        )
+                        .then(createDeliveryForOrder(savedOrder, orderReq.getDeliveryReq()))
+                        .thenReturn(new OrderDTO.OrderInfoResp(savedOrder.getOrderId()))
                 );
     }
 
@@ -76,31 +72,23 @@ public class OrderService {
      * @param orderProductReqList
      * @return
      */
-    private Mono<Integer> saveProductsForOrder(Order order, List<OrderDTO.OrderProductReq> orderProductReqList) {
+    private Mono<Void> saveProductsForOrder(Order order, List<OrderDTO.OrderProductReq> orderProductReqList) {
         return Flux.fromIterable(orderProductReqList)
-                .flatMap(orderProductReq -> customProductRepository.findById(orderProductReq.getProductId())
+                .concatMap(orderProductReq -> customProductRepository.findById(orderProductReq.getProductId())
                         .flatMap(product -> {
                             if(product.getStockQuantity() < orderProductReq.getTotalCount()) {
                                 return Mono.error(new RuntimeException("'" + product.getName() + "' 상품의 재고가 부족합니다."));
                             } else {
-                                // 재고 업데이트
-                                int stockQuantity = product.getStockQuantity() - orderProductReq.getTotalCount();
-                                product.updateStockQuantity(stockQuantity);
-
-                                // 각 상품의 구매 금액
-                                int eachTotalPrice = product.getDiscountPrice() * orderProductReq.getTotalCount();
-
                                 return orderProductRepository.save(OrderProduct.builder()
-                                            .totalPrice(eachTotalPrice)
+                                            .totalPrice(product.getDiscountPrice() * orderProductReq.getTotalCount())   // 각 상품의 구매 금액
                                             .totalCount(orderProductReq.getTotalCount())
                                             .orderId(order.getOrderId())
                                             .productId(orderProductReq.getProductId())
                                             .build())
-                                        .then(productRepository.save(product))
-                                        .thenReturn(eachTotalPrice);
+                                        .then(productRepository.save(product));
                             }
                         })
-                ).reduce(Integer::sum);
+                ).then();
     }
 
     /**
@@ -122,23 +110,6 @@ public class OrderService {
                 .build());
     }
 
-    /**
-     * 결제 정보 추가
-     * @param order
-     * @param paymentReq
-     * @return
-     */
-    private Mono<Void> createPaymentForOrder(Order order, PaymentDTO.PaymentReq paymentReq, int totalPrice) {
-        return customPaymentRepository.save(Payment.createPayment()
-                        .amount(totalPrice)
-                        .paymentStatus(PaymentStatus.PAID)
-                        .paymentMethod(paymentReq.getPaymentMethod())
-                        .orderId(order.getOrderId())
-                        .build())
-                .then();
-    }
-
-
     //== 주문 생성 로직 끝 ==//
 
     //== 주문 조회 로직 시작 ==//
@@ -149,8 +120,7 @@ public class OrderService {
      */
     @Transactional
     public Flux<OrderDTO.OrderResp> getOrderList() {
-        return SecurityUtil.getCurrentMemberName()
-                .flatMap(name -> memberRepository.findByName(name))
+        return findCurrentMember()
                 .flatMapMany(member -> findOrders(member));
     }
 
@@ -197,86 +167,6 @@ public class OrderService {
         return customProductRepository.findById(orderProduct.getProductId());
     }
 
-
     //== 주문 조회 로직 끝 ==//
-
-    //== 주문 취소 로직 시작 ==//
-
-    /**
-     * 주문 취소
-     * @param orderId
-     * @return
-     */
-    @Transactional
-    public Mono<Void> cancel(Long orderId) {
-        return customOrderRepository.findById(orderId)
-                .flatMap(order -> updateOrderStatus(order)
-                    .then(updateProductStockQuantity(order))
-                    .then(updateDeliveryStatus(order))
-                    .then(updatePaymentStatus(order))
-                );
-    }
-
-    /**
-     * 주문 상태 변경
-     * @param order
-     * @return
-     */
-    private Mono<Void> updateOrderStatus(Order order) {
-        if(!order.getOrderStatus().equals(OrderStatus.COMPLETE)) {
-            return Mono.error(new RuntimeException("주문이 완료되지 않았거나 이미 취소된 주문입니다."));
-        }
-
-        order.updateStatus(OrderStatus.CANCEL);
-
-        return orderRepository.save(order).then();
-    }
-
-    /**
-     * 취소한 만큼 상품 수량 업데이트
-     * @param order
-     * @return
-     */
-    private Mono<Void> updateProductStockQuantity(Order order) {
-        return orderProductRepository.findAllByOrderId(order.getOrderId())
-                .concatMap(orderProduct -> productRepository.findById(orderProduct.getProductId())
-                        .flatMap(product -> {
-                            int updatedStockQuantity = product.getStockQuantity() + orderProduct.getTotalCount();
-                            product.updateStockQuantity(updatedStockQuantity);
-
-                            return productRepository.save(product);
-                        })
-                ).then();
-    }
-
-    /**
-     * 배송 상태 변경
-     * @param order
-     * @return
-     */
-    private Mono<Void> updateDeliveryStatus(Order order) {
-        return customDeliveryRepository.findByOrderId(order.getOrderId())
-                .flatMap(delivery -> {
-                    delivery.updateStatus(DeliveryStatus.CANCEL);
-
-                    return deliveryRepository.save(delivery);
-                }).then();
-    }
-
-    /**
-     * 결제 상태 변경
-     * @param order
-     * @return
-     */
-    private Mono<Void> updatePaymentStatus(Order order) {
-        return customPaymentRepository.findByOrderId(order.getOrderId())
-                .flatMap(payment -> {
-                    payment.updateStatus(PaymentStatus.REFUND);
-
-                    return paymentRepository.save(payment);
-                }).then();
-    }
-
-    //== 주문 취소 로직 끝 ==//
 
 }
