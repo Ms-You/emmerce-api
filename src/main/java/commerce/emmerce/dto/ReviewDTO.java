@@ -16,7 +16,6 @@ public class ReviewDTO {
         private String title;
         private String description;
         private Double starScore;
-        private List<String> reviewImgList;
         private Long orderId;
         private Long productId;
     }

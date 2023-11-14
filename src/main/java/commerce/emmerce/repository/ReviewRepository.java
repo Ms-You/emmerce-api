@@ -47,6 +47,28 @@ public class ReviewRepository {
         return executeSpec.then();
     }
 
+    public Mono<Review> findById(Long reviewId) {
+        String query = """
+                select *
+                from review r
+                where r.review_id = :reviewId
+                """;
+
+        return databaseClient.sql(query)
+                .bind("reviewId", reviewId)
+                .fetch().one()
+                .map(row -> Review.createReview()
+                        .reviewId((Long) row.get("review_id"))
+                        .title((String) row.get("title"))
+                        .description((String) row.get("description"))
+                        .startScore((Double) row.get("star_score"))
+                        .reviewImgList(Arrays.asList((String[]) row.get("review_img_list")))
+                        .writeDate((LocalDate) row.get("write_date"))
+                        .memberId((Long) row.get("member_id"))
+                        .productId((Long) row.get("product_id"))
+                        .build());
+    }
+
     public Flux<Review> findAllByProductId(Long productId) {
         String query = """
                 select *

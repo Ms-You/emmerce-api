@@ -24,6 +24,12 @@ public class FileHandler {
         });
     }
 
+    public Mono<List<String>> savedImagesAndGetPaths(Flux<FilePart> images, String dirPath) {
+        return images.flatMap(image -> saveImage(Mono.just(image), dirPath))
+                .map(imageName -> dirPath + imageName)
+                .collectList();
+    }
+
     public Mono<Void> deleteImage(String imagePath) {
         return Mono.fromCallable(() -> {
             Path path = Paths.get(imagePath);

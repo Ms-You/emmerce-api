@@ -13,14 +13,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -54,14 +47,9 @@ public class ProductService {
                                 String titleImgPath = imagePath + uniqueFileName;
                                 return Tuples.of(productReq, titleImgPath);
                             })
-                            .flatMap(tuple -> detailImgs.flatMap(detailImg -> fileHandler.saveImage(Mono.just(detailImg), imagePath))
-                                    .collectList()
-                                    .map(detailImgNames -> {
-                                        List<String> detailImgPaths = detailImgNames.stream()
-                                                .map(imgName -> imagePath + imgName)
-                                                .collect(Collectors.toList());
-                                        return Tuples.of(tuple.getT1(), tuple.getT2(), detailImgPaths);
-                                    }))
+                            .flatMap(tuple -> fileHandler.savedImagesAndGetPaths(detailImgs, imagePath)
+                                    .map(savedDetailImgs -> Tuples.of(tuple.getT1(), tuple.getT2(), savedDetailImgs))
+                            )
                             .flatMap(tuple -> productRepository.save(Product.createProduct()
                                     .name(tuple.getT1().getName())
                                     .detail(tuple.getT1().getDetail())
@@ -137,15 +125,8 @@ public class ProductService {
                         String titleImgPath = imagePath + uniqueFileName;
                         return Tuples.of(updateReq, titleImgPath);
                     })
-                    .flatMap(tuple -> detailImgs
-                            .flatMap(detailImg -> fileHandler.saveImage(Mono.just(detailImg), imagePath))
-                            .collectList()
-                            .map(detailImgNames -> {
-                                List<String> detailImgPaths = detailImgNames.stream()
-                                        .map(detailImgName -> imagePath + detailImgName)
-                                        .collect(Collectors.toList());
-                                return Tuples.of(tuple.getT1(), tuple.getT2(), detailImgPaths);
-                            })
+                    .flatMap(tuple -> fileHandler.savedImagesAndGetPaths(detailImgs, imagePath)
+                            .map(savedDetailImgs -> Tuples.of(tuple.getT1(), tuple.getT2(), savedDetailImgs))
                     )
                     .flatMap(tuple -> productRepository.findById(productId)
                             .flatMap(product -> Mono.when(
