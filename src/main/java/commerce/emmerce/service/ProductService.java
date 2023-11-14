@@ -1,10 +1,12 @@
 package commerce.emmerce.service;
 
+import commerce.emmerce.config.FileHandler;
 import commerce.emmerce.domain.Product;
 import commerce.emmerce.domain.Review;
 import commerce.emmerce.dto.*;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -12,16 +14,20 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ProductService {
 
+    private final FileHandler fileHandler;
     private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
 
@@ -43,21 +49,12 @@ public class ProductService {
                     // 이미지 임시 저장 디렉토리 위치
                     String imagePath = "C:\\emmerce\\images\\";
 
-                    return titleImg.flatMap(img -> {
-                                String uniqueFileName = UUID.randomUUID() + img.filename();
-                                return img.transferTo(Paths.get(imagePath + uniqueFileName))
-                                        .thenReturn(uniqueFileName);
-                            })
+                    return fileHandler.saveImage(titleImg, imagePath)
                             .map(uniqueFileName -> {
                                 String titleImgPath = imagePath + uniqueFileName;
                                 return Tuples.of(productReq, titleImgPath);
                             })
-                            .flatMap(tuple -> detailImgs
-                                    .flatMap(detailImg -> {
-                                        String uniqueFileName = UUID.randomUUID() + detailImg.filename();
-                                        return detailImg.transferTo(Paths.get(imagePath + uniqueFileName))
-                                                .thenReturn(uniqueFileName);
-                                    })
+                            .flatMap(tuple -> detailImgs.flatMap(detailImg -> fileHandler.saveImage(Mono.just(detailImg), imagePath))
                                     .collectList()
                                     .map(detailImgNames -> {
                                         List<String> detailImgPaths = detailImgNames.stream()
@@ -135,48 +132,37 @@ public class ProductService {
             // 이미지 임시 저장 디렉토리 위치
             String imagePath = "C:\\emmerce\\images\\";
 
-            return titleImg.flatMap(img -> {
-                        String uniqueFileName = UUID.randomUUID() + img.filename();
-                        return img.transferTo(Paths.get(imagePath + uniqueFileName))
-                                .thenReturn(uniqueFileName);
-                    })
+            return fileHandler.saveImage(titleImg, imagePath)
                     .map(uniqueFileName -> {
                         String titleImgPath = imagePath + uniqueFileName;
                         return Tuples.of(updateReq, titleImgPath);
                     })
-                    .flatMap(tuple ->
-                            detailImgs.flatMap(detailImg -> {
-                                        String uniqueFileName = UUID.randomUUID() + detailImg.filename();
-                                        return detailImg.transferTo(Paths.get(imagePath + uniqueFileName))
-                                                .thenReturn(uniqueFileName);
-                                    })
-                                    .collectList()
-                                    .map(detailImgNames -> {
-                                        List<String> detailImgPaths = detailImgNames.stream()
-                                                .map(detailImgName -> imagePath + detailImgName)
-                                                .collect(Collectors.toList());
-                                        return Tuples.of(tuple.getT1(), tuple.getT2(), detailImgPaths);
-                                    }))
+                    .flatMap(tuple -> detailImgs
+                            .flatMap(detailImg -> fileHandler.saveImage(Mono.just(detailImg), imagePath))
+                            .collectList()
+                            .map(detailImgNames -> {
+                                List<String> detailImgPaths = detailImgNames.stream()
+                                        .map(detailImgName -> imagePath + detailImgName)
+                                        .collect(Collectors.toList());
+                                return Tuples.of(tuple.getT1(), tuple.getT2(), detailImgPaths);
+                            })
+                    )
                     .flatMap(tuple -> productRepository.findById(productId)
+                            .flatMap(product -> Mono.when(
+                                    fileHandler.deleteImage(product.getTitleImg()),
+                                    fileHandler.deleteImages(product.getDetailImgList())
+                            ).thenReturn(product))
                             .flatMap(product -> {
-                                    File basicTitleImgFile = new File(product.getTitleImg());
-                                    basicTitleImgFile.delete();
-
-                                    product.getDetailImgList().forEach(basicDetailImg -> {
-                                        File basicDetailImgFile = new File(basicDetailImg);
-                                        basicDetailImgFile.delete();
-                                    });
-
-                                    product.updateProduct(
-                                            tuple.getT1().getName(),
-                                            tuple.getT1().getDetail(),
-                                            tuple.getT1().getOriginalPrice(),
-                                            tuple.getT1().getDiscountPrice(),
-                                            discountRate,
-                                            tuple.getT1().getStockQuantity(),
-                                            tuple.getT2(),
-                                            tuple.getT3()
-                                    );
+                                product.updateProduct(
+                                        tuple.getT1().getName(),
+                                        tuple.getT1().getDetail(),
+                                        tuple.getT1().getOriginalPrice(),
+                                        tuple.getT1().getDiscountPrice(),
+                                        discountRate,
+                                        tuple.getT1().getStockQuantity(),
+                                        tuple.getT2(),
+                                        tuple.getT3()
+                                );
 
                                 return productRepository.save(product);
                             })
