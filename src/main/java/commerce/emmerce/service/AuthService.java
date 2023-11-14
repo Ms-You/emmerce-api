@@ -47,7 +47,6 @@ public class AuthService {
                 .password(passwordEncoder.encode(registerReq.getPassword()))
                 .tel(registerReq.getTel())
                 .birth(registerReq.getBirth())
-                .profileImg("default_img")
                 .point(0)
                 .role(RoleType.ROLE_USER)
                 .city("도시")

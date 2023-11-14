@@ -24,8 +24,6 @@ public class Member {
 
     private String birth;
 
-    private String profileImg;
-
     private Integer point;  // 보유 포인트
 
     private RoleType role;
@@ -38,7 +36,7 @@ public class Member {
 
 
     @Builder(builderMethodName = "createMember")
-    private Member(Long id, String name, String email, String password, String tel, String birth, String profileImg,
+    private Member(Long id, String name, String email, String password, String tel, String birth,
                    Integer point, RoleType role, String city, String street, String zipcode) {
         this.memberId = id;
         this.name = name;
@@ -46,7 +44,6 @@ public class Member {
         this.password = password;
         this.tel = tel;
         this.birth = birth;
-        this.profileImg = profileImg;
         this.point = point;
         this.role = role;
         this.city = city;

@@ -16,8 +16,6 @@ public class ProductDTO {
         private Integer originalPrice;
         private Integer discountPrice;
         private Integer stockQuantity;
-        private String titleImg;
-        private List<String> detailImgList = new ArrayList<>();
         private String brand;
     }
 
@@ -29,8 +27,6 @@ public class ProductDTO {
         private Integer originalPrice;
         private Integer discountPrice;
         private Integer stockQuantity;
-        private String titleImg;
-        private List<String> detailImgList = new ArrayList<>();
     }
 
     @Getter

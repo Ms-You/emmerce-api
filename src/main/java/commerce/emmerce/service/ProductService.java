@@ -5,11 +5,18 @@ import commerce.emmerce.domain.Review;
 import commerce.emmerce.dto.*;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuples;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -20,26 +27,58 @@ public class ProductService {
 
     /**
      * 상품 추가
-     * @param productReq
+     * @param productReqMono
+     * @param titleImg
+     * @param detailImgs
      * @return
      */
-    public Mono<Void> create(ProductDTO.ProductReq productReq) {
-        // 할인률 계산
-        int discountRate = (int) Math.round((double) (productReq.getOriginalPrice() - productReq.getDiscountPrice()) / productReq.getOriginalPrice() * 100);
+    public Mono<Void> create(Mono<ProductDTO.ProductReq> productReqMono,
+                             Mono<FilePart> titleImg,
+                             Flux<FilePart> detailImgs) {
 
-        return productRepository.save(Product.createProduct()
-                        .name(productReq.getName())
-                        .detail(productReq.getDetail())
-                        .originalPrice(productReq.getOriginalPrice())
-                        .discountPrice(productReq.getDiscountPrice())
-                        .discountRate(discountRate)
-                        .stockQuantity(productReq.getStockQuantity())
-                        .starScore(0.0) // 초기 값 세팅
-                        .titleImg(productReq.getTitleImg())
-                        .detailImgList(productReq.getDetailImgList())
-                        .brand(productReq.getBrand())
-                        .enrollTime(LocalDateTime.now())
-                        .build());
+        return productReqMono
+                .flatMap(productReq -> {
+                    // 할인률 계산
+                    int discount = (int) Math.round((double) (productReq.getOriginalPrice() - productReq.getDiscountPrice()) / productReq.getOriginalPrice() * 100);
+                    // 이미지 임시 저장 디렉토리 위치
+                    String imagePath = "C:\\emmerce\\images\\";
+
+                    return titleImg.flatMap(img -> {
+                                String uniqueFileName = UUID.randomUUID() + img.filename();
+                                return img.transferTo(Paths.get(imagePath + uniqueFileName))
+                                        .thenReturn(uniqueFileName);
+                            })
+                            .map(uniqueFileName -> {
+                                String titleImgPath = imagePath + uniqueFileName;
+                                return Tuples.of(productReq, titleImgPath);
+                            })
+                            .flatMap(tuple -> detailImgs
+                                    .flatMap(detailImg -> {
+                                        String uniqueFileName = UUID.randomUUID() + detailImg.filename();
+                                        return detailImg.transferTo(Paths.get(imagePath + uniqueFileName))
+                                                .thenReturn(uniqueFileName);
+                                    })
+                                    .collectList()
+                                    .map(detailImgNames -> {
+                                        List<String> detailImgPaths = detailImgNames.stream()
+                                                .map(imgName -> imagePath + imgName)
+                                                .collect(Collectors.toList());
+                                        return Tuples.of(tuple.getT1(), tuple.getT2(), detailImgPaths);
+                                    }))
+                            .flatMap(tuple -> productRepository.save(Product.createProduct()
+                                    .name(tuple.getT1().getName())
+                                    .detail(tuple.getT1().getDetail())
+                                    .originalPrice(tuple.getT1().getOriginalPrice())
+                                    .discountPrice(tuple.getT1().getDiscountPrice())
+                                    .discountRate(discount)
+                                    .stockQuantity(tuple.getT1().getStockQuantity())
+                                    .starScore(0.0) // 초기 값 세팅
+                                    .titleImg(tuple.getT2())
+                                    .detailImgList(tuple.getT3())
+                                    .brand(tuple.getT1().getBrand())
+                                    .enrollTime(LocalDateTime.now())
+                                    .build()));
+                });
     }
 
     /**
@@ -80,20 +119,69 @@ public class ProductService {
     /**
      * 상품 정보 수정
      * @param productId
-     * @param updateReq
+     * @param updateReqMono
+     * @param titleImg
+     * @param detailImgs
      * @return
      */
-    public Mono<Void> update(Long productId, ProductDTO.UpdateReq updateReq) {
-        return productRepository.findById(productId)
-                .flatMap(product -> {
-                    // 할인률 계산
-                    int discountRate = (int) Math.round((double) (updateReq.getOriginalPrice() - updateReq.getDiscountPrice()) / updateReq.getOriginalPrice() * 100);
+    public Mono<Void> update(Long productId,
+                             Mono<ProductDTO.UpdateReq> updateReqMono,
+                             Mono<FilePart> titleImg,
+                             Flux<FilePart> detailImgs) {
 
-                    product.updateProduct(updateReq.getName(), updateReq.getDetail(), updateReq.getOriginalPrice(), updateReq.getDiscountPrice(),
-                            discountRate, updateReq.getStockQuantity(), updateReq.getTitleImg(), updateReq.getDetailImgList());
+        return updateReqMono.flatMap(updateReq -> {
+            // 할인률 계산
+            int discountRate = (int) Math.round((double) (updateReq.getOriginalPrice() - updateReq.getDiscountPrice()) / updateReq.getOriginalPrice() * 100);
+            // 이미지 임시 저장 디렉토리 위치
+            String imagePath = "C:\\emmerce\\images\\";
 
-                    return productRepository.save(product).then();
-                });
+            return titleImg.flatMap(img -> {
+                        String uniqueFileName = UUID.randomUUID() + img.filename();
+                        return img.transferTo(Paths.get(imagePath + uniqueFileName))
+                                .thenReturn(uniqueFileName);
+                    })
+                    .map(uniqueFileName -> {
+                        String titleImgPath = imagePath + uniqueFileName;
+                        return Tuples.of(updateReq, titleImgPath);
+                    })
+                    .flatMap(tuple ->
+                            detailImgs.flatMap(detailImg -> {
+                                        String uniqueFileName = UUID.randomUUID() + detailImg.filename();
+                                        return detailImg.transferTo(Paths.get(imagePath + uniqueFileName))
+                                                .thenReturn(uniqueFileName);
+                                    })
+                                    .collectList()
+                                    .map(detailImgNames -> {
+                                        List<String> detailImgPaths = detailImgNames.stream()
+                                                .map(detailImgName -> imagePath + detailImgName)
+                                                .collect(Collectors.toList());
+                                        return Tuples.of(tuple.getT1(), tuple.getT2(), detailImgPaths);
+                                    }))
+                    .flatMap(tuple -> productRepository.findById(productId)
+                            .flatMap(product -> {
+                                    File basicTitleImgFile = new File(product.getTitleImg());
+                                    basicTitleImgFile.delete();
+
+                                    product.getDetailImgList().forEach(basicDetailImg -> {
+                                        File basicDetailImgFile = new File(basicDetailImg);
+                                        basicDetailImgFile.delete();
+                                    });
+
+                                    product.updateProduct(
+                                            tuple.getT1().getName(),
+                                            tuple.getT1().getDetail(),
+                                            tuple.getT1().getOriginalPrice(),
+                                            tuple.getT1().getDiscountPrice(),
+                                            discountRate,
+                                            tuple.getT1().getStockQuantity(),
+                                            tuple.getT2(),
+                                            tuple.getT3()
+                                    );
+
+                                return productRepository.save(product);
+                            })
+                    ).then();
+        });
     }
 
     /**

@@ -7,7 +7,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Tag(name = "AdminProduct", description = "상품 관련 컨트롤러 (관리자)")
@@ -19,18 +21,27 @@ public class AdminProductController {
     private final ProductService productService;
 
     @Operation(summary = "새로운 상품 추가", description = "새로운 상품을 등록합니다.")
-    @Parameter(name = "productReq", description = "상품 명, 상세 정보 등 상품 정보를 전달")
+    @Parameters({ @Parameter(name = "productReq", description = "상품 명, 상세 정보 등 상품 정보를 전달"),
+                @Parameter(name = "titleImg", description = "상품의 대표 이미지를 전달"),
+                @Parameter(name = "detailImgs", description = "상품의 이미지 목록을 전달") })
     @PostMapping
-    public Mono<Void> createProduct(@RequestBody ProductDTO.ProductReq productReq) {
-        return productService.create(productReq);
+    public Mono<Void> createProduct(@RequestPart("productReq") Mono<ProductDTO.ProductReq> productReqMono,
+                                    @RequestPart("titleImg") Mono<FilePart> titleImg,
+                                    @RequestPart("detailImgs") Flux<FilePart> detailImgs) {
+        return productService.create(productReqMono, titleImg, detailImgs);
     }
 
     @Operation(summary = "상품 정보 수정", description = "상품과 관련된 정보를 수정합니다.")
     @Parameters({ @Parameter(name = "productId", description = "수정할 상품 id"),
-            @Parameter(name = "updateReq", description = "수정할 상품 정보") })
+                @Parameter(name = "updateReq", description = "수정할 상품 정보를 전달"),
+                @Parameter(name = "titleImg", description = "수정할 상품의 대표 이미지를 전달"),
+                @Parameter(name = "detailImgs", description = "수정할 상품의 이미지 목록을 전달") })
     @PutMapping("/{productId}")
-    public Mono<Void> updateProduct(@PathVariable Long productId, @RequestBody ProductDTO.UpdateReq updateReq) {
-        return productService.update(productId, updateReq);
+    public Mono<Void> updateProduct(@PathVariable Long productId,
+                                    @RequestPart("updateReq") Mono<ProductDTO.UpdateReq> updateReqMono,
+                                    @RequestPart("titleImg") Mono<FilePart> titleImg,
+                                    @RequestPart("detailImgs") Flux<FilePart> detailImgs) {
+        return productService.update(productId, updateReqMono, titleImg, detailImgs);
     }
 
 
