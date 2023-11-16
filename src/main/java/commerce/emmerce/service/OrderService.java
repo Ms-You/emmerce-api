@@ -20,13 +20,11 @@ import java.util.List;
 @Service
 public class OrderService {
 
-    private final MemberRepositoryImpl memberRepository;
-    private final OrderRepositoryImpl customOrderRepository;
-    private final OrderProductRepositoryImpl orderProductRepository;
-    private final ProductRepositoryImpl customProductRepository;
+    private final MemberRepository memberRepository;
+    private final OrderRepository orderRepository;
+    private final OrderProductRepository orderProductRepository;
     private final ProductRepository productRepository;
-    private final DeliveryRepositoryImpl customDeliveryRepository;
-
+    private final DeliveryRepository deliveryRepository;
 
     private Mono<Member> findCurrentMember() {
         return SecurityUtil.getCurrentMemberName()
@@ -34,7 +32,6 @@ public class OrderService {
     }
 
     //== 주문 생성 로직 시작 ==//
-
     /**
      * 주문 시작
      * @param orderReq
@@ -53,7 +50,7 @@ public class OrderService {
      * @return
      */
     private Mono<OrderDTO.OrderInfoResp> makeOrder(Member member, OrderDTO.OrderReq orderReq) {
-        return customOrderRepository.save(Order.createOrder()
+        return orderRepository.save(Order.createOrder()
                         .orderDate(LocalDateTime.now())
                         .orderStatus(OrderStatus.ING)
                         .memberId(member.getMemberId())
@@ -65,7 +62,6 @@ public class OrderService {
                 );
     }
 
-
     /**
      * 주문에 상품 정보 추가
      * @param order
@@ -74,7 +70,7 @@ public class OrderService {
      */
     private Mono<Void> saveProductsForOrder(Order order, List<OrderDTO.OrderProductReq> orderProductReqList) {
         return Flux.fromIterable(orderProductReqList)
-                .concatMap(orderProductReq -> customProductRepository.findById(orderProductReq.getProductId())
+                .concatMap(orderProductReq -> productRepository.findById(orderProductReq.getProductId())
                         .flatMap(product -> {
                             if(product.getStockQuantity() < orderProductReq.getTotalCount()) {
                                 return Mono.error(new RuntimeException("'" + product.getName() + "' 상품의 재고가 부족합니다."));
@@ -84,8 +80,7 @@ public class OrderService {
                                             .totalCount(orderProductReq.getTotalCount())
                                             .orderId(order.getOrderId())
                                             .productId(orderProductReq.getProductId())
-                                            .build())
-                                        .then(productRepository.save(product));
+                                            .build());
                             }
                         })
                 ).then();
@@ -98,7 +93,7 @@ public class OrderService {
      * @return
      */
     private Mono<Void> createDeliveryForOrder(Order order, DeliveryDTO.DeliveryReq deliveryReq) {
-        return customDeliveryRepository.save(Delivery.createDelivery()
+        return deliveryRepository.save(Delivery.createDelivery()
                 .name(deliveryReq.getName())
                 .tel(deliveryReq.getTel())
                 .email(deliveryReq.getEmail())
@@ -109,11 +104,9 @@ public class OrderService {
                 .orderId(order.getOrderId())
                 .build());
     }
-
     //== 주문 생성 로직 끝 ==//
 
     //== 주문 조회 로직 시작 ==//
-
     /**
      * 주문 목록 조회
      * @return
@@ -130,7 +123,7 @@ public class OrderService {
      * @return
      */
     public Flux<OrderDTO.OrderResp> findOrders(Member member) {
-        return customOrderRepository.findByMemberId(member.getMemberId())
+        return orderRepository.findByMemberId(member.getMemberId())
                 .flatMap(order -> findOrderProducts(order)
                         .map(product -> OrderDTO.OrderProductResp.builder()
                                 .productId(product.getProductId())
@@ -164,9 +157,8 @@ public class OrderService {
      * @return
      */
     public Mono<Product> findProducts(OrderProduct orderProduct) {
-        return customProductRepository.findById(orderProduct.getProductId());
+        return productRepository.findById(orderProduct.getProductId());
     }
-
     //== 주문 조회 로직 끝 ==//
 
 }

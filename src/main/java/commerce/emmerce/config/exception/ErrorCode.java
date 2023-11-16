@@ -24,11 +24,15 @@ public enum ErrorCode {
     // ORDER
     CANCELED_ORDER(HttpStatus.BAD_REQUEST.value(), "이미 취소된 주문입니다."),
     ING_ORDER(HttpStatus.BAD_REQUEST.value(), "진행중인 주문입니다."),
+    ORDER_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "해당 주문을 찾을 수 없습니다."),
 
     // Payment
     PAYMENT_CANCELED(HttpStatus.BAD_REQUEST.value(), "결제가 취소되었습니다."),
     PAYMENT_FAILED(HttpStatus.BAD_REQUEST.value(), "결제에 실패하였습니다."),
     ORDER_MEMBER_NOT_MATCHED(HttpStatus.BAD_REQUEST.value(), "주문자가 일치하지 않습니다."),
+
+    // Review
+    AFTER_DELIVERY(HttpStatus.BAD_REQUEST.value(), "배송이 완료된 다음에 작성해주세요."),
     ;
 
     private final int status;

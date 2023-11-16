@@ -3,10 +3,11 @@ package commerce.emmerce.service;
 import commerce.emmerce.config.SecurityUtil;
 import commerce.emmerce.domain.Cart;
 import commerce.emmerce.domain.CartProduct;
+import commerce.emmerce.domain.Member;
 import commerce.emmerce.dto.CartProductDTO;
-import commerce.emmerce.repository.CartProductRepositoryImpl;
-import commerce.emmerce.repository.CartRepositoryImpl;
-import commerce.emmerce.repository.MemberRepositoryImpl;
+import commerce.emmerce.repository.CartProductRepository;
+import commerce.emmerce.repository.CartRepository;
+import commerce.emmerce.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,21 +20,9 @@ import reactor.core.publisher.Mono;
 @Service
 public class CartProductService {
 
-    private final CartProductRepositoryImpl cartProductRepository;
-    private final CartRepositoryImpl cartRepository;
-    private final MemberRepositoryImpl memberRepository;
-
-
-    /**
-     * 현재 로그인 한 사용자 정보 반환
-     * @return
-     */
-    public Mono<Cart> getCurrentMemberCart() {
-        return SecurityUtil.getCurrentMemberName()
-                .flatMap(name -> memberRepository.findByName(name))
-                .flatMap(member -> cartRepository.findByMemberId(member.getMemberId()));
-    }
-
+    private final CartProductRepository cartProductRepository;
+    private final CartRepository cartRepository;
+    private final MemberRepository memberRepository;
 
     /**
      * 장바구니에 상품 추가
@@ -51,7 +40,6 @@ public class CartProductService {
                 );
     }
 
-
     /**
      * 상품 목록 조회
      * @return
@@ -60,7 +48,6 @@ public class CartProductService {
         return getCurrentMemberCart()
                 .flatMapMany(cart -> cartProductRepository.findAllByCartId(cart.getCartId()));
     }
-
 
     /**
      * 장바구니에서 상품 제거
@@ -75,7 +62,6 @@ public class CartProductService {
                 );
     }
 
-
     /**
      * 장바구니 비우기
      * @return
@@ -86,6 +72,24 @@ public class CartProductService {
                 .flatMap(cart -> cartProductRepository.deleteAll(cart.getCartId())
                         .doOnNext(rowsUpdated -> log.info("삭제된 상품 개수: {}", rowsUpdated))
                 ).then();
+    }
+
+    /**
+     * 현재 로그인 한 사용자 정보 반환
+     * @return
+     */
+    private Mono<Member> findCurrentMember() {
+        return SecurityUtil.getCurrentMemberName()
+                .flatMap(name -> memberRepository.findByName(name));
+    }
+
+    /**
+     * 장바구니 반환
+     * @return
+     */
+    private Mono<Cart> getCurrentMemberCart() {
+        return findCurrentMember()
+                .flatMap(member -> cartRepository.findByMemberId(member.getMemberId()));
     }
 
 }

@@ -1,6 +1,9 @@
 package commerce.emmerce.service;
 
+import commerce.emmerce.config.s3.S3FileUploader;
 import commerce.emmerce.config.SecurityUtil;
+import commerce.emmerce.config.exception.ErrorCode;
+import commerce.emmerce.config.exception.GlobalException;
 import commerce.emmerce.domain.DeliveryStatus;
 import commerce.emmerce.domain.Member;
 import commerce.emmerce.domain.OrderProduct;
@@ -10,10 +13,9 @@ import commerce.emmerce.dto.ReviewDTO;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -24,68 +26,80 @@ import java.time.LocalDate;
 @Service
 public class ReviewService {
 
-    private final MemberRepositoryImpl memberRepository;
-    private final OrderProductRepositoryImpl orderProductRepository;
-    private final ReviewRepositoryImpl reviewRepository;
-    private final DeliveryRepositoryImpl deliveryRepository;
+    private final S3FileUploader s3FileUploader;
+    private final MemberRepository memberRepository;
+    private final OrderProductRepository orderProductRepository;
+    private final ReviewRepository reviewRepository;
+    private final DeliveryRepository deliveryRepository;
+
+    /**
+     * 현재 로그인 한 사용자 정보 반환
+     * @return
+     */
+    private Mono<Member> findCurrentMember() {
+        return SecurityUtil.getCurrentMemberName()
+                .flatMap(name -> memberRepository.findByName(name));
+    }
 
     /**
      * 리뷰 작성
-     * @param reviewReq
+     * @param reviewReqMono
+     * @param reviewImages
      * @return
      */
     @Transactional
-    public Mono<Void> write(ReviewDTO.ReviewReq reviewReq) {
-        return SecurityUtil.getCurrentMemberName()
-                .flatMap(name -> memberRepository.findByName(name)
-                        .flatMap(member -> getOrderProduct(member, reviewReq))
-                );
+    public Mono<Void> write(Mono<ReviewDTO.ReviewReq> reviewReqMono,
+                            Flux<FilePart> reviewImages) {
+        return findCurrentMember()
+                .flatMap(member -> getOrderProduct(member, reviewReqMono))
+                .flatMap(member -> writeReview(member, reviewReqMono, reviewImages));
     }
 
     /**
      * 주문 상품 조회
      * @param member
-     * @param reviewReq
+     * @param reviewReqMono
      * @return
      */
-    public Mono<Void> getOrderProduct(Member member, ReviewDTO.ReviewReq reviewReq) {
-        return orderProductRepository.findByOrderIdAndProductId(reviewReq.getOrderId(), reviewReq.getProductId())
-                .switchIfEmpty(Mono.error(new IllegalArgumentException("잘못된 상품입니다.")))
-                .flatMap(orderProduct -> checkDeliveryStatus(member, orderProduct, reviewReq));
+    public Mono<Member> getOrderProduct(Member member, Mono<ReviewDTO.ReviewReq> reviewReqMono) {
+        return reviewReqMono.flatMap(reviewReq -> orderProductRepository.findByOrderIdAndProductId(reviewReq.getOrderId(), reviewReq.getProductId())
+                .switchIfEmpty(Mono.error(new GlobalException(ErrorCode.ORDER_NOT_FOUND)))
+                .flatMap(orderProduct -> checkDeliveryStatus(member, orderProduct))
+        );
     }
 
     /**
      * 배송 상태 조회
      * @param member
      * @param orderProduct
-     * @param reviewReq
      * @return
      */
-    public Mono<Void> checkDeliveryStatus(Member member, OrderProduct orderProduct, ReviewDTO.ReviewReq reviewReq) {
+    public Mono<Member> checkDeliveryStatus(Member member, OrderProduct orderProduct) {
         return deliveryRepository.findByOrderId(orderProduct.getOrderId())
                 .filter(delivery -> delivery.getDeliveryStatus().equals(DeliveryStatus.COMPLETE))
-                .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST, "배송이 완료된 다음에 작성해주세요.")))
-                .flatMap(delivery -> writeReview(member, reviewReq));
+                .switchIfEmpty(Mono.error(new GlobalException(ErrorCode.AFTER_DELIVERY)))
+                .thenReturn(member);
     }
 
     /**
      * 리뷰 작성
      * @param member
-     * @param reviewReq
+     * @param reviewReqMono
+     * @param reviewImages
      * @return
      */
-    public Mono<Void> writeReview(Member member, ReviewDTO.ReviewReq reviewReq) {
-        return reviewRepository.save(Review.createReview()
-                .title(reviewReq.getTitle())
-                .description(reviewReq.getDescription())
-                .startScore(reviewReq.getStarScore())
-                .reviewImgList(reviewReq.getReviewImgList())
-                .writeDate(LocalDate.now())
-                .memberId(member.getMemberId())
-                .productId(reviewReq.getProductId())
-                .build());
+    public Mono<Void> writeReview(Member member, Mono<ReviewDTO.ReviewReq> reviewReqMono, Flux<FilePart> reviewImages) {
+        return reviewReqMono.zipWith(s3FileUploader.uploadS3ImageList(reviewImages, "review"))
+                .flatMap(tuple -> reviewRepository.save(Review.createReview()
+                        .title(tuple.getT1().getTitle())
+                        .description(tuple.getT1().getDescription())
+                        .startScore(tuple.getT1().getStarScore())
+                        .reviewImgList(tuple.getT2())
+                        .writeDate(LocalDate.now())
+                        .memberId(member.getMemberId())
+                        .productId(tuple.getT1().getProductId())
+                        .build()));
     }
-
 
     /**
      * 리뷰 삭제
@@ -94,13 +108,12 @@ public class ReviewService {
      */
     @Transactional
     public Mono<Void> remove(Long reviewId) {
-        // 예외 처리
-        return reviewRepository.deleteById(reviewId)
-                .doOnNext(rowsUpdated ->
-                        log.info("삭제된 리뷰 수: {}", rowsUpdated)
-                ).then();
+        return reviewRepository.findById(reviewId)
+                .flatMap(review -> s3FileUploader.deleteS3ImageList(review.getReviewImgList(), "review")
+                        .then(reviewRepository.deleteById(reviewId)))
+                .doOnNext(rowsUpdated -> log.info("삭제된 리뷰 수: {}", rowsUpdated))
+                .then();
     }
-
 
     /**
      * 상품에 속한 리뷰 목록 조회 (페이징)
@@ -111,7 +124,7 @@ public class ReviewService {
      */
     public Mono<PageResponseDTO<ReviewDTO.ReviewResp>> reviewsByProduct(Long productId, Integer page, Integer size) {
         Mono<Long> totalReviews = reviewRepository.reviewCountByProduct(productId);
-        Flux<ReviewDTO.ReviewResp> reviewRespFlux = reviewRepository.reviewsByProduct(productId)
+        Flux<ReviewDTO.ReviewResp> reviewRespFlux = reviewRepository.findAllByProductId(productId)
                 .skip((page-1) * size)
                 .take(size)
                 .flatMap(review -> memberRepository.findById(review.getMemberId())
@@ -130,7 +143,6 @@ public class ReviewService {
         return Mono.zip(reviewRespFlux.collectList(), totalReviews)
                 .map(t -> new PageResponseDTO<>(t.getT1(), page, size, t.getT2().intValue()));
     }
-
 
     /**
      * 사용자 이름 마스킹 처리

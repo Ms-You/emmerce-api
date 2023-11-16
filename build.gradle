@@ -32,6 +32,12 @@ dependencies {
 
 	// redis
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
+
+	/* AWS SDK For JAVA 2.X */
+	implementation(platform("software.amazon.awssdk:bom:2.17.122"))
+	implementation("software.amazon.awssdk:s3")
+	implementation("software.amazon.awssdk:netty-nio-client") // AWS SDK HttpClient 로 netty-nio-client 가 사용됨
 
 	// springdoc
 	implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webflux-ui', version: '2.2.0'
