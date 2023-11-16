@@ -4,8 +4,8 @@ import commerce.emmerce.domain.CategoryProduct;
 import commerce.emmerce.dto.CategoryProductDTO;
 import commerce.emmerce.dto.PageResponseDTO;
 import commerce.emmerce.dto.SearchParamDTO;
-import commerce.emmerce.repository.CategoryProductRepositoryImpl;
-import commerce.emmerce.repository.CategoryRepositoryImpl;
+import commerce.emmerce.repository.CategoryProductRepository;
+import commerce.emmerce.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -14,8 +14,8 @@ import reactor.core.publisher.Mono;
 @Service
 public class CategoryProductService {
 
-    private final CategoryProductRepositoryImpl categoryProductRepository;
-    private final CategoryRepositoryImpl categoryRepository;
+    private final CategoryRepository categoryRepository;
+    private final CategoryProductRepository categoryProductRepository;
 
     /**
      * 카테고리에 상품 등록 (상위 카테고리에도 포함)
@@ -43,7 +43,6 @@ public class CategoryProductService {
                 .build());
     }
 
-
     /**
      * 카테고리에서 상품 제거
      * @param categoryId
@@ -54,7 +53,6 @@ public class CategoryProductService {
         // 예외 처리
         return categoryProductRepository.deleteByCategoryIdAndProductId(categoryId, productId);
     }
-
 
     /**
      * 카테고리에 속한 상품 목록 조회

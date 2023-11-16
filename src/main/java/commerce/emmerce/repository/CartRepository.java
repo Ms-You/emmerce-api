@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 
 @RequiredArgsConstructor
 @Repository
-public class CartRepositoryImpl {
+public class CartRepository {
 
     private final DatabaseClient databaseClient;
 
@@ -27,6 +27,5 @@ public class CartRepositoryImpl {
                         .memberId((Long) row.get("member_id"))
                         .build());
     }
-
 
 }

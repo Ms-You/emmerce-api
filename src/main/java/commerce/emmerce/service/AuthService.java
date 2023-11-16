@@ -7,7 +7,7 @@ import commerce.emmerce.config.jwt.TokenProvider;
 import commerce.emmerce.domain.Member;
 import commerce.emmerce.domain.RoleType;
 import commerce.emmerce.dto.MemberDTO;
-import commerce.emmerce.repository.MemberRepositoryImpl;
+import commerce.emmerce.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -27,7 +27,7 @@ public class AuthService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final ReactiveAuthenticationManager authenticationManager;
     private final TokenProvider tokenProvider;
-    private final MemberRepositoryImpl memberRepository;
+    private final MemberRepository memberRepository;
     private final ReactiveRedisTemplate<String, String> reactiveRedisTemplate;
 
     @Value("${jwt.live.rtk}")
@@ -47,7 +47,6 @@ public class AuthService {
                 .password(passwordEncoder.encode(registerReq.getPassword()))
                 .tel(registerReq.getTel())
                 .birth(registerReq.getBirth())
-                .profileImg("default_img")
                 .point(0)
                 .role(RoleType.ROLE_USER)
                 .city("도시")
@@ -57,7 +56,6 @@ public class AuthService {
 
         return memberRepository.save(member);
     }
-
 
     /**
      * 사용자 이름 중복 체크
@@ -71,7 +69,6 @@ public class AuthService {
                 );
     }
 
-
     /**
      * 비밀번호 일치 여부 확인
      * @param password
@@ -82,7 +79,6 @@ public class AuthService {
         if(!password.equals(passwordConfirm))
             throw new GlobalException(ErrorCode.PASSWORD_NOT_MATCH);
     }
-
 
     /**
      * 로그인
@@ -109,7 +105,6 @@ public class AuthService {
                 });
     }
 
-
     /**
      * 로그아웃 (jwt token redis 에서 관리)
      * @param token
@@ -133,7 +128,6 @@ public class AuthService {
                         )
                 ).then();
     }
-
 
     /**
      * 토큰 만료 시 재발행

@@ -38,3 +38,8 @@ out/
 
 ### yml ###
 src/main/resources/application.yml
+src/main/resources/application-local.yml
+src/main/resources/application-dev.yml
+
+### sql ###
+/init.sql

@@ -7,7 +7,6 @@ import commerce.emmerce.domain.*;
 import commerce.emmerce.kakaopay.dto.KakaoPayDTO;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -23,17 +22,13 @@ import java.time.LocalDateTime;
 public class KakaoPayService {
 
     private static final String cid = "TC0ONETIME"; // 테스트를 위한 가맹점 코드
-    private final MemberRepositoryImpl memberRepository;
+    private final MemberRepository memberRepository;
     private final OrderRepository orderRepository;
-    private final OrderProductRepositoryImpl orderProductRepository;
-    private final ProductRepositoryImpl productRepositoryImpl;
+    private final OrderProductRepository orderProductRepository;
     private final ProductRepository productRepository;
     private final PaymentRepository paymentRepository;
-    private final PaymentRepositoryImpl paymentRepositoryImpl;
-    private final DeliveryRepositoryImpl deliveryRepositoryImpl;
     private final DeliveryRepository deliveryRepository;
     private final WebClient webClient;
-
 
     /**
      * 현재 로그인 한 사용자 정보 반환
@@ -43,7 +38,6 @@ public class KakaoPayService {
         return SecurityUtil.getCurrentMemberName()
                 .flatMap(name -> memberRepository.findByName(name));
     }
-
 
     /**
      * 카카오페이 결제 준비 요청
@@ -76,7 +70,7 @@ public class KakaoPayService {
                     params.add("quantity", String.valueOf(totalQuantity));   // 주문 수량
                     params.add("total_amount", String.valueOf(totalAmount));   // 총 금액
 
-                    return productRepositoryImpl.findById(orderProductList.get(0).getProductId())
+                    return productRepository.findById(orderProductList.get(0).getProductId())
                             .map(product -> {
                                 String itemName = product.getName();
 
@@ -105,12 +99,11 @@ public class KakaoPayService {
                                         .partner_order_id(String.valueOf(payReq.getOrderId()))
                                         .partner_user_id(String.valueOf(member.getMemberId()))
                                         .build();
-                                return paymentRepositoryImpl.saveTemporary(payment)
+                                return paymentRepository.saveTemporary(payment)
                                         .thenReturn(readyResp);
                             });
                 });
     }
-
 
     /**
      * 카카오페이 결제 승인 요청
@@ -120,7 +113,7 @@ public class KakaoPayService {
      */
     public Mono<KakaoPayDTO.ApproveResp> kakaoPayApprove(String pgToken, Long orderId) {
         return findCurrentMember()
-                .flatMap(member -> paymentRepositoryImpl.findByOrderId(orderId)
+                .flatMap(member -> paymentRepository.findByOrderId(orderId)
                         .flatMap(payment -> {
                             MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
                             params.add("cid", cid);
@@ -144,7 +137,6 @@ public class KakaoPayService {
                                     });
                         }));
     }
-
 
     /**
      * Payment 인스턴스 생성
@@ -183,7 +175,6 @@ public class KakaoPayService {
                 .build();
     }
 
-
     /**
      * 주문 상태 정보 변경
      * @param orderId
@@ -196,9 +187,7 @@ public class KakaoPayService {
                     order.updateStatus(orderStatus);
                     return orderRepository.save(order);
                 });
-
     }
-
 
     /**
      * 상품 재고 수량 변경 (flag = true :결제 완료에 따른 재고 수량 변경)
@@ -209,7 +198,7 @@ public class KakaoPayService {
      */
     private Mono<Void> updateProductStock(Long orderId, boolean flag) {
         return orderProductRepository.findByOrderId(orderId)
-                .flatMap(orderProduct -> productRepositoryImpl.findById(orderProduct.getProductId())
+                .flatMap(orderProduct -> productRepository.findById(orderProduct.getProductId())
                         .doOnSuccess(product -> {
                             int stockQuantity = flag ? product.getStockQuantity() - orderProduct.getTotalCount()
                                     : product.getStockQuantity() + orderProduct.getTotalCount();
@@ -217,7 +206,6 @@ public class KakaoPayService {
                         }).flatMap(productRepository::save)
                 ).then();
     }
-
 
     /**
      * 카카오페이 결제 정보 조회
@@ -232,7 +220,7 @@ public class KakaoPayService {
                                 return Mono.error(new GlobalException(ErrorCode.ORDER_MEMBER_NOT_MATCHED));
                             }
 
-                            return paymentRepositoryImpl.findByOrderId(order.getOrderId())
+                            return paymentRepository.findByOrderId(order.getOrderId())
                                     .flatMap(payment -> webClient.get()
                                             .uri(uriBuilder -> uriBuilder.path("/v1/payment/order")
                                                     .queryParam("cid", cid)
@@ -243,7 +231,6 @@ public class KakaoPayService {
                         })
                 );
     }
-
 
     /**
      * 카카오페이 결제 취소
@@ -267,7 +254,7 @@ public class KakaoPayService {
 
                             return updateOrder.flatMap(updated -> updateProductStock(order.getOrderId(), false))
                                     .then(updateDeliveryStatus(order.getOrderId()))
-                                    .then(paymentRepositoryImpl.findByOrderId(order.getOrderId()))
+                                    .then(paymentRepository.findByOrderId(order.getOrderId()))
                                     .flatMap(payment -> orderProductRepository.findByOrderId(order.getOrderId()).collectList()
                                             .flatMap(orderProductList -> {
                                                 int cancelAmount = orderProductList.stream()
@@ -291,20 +278,16 @@ public class KakaoPayService {
                 );
     }
 
-
     /**
      * 주문 상태 변경
      * @param orderId
      * @return
      */
     private Mono<Void> updateDeliveryStatus(Long orderId) {
-        return deliveryRepositoryImpl.findByOrderId(orderId)
-                .flatMap(delivery -> {
-                    delivery.updateStatus(DeliveryStatus.CANCEL);
-
-                    return deliveryRepository.save(delivery);
-                }).then();
+        return deliveryRepository.findByOrderId(orderId)
+                .flatMap(delivery ->
+                        deliveryRepository.updateStatus(delivery.getDeliveryId(), DeliveryStatus.CANCEL)
+                ).then();
     }
-
 
 }
