@@ -1,6 +1,6 @@
 package commerce.emmerce.service;
 
-import commerce.emmerce.config.FileHandler;
+import commerce.emmerce.config.s3.S3FileUploader;
 import commerce.emmerce.config.SecurityUtil;
 import commerce.emmerce.config.exception.ErrorCode;
 import commerce.emmerce.config.exception.GlobalException;
@@ -26,7 +26,7 @@ import java.time.LocalDate;
 @Service
 public class ReviewService {
 
-    private final FileHandler fileHandler;
+    private final S3FileUploader s3FileUploader;
     private final MemberRepository memberRepository;
     private final OrderProductRepository orderProductRepository;
     private final ReviewRepository reviewRepository;
@@ -44,14 +44,15 @@ public class ReviewService {
     /**
      * 리뷰 작성
      * @param reviewReqMono
+     * @param reviewImages
      * @return
      */
     @Transactional
     public Mono<Void> write(Mono<ReviewDTO.ReviewReq> reviewReqMono,
-                            Flux<FilePart> reviewImgs) {
+                            Flux<FilePart> reviewImages) {
         return findCurrentMember()
                 .flatMap(member -> getOrderProduct(member, reviewReqMono))
-                .flatMap(member -> writeReview(member, reviewReqMono, reviewImgs));
+                .flatMap(member -> writeReview(member, reviewReqMono, reviewImages));
     }
 
     /**
@@ -84,25 +85,20 @@ public class ReviewService {
      * 리뷰 작성
      * @param member
      * @param reviewReqMono
-     * @param reviewImgs
+     * @param reviewImages
      * @return
      */
-    public Mono<Void> writeReview(Member member, Mono<ReviewDTO.ReviewReq> reviewReqMono, Flux<FilePart> reviewImgs) {
-        return reviewReqMono.flatMap(reviewReq -> {
-            // 임시 저장 경로
-            String imagePath = "C:\\emmerce\\images\\";
-
-            return fileHandler.savedImagesAndGetPaths(reviewImgs, imagePath)
-                    .flatMap(savedReviewImgs -> reviewRepository.save(Review.createReview()
-                            .title(reviewReq.getTitle())
-                            .description(reviewReq.getDescription())
-                            .startScore(reviewReq.getStarScore())
-                            .reviewImgList(savedReviewImgs)
-                            .writeDate(LocalDate.now())
-                            .memberId(member.getMemberId())
-                            .productId(reviewReq.getProductId())
-                            .build()));
-        }).then();
+    public Mono<Void> writeReview(Member member, Mono<ReviewDTO.ReviewReq> reviewReqMono, Flux<FilePart> reviewImages) {
+        return reviewReqMono.zipWith(s3FileUploader.uploadS3ImageList(reviewImages, "review"))
+                .flatMap(tuple -> reviewRepository.save(Review.createReview()
+                        .title(tuple.getT1().getTitle())
+                        .description(tuple.getT1().getDescription())
+                        .startScore(tuple.getT1().getStarScore())
+                        .reviewImgList(tuple.getT2())
+                        .writeDate(LocalDate.now())
+                        .memberId(member.getMemberId())
+                        .productId(tuple.getT1().getProductId())
+                        .build()));
     }
 
     /**
@@ -113,9 +109,8 @@ public class ReviewService {
     @Transactional
     public Mono<Void> remove(Long reviewId) {
         return reviewRepository.findById(reviewId)
-                .flatMap(review -> fileHandler.deleteImages(review.getReviewImgList())
-                        .then(Mono.just(review)))
-                .flatMap(review -> reviewRepository.deleteById(reviewId))
+                .flatMap(review -> s3FileUploader.deleteS3ImageList(review.getReviewImgList(), "review")
+                        .then(reviewRepository.deleteById(reviewId)))
                 .doOnNext(rowsUpdated -> log.info("삭제된 리뷰 수: {}", rowsUpdated))
                 .then();
     }

@@ -22,11 +22,11 @@ public class ReviewController {
 
     @Operation(summary = "리뷰 작성", description = "상품을 주문하고 배송이 완료된 사용자에 한해 상품에 대해 리뷰를 작성합니다.")
     @Parameters({ @Parameter(name = "reviewReq", description = "주문 정보, 상품 정보 및 작성할 리뷰 정보를 전달"),
-                @Parameter(name = "reviewImgs", description = "리뷰에 포함할 이미지 목록을 전달")})
+                @Parameter(name = "reviewImages", description = "리뷰에 포함할 이미지 목록을 전달")})
     @PostMapping("/review")
     public Mono<Void> writeReview(@RequestPart("reviewReq") Mono<ReviewDTO.ReviewReq> reviewReqMono,
-                                  @RequestPart("reviewImgs") Flux<FilePart> reviewImgs) {
-        return reviewService.write(reviewReqMono, reviewImgs);
+                                  @RequestPart("reviewImages") Flux<FilePart> reviewImages) {
+        return reviewService.write(reviewReqMono, reviewImages);
     }
 
 

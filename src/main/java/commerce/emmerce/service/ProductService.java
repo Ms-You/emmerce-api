@@ -1,6 +1,6 @@
 package commerce.emmerce.service;
 
-import commerce.emmerce.config.FileHandler;
+import commerce.emmerce.config.s3.S3FileUploader;
 import commerce.emmerce.domain.Product;
 import commerce.emmerce.domain.Review;
 import commerce.emmerce.dto.*;
@@ -20,49 +20,42 @@ import java.time.LocalDateTime;
 @Service
 public class ProductService {
 
-    private final FileHandler fileHandler;
+    private final S3FileUploader s3FileUploader;
     private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
 
     /**
      * 상품 추가
      * @param productReqMono
-     * @param titleImg
-     * @param detailImgs
+     * @param titleImage
+     * @param detailImages
      * @return
      */
     public Mono<Void> create(Mono<ProductDTO.ProductReq> productReqMono,
-                             Mono<FilePart> titleImg,
-                             Flux<FilePart> detailImgs) {
-
-        return productReqMono
-                .flatMap(productReq -> {
+                             Mono<FilePart> titleImage,
+                             Flux<FilePart> detailImages) {
+        return productReqMono.zipWith(s3FileUploader.uploadS3Image(titleImage, "product/title"))  // 타이틀 이미지 업로드
+                .flatMap(tuple -> s3FileUploader.uploadS3ImageList(detailImages, "product/detail") // 디테일 이미지 목록 업로드
+                        .map(savedImagePaths -> Tuples.of(tuple.getT1(), tuple.getT2(), savedImagePaths)))
+                .flatMap(tuple -> {
                     // 할인률 계산
-                    int discount = (int) Math.round((double) (productReq.getOriginalPrice() - productReq.getDiscountPrice()) / productReq.getOriginalPrice() * 100);
-                    // 이미지 임시 저장 디렉토리 위치
-                    String imagePath = "C:\\emmerce\\images\\";
-
-                    return fileHandler.saveImage(titleImg, imagePath)
-                            .map(uniqueFileName -> {
-                                String titleImgPath = imagePath + uniqueFileName;
-                                return Tuples.of(productReq, titleImgPath);
-                            })
-                            .flatMap(tuple -> fileHandler.savedImagesAndGetPaths(detailImgs, imagePath)
-                                    .map(savedDetailImgs -> Tuples.of(tuple.getT1(), tuple.getT2(), savedDetailImgs))
-                            )
-                            .flatMap(tuple -> productRepository.save(Product.createProduct()
-                                    .name(tuple.getT1().getName())
-                                    .detail(tuple.getT1().getDetail())
-                                    .originalPrice(tuple.getT1().getOriginalPrice())
-                                    .discountPrice(tuple.getT1().getDiscountPrice())
-                                    .discountRate(discount)
-                                    .stockQuantity(tuple.getT1().getStockQuantity())
-                                    .starScore(0.0) // 초기 값 세팅
-                                    .titleImg(tuple.getT2())
-                                    .detailImgList(tuple.getT3())
-                                    .brand(tuple.getT1().getBrand())
-                                    .enrollTime(LocalDateTime.now())
-                                    .build()));
+                    int discountRate = 0;
+                    if(tuple.getT1().getOriginalPrice() != 0) {
+                        discountRate = (int) Math.round((double) (tuple.getT1().getOriginalPrice() - tuple.getT1().getDiscountPrice()) / tuple.getT1().getOriginalPrice() * 100);
+                    }
+                    return productRepository.save(Product.createProduct()
+                            .name(tuple.getT1().getName())
+                            .detail(tuple.getT1().getDetail())
+                            .originalPrice(tuple.getT1().getOriginalPrice())
+                            .discountPrice(tuple.getT1().getDiscountPrice())
+                            .discountRate(discountRate)
+                            .stockQuantity(tuple.getT1().getStockQuantity())
+                            .starScore(0.0) // 초기 값 세팅
+                            .titleImg(tuple.getT2())
+                            .detailImgList(tuple.getT3())
+                            .brand(tuple.getT1().getBrand())
+                            .enrollTime(LocalDateTime.now())
+                            .build());
                 });
     }
 
@@ -105,50 +98,40 @@ public class ProductService {
      * 상품 정보 수정
      * @param productId
      * @param updateReqMono
-     * @param titleImg
-     * @param detailImgs
+     * @param titleImage
+     * @param detailImages
      * @return
      */
     public Mono<Void> update(Long productId,
                              Mono<ProductDTO.UpdateReq> updateReqMono,
-                             Mono<FilePart> titleImg,
-                             Flux<FilePart> detailImgs) {
-
-        return updateReqMono.flatMap(updateReq -> {
-            // 할인률 계산
-            int discountRate = (int) Math.round((double) (updateReq.getOriginalPrice() - updateReq.getDiscountPrice()) / updateReq.getOriginalPrice() * 100);
-            // 이미지 임시 저장 디렉토리 위치
-            String imagePath = "C:\\emmerce\\images\\";
-
-            return fileHandler.saveImage(titleImg, imagePath)
-                    .map(uniqueFileName -> {
-                        String titleImgPath = imagePath + uniqueFileName;
-                        return Tuples.of(updateReq, titleImgPath);
-                    })
-                    .flatMap(tuple -> fileHandler.savedImagesAndGetPaths(detailImgs, imagePath)
-                            .map(savedDetailImgs -> Tuples.of(tuple.getT1(), tuple.getT2(), savedDetailImgs))
-                    )
-                    .flatMap(tuple -> productRepository.findById(productId)
-                            .flatMap(product -> Mono.when(
-                                    fileHandler.deleteImage(product.getTitleImg()),
-                                    fileHandler.deleteImages(product.getDetailImgList())
-                            ).thenReturn(product))
-                            .flatMap(product -> {
-                                product.updateProduct(
-                                        tuple.getT1().getName(),
-                                        tuple.getT1().getDetail(),
-                                        tuple.getT1().getOriginalPrice(),
-                                        tuple.getT1().getDiscountPrice(),
-                                        discountRate,
-                                        tuple.getT1().getStockQuantity(),
-                                        tuple.getT2(),
-                                        tuple.getT3()
-                                );
-
-                                return productRepository.save(product);
-                            })
-                    ).then();
-        });
+                             Mono<FilePart> titleImage,
+                             Flux<FilePart> detailImages) {
+        return updateReqMono.zipWith(s3FileUploader.uploadS3Image(titleImage, "product/title"))
+                .flatMap(tuple -> s3FileUploader.uploadS3ImageList(detailImages, "product/detail")
+                        .map(savedImageNames -> Tuples.of(tuple.getT1(), tuple.getT2(), savedImageNames))
+                ).flatMap(tuple -> productRepository.findById(productId)
+                        .flatMap(product -> Mono.when(
+                                s3FileUploader.deleteS3Image(product.getTitleImg(), "product/title"),
+                                s3FileUploader.deleteS3ImageList(product.getDetailImgList(), "product/detail")
+                        ).thenReturn(product))
+                        .flatMap(product -> {
+                            int discountRate = 0;
+                            if(tuple.getT1().getOriginalPrice() != 0) {
+                                discountRate = (int) Math.round((double) (tuple.getT1().getOriginalPrice() - tuple.getT1().getDiscountPrice()) / tuple.getT1().getOriginalPrice() * 100);
+                            }
+                            product.updateProduct(
+                                    tuple.getT1().getName(),
+                                    tuple.getT1().getDetail(),
+                                    tuple.getT1().getOriginalPrice(),
+                                    tuple.getT1().getDiscountPrice(),
+                                    discountRate,
+                                    tuple.getT1().getStockQuantity(),
+                                    tuple.getT2(),
+                                    tuple.getT3()
+                            );
+                            return productRepository.save(product);
+                        })
+                );
     }
 
     /**
