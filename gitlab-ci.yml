@@ -1,0 +1,45 @@
+stages:
+  - build
+  - package
+  - deploy
+
+build:
+  image: openjdk:17-alpine
+  stage: build
+  script:
+    - ./gradlew clean
+    - ./gradlew build
+  artifacts:
+    paths:
+      - build/libs/*.jar
+
+package:
+  image: docker:latest
+  stage: package
+  variables:
+    IMAGE_NAME: emmerce-api
+  before_script:
+    - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
+  script:
+    - docker build -t $DOCKER_HUB_USER/$IMAGE_NAME .
+    - docker push $DOCKER_HUB_USER/$IMAGE_NAME
+  after_script:
+    - docker logout
+
+deploy:
+  stage: deploy
+  variables:
+    CONTAINER_NAME: emmerce-api-container
+  before_script:
+    - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
+  script:
+    - docker stop $CONTAINER_NAME || true
+    - docker rm $CONTAINER_NAME || true
+    - docker rmi $DOCKER_HUB_USER/$IMAGE_NAME || true
+    - docker run -d --restart always -p 8088:8088 --name $CONTAINER_NAME $DOCKER_HUB_USER/$IMAGE_NAME
+  after_script:
+    - docker logout
+  only:
+    - master
+  tags:
+    - dev
