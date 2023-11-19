@@ -3,14 +3,18 @@ stages:
   - package
   - deploy
 
+services:
+  - docker:dind
+
 build:
   image: openjdk:17-alpine
   stage: build
   before_script:
     - chmod +x gradlew
+    - set +x && echo "$APPLICATION_YML" > src/main/resources/application.yml && set -x
   script:
     - ./gradlew clean
-    - ./gradlew build -x test
+    - ./gradlew build --info
   artifacts:
     paths:
       - build/libs/*.jar
