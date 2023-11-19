@@ -6,6 +6,8 @@ stages:
 build:
   image: openjdk:17-alpine
   stage: build
+  before_script:
+    - chmod +x gradlew
   script:
     - ./gradlew clean
     - ./gradlew build
