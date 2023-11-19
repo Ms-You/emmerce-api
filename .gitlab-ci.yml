@@ -3,9 +3,6 @@ stages:
   - package
   - deploy
 
-services:
-  - docker:dind
-
 build:
   image: openjdk:17-alpine
   stage: build
