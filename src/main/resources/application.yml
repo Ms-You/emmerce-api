@@ -4,7 +4,7 @@ spring:
     ansi:
       enabled: always
   profiles:
-    active: local
+    active: dev
 
 # R2DBC에서 Database로 나가는 쿼리를 보고 싶을 때
 logging:
