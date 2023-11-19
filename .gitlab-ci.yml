@@ -14,7 +14,7 @@ build:
     - set +x && echo "$APPLICATION_YML" > src/main/resources/application.yml && set -x
   script:
     - ./gradlew clean
-    - ./gradlew build --info
+    - ./gradlew build -x test
   artifacts:
     paths:
       - build/libs/*.jar
