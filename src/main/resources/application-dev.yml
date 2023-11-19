@@ -1,0 +1,13 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://postgres:5432/emmerce
+    username: postgres
+    password: postgres
+
+  # redis
+  redis:
+    host: redis
+    port: 6379
+
+server:
+  port: 8088
