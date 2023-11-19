@@ -31,6 +31,7 @@ package:
   variables:
     IMAGE_NAME: emmerce-api
     DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: "/certs"
   before_script:
     - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
   script:
