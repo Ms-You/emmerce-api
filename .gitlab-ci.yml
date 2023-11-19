@@ -14,8 +14,8 @@ build:
       - build/libs/*.jar
   only:
     - master
-    tags:
-      - dev
+  tags:
+    - dev
 
 package:
   image: docker:latest
@@ -31,8 +31,8 @@ package:
     - docker logout
   only:
     - master
-    tags:
-      - dev
+  tags:
+    - dev
 
 deploy:
   stage: deploy
