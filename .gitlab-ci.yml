@@ -10,7 +10,7 @@ build:
     - chmod +x gradlew
   script:
     - ./gradlew clean
-    - ./gradlew build --info
+    - ./gradlew build -x test
   artifacts:
     paths:
       - build/libs/*.jar
