@@ -1,0 +1,20 @@
+version: 0.0
+os: linux
+
+files:
+  - source: /build/libs/*.jar
+    destination: /home/ubuntu/emmerce
+    overwrite: yes
+
+permissions:
+  - object: /home/ubuntu/emmerce
+    owner: ubuntu
+    group: ubuntu
+
+hooks:
+  ApplicationStop:
+    - location: scripts/stop.sh
+      runas: root
+  ApplicationStart:
+    - location: scripts/start.sh
+      runas: root
