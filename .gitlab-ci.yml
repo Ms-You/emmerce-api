@@ -28,7 +28,7 @@ package:
   before_script:
     - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_ID --password-stdin
   script:
-    - docker build -t $DOCKER_HUB_USER/$IMAGE_NAME .
+    - docker build --build-arg JAR_FILE=build/libs/*.jar --build-arg YML_FILE=src/main/resources/application.yml -t $DOCKER_HUB_USER/$IMAGE_NAME .
     - docker push $DOCKER_HUB_USER/$IMAGE_NAME
   after_script:
     - docker logout
