@@ -41,6 +41,7 @@ deploy:
   image: docker:latest
   stage: deploy
   variables:
+    IMAGE_NAME: emmerce-api
     CONTAINER_NAME: emmerce-api-container
   before_script:
     - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_ID --password-stdin
