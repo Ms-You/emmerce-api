@@ -8,10 +8,10 @@ ARG YML_FILE
 # add jar file to container
 COPY ${JAR_FILE} app.jar
 # add application.yml file to container
-COPY ${YML_FILE} /app/application.yml
+COPY ${YML_FILE} /application.yml
 
 # expose port
 EXPOSE 8088
 
 # run jar file
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "-Dspring.config.location=file:/application.yml", "app.jar"]
