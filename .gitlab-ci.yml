@@ -23,8 +23,6 @@ build:
 package:
   image: docker:latest
   stage: package
-  services:
-    - docker:dind
   variables:
     IMAGE_NAME: emmerce-api
   before_script:
