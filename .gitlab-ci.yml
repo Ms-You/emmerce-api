@@ -23,9 +23,10 @@ build:
 package:
   image: docker:latest
   stage: package
+  services:
+    - docker:dind
   variables:
     IMAGE_NAME: emmerce-api
-    DOCKER_HOST: unix:///var/run/docker.sock
   before_script:
     - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
   script:
