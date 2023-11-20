@@ -1,16 +1,7 @@
-variables:
-  DOCKER_HOST: tcp://docker:2375
-  DOCKER_TLS_CERTDIR: "/certs"
-
 stages:
   - build
   - package
   - deploy
-
-services:
-  - name: docker:dind
-    command: ["--host=tcp://0.0.0.0:2375", "--host=unix:///var/run/docker.sock", "--tlsverify", "--tlscacert=/certs/client/ca.pem", "--tlscert=/certs/client/cert.pem", "--tlskey=/certs/client/key.pem"]
-
 
 build:
   image: openjdk:17-alpine
@@ -32,9 +23,10 @@ build:
 package:
   image: docker:latest
   stage: package
+  services:
+  - docker:dind
   variables:
     IMAGE_NAME: emmerce-api
-    DOCKER_HOST: tcp://docker:2375
   before_script:
     - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
   script:
