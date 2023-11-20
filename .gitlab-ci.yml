@@ -38,6 +38,7 @@ package:
     - dev
 
 deploy:
+  image: docker:latest
   stage: deploy
   variables:
     CONTAINER_NAME: emmerce-api-container
