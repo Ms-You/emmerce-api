@@ -26,7 +26,7 @@ package:
   variables:
     IMAGE_NAME: emmerce-api
   before_script:
-    - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
+    - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_ID --password-stdin
   script:
     - docker build -t $DOCKER_HUB_USER/$IMAGE_NAME .
     - docker push $DOCKER_HUB_USER/$IMAGE_NAME
@@ -42,7 +42,7 @@ deploy:
   variables:
     CONTAINER_NAME: emmerce-api-container
   before_script:
-    - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_USER --password-stdin
+    - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_ID --password-stdin
   script:
     - docker stop $CONTAINER_NAME || true
     - docker rm $CONTAINER_NAME || true
