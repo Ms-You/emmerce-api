@@ -22,9 +22,11 @@ public class CartProductDTO {
         private Long productId;
         private String name;
         private String titleImg;
+        private Integer originalPrice;
         private Integer discountPrice;
         private Integer totalCount;
         private Integer totalPrice;
+        private String brand;
     }
 
 

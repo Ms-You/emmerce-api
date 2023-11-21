@@ -99,9 +99,11 @@ public class CartProductRepository {
                         .productId((Long) row.get("product_id"))
                         .name((String) row.get("name"))
                         .titleImg((String) row.get("title_img"))
+                        .originalPrice((Integer) row.get("original_price"))
                         .discountPrice((Integer) row.get("discount_price"))
                         .totalCount((Integer) row.get("quantity"))
                         .totalPrice((Integer) row.get("discount_price") * (Integer) row.get("quantity"))
+                        .brand((String) row.get("brand"))
                         .build());
     }
 
