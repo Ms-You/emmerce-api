@@ -43,3 +43,12 @@ src/main/resources/application-dev.yml
 
 ### sql ###
 /init.sql
+
+### codedeploy ###
+appspec.yml
+scripts
+scripts/start.sh
+scripts/stop.sh
+
+### docker ###
+docker-compose.yml
