@@ -4,6 +4,7 @@ import commerce.emmerce.config.SecurityUtil;
 import commerce.emmerce.config.exception.ErrorCode;
 import commerce.emmerce.config.exception.GlobalException;
 import commerce.emmerce.domain.*;
+import commerce.emmerce.kakaopay.dto.CardInfo;
 import commerce.emmerce.kakaopay.dto.KakaoPayDTO;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -144,6 +145,8 @@ public class KakaoPayService {
      * @return
      */
     private Payment convertToPayment(KakaoPayDTO.ApproveResp approveResp) {
+        CardInfo cardInfo = approveResp.getCard_info();
+        System.out.println("코프: " + cardInfo.getPurchase_corp());
         return Payment.builder()
                 .aid(approveResp.getAid())
                 .tid(approveResp.getTid())
@@ -157,17 +160,17 @@ public class KakaoPayService {
                 .point(approveResp.getAmount().getPoint())
                 .discount(approveResp.getAmount().getDiscount())
                 .green_deposit(approveResp.getAmount().getGreen_deposit())
-                .purchase_corp(approveResp.getCard_info().getPurchase_corp())
-                .purchase_corp_code(approveResp.getCard_info().getPurchase_corp_code())
-                .issuer_corp(approveResp.getCard_info().getIssuer_corp())
-                .issuer_corp_code(approveResp.getCard_info().getIssuer_corp_code())
-                .bin(approveResp.getCard_info().getBin())
-                .card_type(approveResp.getCard_info().getCard_type())
-                .install_month(approveResp.getCard_info().getInstall_month())
-                .approved_id(approveResp.getCard_info().getApproved_id())
-                .card_mid(approveResp.getCard_info().getCard_mid())
-                .interest_free_install(approveResp.getCard_info().getInterest_free_install())
-                .card_item_code(approveResp.getCard_info().getCard_item_code())
+                .purchase_corp(cardInfo != null ? cardInfo.getPurchase_corp() : "-")
+                .purchase_corp_code(cardInfo != null ? cardInfo.getPurchase_corp_code() : "-")
+                .issuer_corp(cardInfo != null ? cardInfo.getIssuer_corp() : "-")
+                .issuer_corp_code(cardInfo != null ? cardInfo.getIssuer_corp_code() : "-")
+                .bin(cardInfo != null ? cardInfo.getBin() : "-")
+                .card_type(cardInfo != null ? cardInfo.getCard_type() : "-")
+                .install_month(cardInfo != null ? cardInfo.getInstall_month() : "-")
+                .approved_id(cardInfo != null ? cardInfo.getApproved_id() : "-")
+                .card_mid(cardInfo != null ? cardInfo.getCard_mid() : "-")
+                .interest_free_install(cardInfo != null ? cardInfo.getInterest_free_install() : "-")
+                .card_item_code(cardInfo != null ? cardInfo.getCard_item_code() : "-")
                 .item_name(approveResp.getItem_name())
                 .quantity(approveResp.getQuantity())
                 .created_at(LocalDateTime.parse(approveResp.getCreated_at()))

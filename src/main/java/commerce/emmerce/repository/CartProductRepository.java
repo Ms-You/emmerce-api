@@ -26,7 +26,7 @@ public class CartProductRepository {
                 where cart_product_id = :cartProductId
                 """;
 
-        String query = cartProduct.getCartId() == null ? insertQuery : updateQuery;
+        String query = cartProduct.getCartProductId() == null ? insertQuery : updateQuery;
 
         DatabaseClient.GenericExecuteSpec executeSpec = databaseClient.sql(query)
                 .bind("cartId", cartProduct.getCartId())
