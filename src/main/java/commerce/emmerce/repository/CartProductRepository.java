@@ -86,7 +86,7 @@ public class CartProductRepository {
 
     public Flux<CartProductDTO.ListResp> findAllByCartId(Long cartId) {
         String query = """
-                select p.*, cp.quantity as quantity
+                select p.*, cp.cart_product_id as cart_product_id, cp.quantity as quantity
                 from product p
                 inner join cart_product cp on p.product_id = cp.product_id
                 where cp.cart_id = :cartId
@@ -96,12 +96,13 @@ public class CartProductRepository {
                 .bind("cartId", cartId)
                 .fetch().all()
                 .map(row -> CartProductDTO.ListResp.builder()
+                        .cartProductId((Long) row.get("cart_product_id"))
                         .productId((Long) row.get("product_id"))
                         .name((String) row.get("name"))
                         .titleImg((String) row.get("title_img"))
                         .originalPrice((Integer) row.get("original_price"))
                         .discountPrice((Integer) row.get("discount_price"))
-                        .totalCount((Integer) row.get("quantity"))
+                        .quantity((Integer) row.get("quantity"))
                         .totalPrice((Integer) row.get("discount_price") * (Integer) row.get("quantity"))
                         .brand((String) row.get("brand"))
                         .build());

@@ -19,12 +19,13 @@ public class CartProductDTO {
     @AllArgsConstructor
     @Builder
     public static class ListResp {
+        private Long cartProductId;
         private Long productId;
         private String name;
         private String titleImg;
         private Integer originalPrice;
         private Integer discountPrice;
-        private Integer totalCount;
+        private Integer quantity;
         private Integer totalPrice;
         private String brand;
     }
