@@ -21,7 +21,10 @@ public enum ErrorCode {
     NAME_ALREADY_EXIST(HttpStatus.BAD_REQUEST.value(), "이미 존재하는 아이디입니다."),
     PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST.value(), "비밀번호가 일치하지 않습니다."),
 
-    // ORDER
+    // CartProduct
+    CART_PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "장바구니에서 상품을 찾을 수 없습니다."),
+
+    // Order
     CANCELED_ORDER(HttpStatus.BAD_REQUEST.value(), "이미 취소된 주문입니다."),
     ING_ORDER(HttpStatus.BAD_REQUEST.value(), "진행중인 주문입니다."),
     ORDER_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "해당 주문을 찾을 수 없습니다."),

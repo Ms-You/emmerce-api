@@ -40,6 +40,26 @@ public class CartProductRepository {
         return executeSpec.then();
     }
 
+    public Mono<CartProduct> findByCartIdAndCartProductId(Long cartId, Long cartProductId) {
+        String query = """
+                select *
+                from cart_product cp
+                where cp.cart_id = :cartId
+                    and cp.cart_product_id = :cartProductId
+                """;
+
+        return databaseClient.sql(query)
+                .bind("cartId", cartId)
+                .bind("cartProductId", cartProductId)
+                .fetch().one()
+                .map(row -> CartProduct.builder()
+                        .cartProductId((Long) row.get("cart_product_id"))
+                        .cartId((Long) row.get("cart_id"))
+                        .productId((Long) row.get("product_id"))
+                        .quantity((Integer) row.get("quantity"))
+                        .build());
+    }
+
     public Mono<CartProduct> findByCartIdAndProductId(Long cartId, Long productId) {
         String query = """
                 select * 
