@@ -8,11 +8,14 @@ import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
+
+import java.util.Arrays;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,9 +25,30 @@ public class JwtAuthenticationFilter implements WebFilter {
     private final TokenProvider tokenProvider;
     private final ReactiveRedisTemplate<String, String> reactiveRedisTemplate;
 
+    private static final String[] AUTH_WHITE_LIST = {
+            "/auth/**",
+            "/swagger/**",
+            "/swagger-ui/**",
+            "/swagger-ui.html",
+            "/swagger-resources/**",
+            "/webjars/**",
+            "/v3/api-docs/**",
+            "/v3/**",
+            "/category/**",
+            "/product/**"
+    };
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String token = resolveToken(exchange.getRequest());
+        String path = exchange.getRequest().getPath().value();
+
+        AntPathMatcher antPathMatcher = new AntPathMatcher();
+        boolean isWhiteListPath = Arrays.stream(AUTH_WHITE_LIST).anyMatch(whiteListPath -> antPathMatcher.match(whiteListPath, path));
+        if(isWhiteListPath) {
+            return chain.filter(exchange);
+        }
+
         if (StringUtils.hasText(token)) {
             return reactiveRedisTemplate.opsForValue().get(token)
                     .defaultIfEmpty("active")

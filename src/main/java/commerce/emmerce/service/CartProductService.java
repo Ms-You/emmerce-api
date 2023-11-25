@@ -1,6 +1,8 @@
 package commerce.emmerce.service;
 
 import commerce.emmerce.config.SecurityUtil;
+import commerce.emmerce.config.exception.ErrorCode;
+import commerce.emmerce.config.exception.GlobalException;
 import commerce.emmerce.domain.Cart;
 import commerce.emmerce.domain.CartProduct;
 import commerce.emmerce.domain.Member;
@@ -32,11 +34,16 @@ public class CartProductService {
     @Transactional
     public Mono<Void> putInCart(CartProductDTO.EnrollReq enrollReq) {
         return getCurrentMemberCart()
-                .flatMap(cart -> cartProductRepository.save(CartProduct.builder()
-                        .cartId(cart.getCartId())
-                        .productId(enrollReq.getProductId())
-                        .quantity(enrollReq.getQuantity())
-                        .build())
+                .flatMap(cart -> cartProductRepository.findByCartIdAndProductId(cart.getCartId(), enrollReq.getProductId())
+                        .defaultIfEmpty(CartProduct.builder()
+                                .cartId(cart.getCartId())
+                                .productId(enrollReq.getProductId())
+                                .quantity(0)
+                                .build())
+                        .flatMap(cartProduct -> {
+                            cartProduct.updateQuantity(cartProduct.getQuantity() + enrollReq.getQuantity());
+                            return cartProductRepository.save(cartProduct);
+                        })
                 );
     }
 
@@ -51,13 +58,14 @@ public class CartProductService {
 
     /**
      * 장바구니에서 상품 제거
-     * @param productId
+     * @param cartProductId
      * @return
      */
     @Transactional
-    public Mono<Void> removeInCart(Long productId) {
+    public Mono<Void> removeInCart(Long cartProductId) {
         return getCurrentMemberCart()
-                .flatMap(cart -> cartProductRepository.findByCartIdAndProductId(cart.getCartId(), productId)
+                .flatMap(cart -> cartProductRepository.findByCartIdAndCartProductId(cart.getCartId(), cartProductId)
+                        .switchIfEmpty(Mono.error(new GlobalException(ErrorCode.CART_PRODUCT_NOT_FOUND)))
                         .flatMap(cartProduct -> cartProductRepository.delete(cartProduct))
                 );
     }

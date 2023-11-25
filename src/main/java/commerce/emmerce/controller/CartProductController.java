@@ -34,10 +34,10 @@ public class CartProductController {
 
 
     @Operation(summary = "장바구니에서 상품 제거", description = "현재 로그인 한 사용자의 장바구니에 담긴 상품 중 특정 상품을 삭제합니다.")
-    @Parameter(name = "productId", description = "삭제할 상품 id")
-    @DeleteMapping("/product/{productId}")
-    public Mono<Void> removeProductInCart(@PathVariable Long productId) {
-        return cartProductService.removeInCart(productId);
+    @Parameter(name = "cartProductId", description = "삭제할 장바구니 상품 id")
+    @DeleteMapping("/{cartProductId}")
+    public Mono<Void> removeProductInCart(@PathVariable Long cartProductId) {
+        return cartProductService.removeInCart(cartProductId);
     }
 
 

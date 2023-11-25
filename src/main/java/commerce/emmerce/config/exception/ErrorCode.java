@@ -13,6 +13,9 @@ public enum ErrorCode {
 
     // Auth
     ACCESS_TOKEN_NOT_VALIDATE(HttpStatus.BAD_REQUEST.value(), "토큰이 유효하지 않습니다."),
+    ACCESS_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST.value(), "만료된 토큰입니다."),
+    ACCESS_TOKEN_UNSUPPORTED(HttpStatus.BAD_REQUEST.value(), "지원하지 않는 토큰입니다."),
+    ACCESS_TOKEN_CLAIM_EMPTY(HttpStatus.BAD_REQUEST.value(), "JWT 클레임 문자열이 비었습니다."),
     REFRESH_TOKEN_NOT_VALIDATE(HttpStatus.BAD_REQUEST.value(), "리프레시 토큰이 유효하지 않습니다."),
     REFRESH_TOKEN_NOT_MATCHED(HttpStatus.BAD_REQUEST.value(), "리프레시 토큰이 일치하지 않습니다."),
 
@@ -21,7 +24,10 @@ public enum ErrorCode {
     NAME_ALREADY_EXIST(HttpStatus.BAD_REQUEST.value(), "이미 존재하는 아이디입니다."),
     PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST.value(), "비밀번호가 일치하지 않습니다."),
 
-    // ORDER
+    // CartProduct
+    CART_PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "장바구니에서 상품을 찾을 수 없습니다."),
+
+    // Order
     CANCELED_ORDER(HttpStatus.BAD_REQUEST.value(), "이미 취소된 주문입니다."),
     ING_ORDER(HttpStatus.BAD_REQUEST.value(), "진행중인 주문입니다."),
     ORDER_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "해당 주문을 찾을 수 없습니다."),
