@@ -1,25 +1,6 @@
 stages:
-  - build
   - package
   - deploy
-
-build:
-  image: openjdk:17-alpine
-  stage: build
-  before_script:
-    - chmod +x gradlew
-    - set +x && echo "$APPLICATION_YML" > application.yml && set -x
-  script:
-    - ./gradlew clean
-    - ./gradlew build -x test
-  artifacts:
-    paths:
-      - build/libs/*.jar
-      - application.yml
-  only:
-    - master
-  tags:
-    - dev
 
 package:
   image: docker:latest
@@ -29,7 +10,8 @@ package:
   before_script:
     - echo $DOCKER_HUB_PASSWORD | docker login -u $DOCKER_HUB_ID --password-stdin
   script:
-    - docker build --build-arg JAR_FILE=build/libs/*.jar --build-arg YML_FILE=application.yml -t $DOCKER_HUB_USER/$IMAGE_NAME .
+    # Docker 이미지 빌드
+    - docker build -t $DOCKER_HUB_USER/$IMAGE_NAME .
     - docker push $DOCKER_HUB_USER/$IMAGE_NAME
   after_script:
     - docker logout
