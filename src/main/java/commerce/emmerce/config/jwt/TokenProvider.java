@@ -1,5 +1,7 @@
 package commerce.emmerce.config.jwt;
 
+import commerce.emmerce.config.exception.ErrorCode;
+import commerce.emmerce.config.exception.GlobalException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -131,14 +133,17 @@ public class TokenProvider {
                 return true;
             } catch (SecurityException | MalformedJwtException e) {
                 log.info("유효하지 않은 토큰입니다.", e);
+                throw new GlobalException(ErrorCode.ACCESS_TOKEN_NOT_VALIDATE);
             } catch (ExpiredJwtException e){
                 log.info("만료된 토큰입니다.", e);
+                throw new GlobalException(ErrorCode.ACCESS_TOKEN_EXPIRED);
             } catch (UnsupportedJwtException e){
                 log.info("지원하지 않는 토큰입니다.", e);
+                throw new GlobalException(ErrorCode.ACCESS_TOKEN_UNSUPPORTED);
             } catch (IllegalArgumentException e){
                 log.info("JWT 클레임 문자열이 비었습니다.", e);
+                throw new GlobalException(ErrorCode.ACCESS_TOKEN_CLAIM_EMPTY);
             }
-            return false;
         });
     }
 
