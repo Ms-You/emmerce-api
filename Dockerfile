@@ -1,17 +1,26 @@
-# base-image
+# 빌드 단계
+FROM openjdk:17-jdk-alpine as builder
+
+# 소스 코드 복사
+WORKDIR /app
+COPY . .
+
+# 애플리케이션 빌드
+RUN chmod +x gradlew
+RUN ./gradlew clean build -x test
+RUN mv build/libs/*.jar app.jar
+
+# 패키징 단계
 FROM openjdk:17-jdk-alpine
 
-# application jar file and yml file
-ARG JAR_FILE
-ARG YML_FILE
+WORKDIR /app
 
-# add jar file to container
-COPY ${JAR_FILE} app.jar
-# add application.yml file to container
-COPY ${YML_FILE} /application.yml
+# 빌드 단계에서 생성된 JAR 파일 복사
+COPY --from=builder /app/app.jar ./app.jar
+COPY --from=builder /app/application.yml ./application.yml
 
-# expose port
+# 포트 열기
 EXPOSE 8088
 
-# run jar file
+# 애플리케이션 실행
 ENTRYPOINT ["java", "-jar", "-Dspring.config.location=file:/application.yml", "app.jar"]
