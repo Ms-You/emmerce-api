@@ -15,10 +15,8 @@ public class CategoryRepository {
 
     public Mono<Void> save(Category category) {
         String insertQuery = """
-                insert into category (tier, name, code, parent_code) 
+                insert into category (tier, name, code, parent_code)
                 values (:tier, :name, :code, :parentCode)
-                on conflict (code) do update
-                set tier = :tier, name = :name, parent_code = :parentCode
                 """;
 
         String updateQuery = """
@@ -44,7 +42,7 @@ public class CategoryRepository {
 
     public Flux<Category> findAll() {
         String query = """
-                select * 
+                select *
                 from category c
                 """;
         return databaseClient.sql(query)

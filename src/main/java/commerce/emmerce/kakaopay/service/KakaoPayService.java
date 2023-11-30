@@ -50,9 +50,9 @@ public class KakaoPayService {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("cid", cid);
         params.add("tax_free_amount", String.valueOf(0));    // 상품 비과세 금액
-        params.add("approval_url", "http://localhost:8088/payment/success?orderId=" + payReq.getOrderId());   // 성공 시 redirect url
-        params.add("cancel_url", "http://localhost:8088/payment/cancel"); // 취소 시 redirect url
-        params.add("fail_url", "http://localhost:8088/payment/fail");   // 실패 시 redirect url
+        params.add("approval_url", "http://localhost:3000/payment/success?orderId=" + payReq.getOrderId());   // 성공 시 redirect url
+        params.add("cancel_url", "http://localhost:3000/payment/cancel"); // 취소 시 redirect url
+        params.add("fail_url", "http://localhost:3000/payment/fail");   // 실패 시 redirect url
 
         return orderRepository.findById(payReq.getOrderId())
                 .flatMap(order -> {
@@ -146,7 +146,7 @@ public class KakaoPayService {
      */
     private Payment convertToPayment(KakaoPayDTO.ApproveResp approveResp) {
         CardInfo cardInfo = approveResp.getCard_info();
-        System.out.println("코프: " + cardInfo.getPurchase_corp());
+
         return Payment.builder()
                 .aid(approveResp.getAid())
                 .tid(approveResp.getTid())
