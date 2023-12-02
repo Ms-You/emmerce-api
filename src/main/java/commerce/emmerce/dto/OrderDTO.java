@@ -59,6 +59,9 @@ public class OrderDTO {
         private String name;
         private String titleImg;
         private String brand;
+        private Integer originalPrice;
+        private Integer discountPrice;
+        private Integer quantity;
     }
 
 

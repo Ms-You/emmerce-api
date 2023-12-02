@@ -116,4 +116,19 @@ public class ReviewRepository {
                 .map(result -> (Long) result.get("count"));
     }
 
+    public Mono<Long> findByMemberAndProduct(Long memberId, Long productId) {
+        String query = """
+                select count(*) as count
+                from review r
+                where r.member_id = :memberId
+                    and r.product_id = :productId
+                """;
+
+        return databaseClient.sql(query)
+                .bind("memberId", memberId)
+                .bind("productId", productId)
+                .fetch().one()
+                .map(result -> (Long) result.get("count"));
+    }
+
 }

@@ -38,7 +38,11 @@ public enum ErrorCode {
     ORDER_MEMBER_NOT_MATCHED(HttpStatus.BAD_REQUEST.value(), "주문자가 일치하지 않습니다."),
 
     // Review
-    AFTER_DELIVERY(HttpStatus.BAD_REQUEST.value(), "배송이 완료된 다음에 작성해주세요."),
+    AFTER_DELIVERY_COMPLETE(HttpStatus.BAD_REQUEST.value(), "배송이 완료된 다음에 작성해주세요."),
+    DELIVERY_CANCELED(HttpStatus.BAD_REQUEST.value(), "배송이 취소되어 리뷰를 작성할 수 없습니다."),
+    AFTER_ORDER_COMPLETE(HttpStatus.BAD_REQUEST.value(), "주문이 완료된 다음에 작성해주세요."),
+    ORDER_CANCELED(HttpStatus.BAD_REQUEST.value(), "주문이 취소되어 리뷰를 작성할 수 없습니다."),
+    ALREADY_WROTE(HttpStatus.BAD_REQUEST.value(), "작성한 리뷰가 존재합니다."),
     ;
 
     private final int status;

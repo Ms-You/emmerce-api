@@ -125,12 +125,17 @@ public class OrderService {
     public Flux<OrderDTO.OrderResp> findOrders(Member member) {
         return orderRepository.findByMemberId(member.getMemberId())
                 .flatMap(order -> findOrderProducts(order)
-                        .map(product -> OrderDTO.OrderProductResp.builder()
-                                .productId(product.getProductId())
-                                .name(product.getName())
-                                .titleImg(product.getTitleImg())
-                                .brand(product.getBrand())
-                                .build()
+                        .flatMap(orderProduct -> findProducts(orderProduct)
+                                .map(product -> OrderDTO.OrderProductResp.builder()
+                                        .productId(product.getProductId())
+                                        .name(product.getName())
+                                        .titleImg(product.getTitleImg())
+                                        .brand(product.getBrand())
+                                        .originalPrice(product.getOriginalPrice())
+                                        .discountPrice(product.getDiscountPrice())
+                                        .quantity(orderProduct.getTotalCount())
+                                        .build()
+                                )
                         ).collectList()
                         .map(orderProductResps -> OrderDTO.OrderResp.builder()
                                 .orderId(order.getOrderId())
@@ -146,9 +151,8 @@ public class OrderService {
      * @param order
      * @return
      */
-    public Flux<Product> findOrderProducts(Order order) {
-        return orderProductRepository.findAllByOrderId(order.getOrderId())
-                .flatMap(orderProduct -> findProducts(orderProduct));
+    public Flux<OrderProduct> findOrderProducts(Order order) {
+        return orderProductRepository.findAllByOrderId(order.getOrderId());
     }
 
     /**
