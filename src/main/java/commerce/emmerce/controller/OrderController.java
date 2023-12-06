@@ -26,7 +26,16 @@ public class OrderController {
     }
 
 
-    @Operation(summary = "주문 내역 조회", description = "현재 로그인 한 사용자의 주문 내역을 조회합니다.")
+    @Operation(summary = "주문 내역 단건 조회", description = "현재 로그인 한 사용자의 주문 내역 단건을 조회합니다.")
+    @Parameter(name = "oderId", description = "조회할 주문 id")
+    @GetMapping("/{orderId}")
+    public Mono<OrderDTO.OrderResp> findOrder(@PathVariable Long orderId) {
+        return orderService.getOrderInfo(orderId);
+    }
+
+
+
+    @Operation(summary = "주문 내역 전체 조회", description = "현재 로그인 한 사용자의 주문 내역 전체를 조회합니다.")
     @GetMapping
     public Flux<OrderDTO.OrderResp> orderList() {
         return orderService.getOrderList();

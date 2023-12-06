@@ -60,22 +60,9 @@ public class OrderService {
                         .then(createDeliveryForOrder(savedOrder, orderReq.getDeliveryReq()))
                         .then(findOrderProducts(savedOrder)
                                 .flatMap(orderProduct -> findProducts(orderProduct)
-                                        .map(product -> OrderDTO.OrderProductResp.builder()
-                                                .productId(product.getProductId())
-                                                .name(product.getName())
-                                                .titleImg(product.getTitleImg())
-                                                .brand(product.getBrand())
-                                                .originalPrice(product.getOriginalPrice())
-                                                .discountPrice(product.getDiscountPrice())
-                                                .quantity(orderProduct.getTotalCount())
-                                                .build())
+                                        .map(product -> OrderDTO.OrderProductResp.transfer(product, orderProduct))
                                 ).collectList()
-                                .map(orderProductResps -> OrderDTO.OrderResp.builder()
-                                        .orderId(savedOrder.getOrderId())
-                                        .orderDate(savedOrder.getOrderDate())
-                                        .orderStatus(savedOrder.getOrderStatus())
-                                        .orderProductRespList(orderProductResps)
-                                        .build())
+                                .map(orderProductRespList -> OrderDTO.OrderResp.transfer(savedOrder, orderProductRespList))
                         )
                 );
     }
@@ -124,7 +111,22 @@ public class OrderService {
     }
     //== 주문 생성 로직 끝 ==//
 
-    //== 주문 조회 로직 시작 ==//
+    /**
+     * 주문 단건 조회
+     * @param orderId
+     * @return
+     */
+    public Mono<OrderDTO.OrderResp> getOrderInfo(Long orderId) {
+        return orderRepository.findById(orderId)
+                .flatMap(order -> findOrderProducts(order)
+                        .flatMap(orderProduct -> findProducts(orderProduct)
+                                .map(product -> OrderDTO.OrderProductResp.transfer(product, orderProduct))
+                        ).collectList()
+                        .map(orderProductRespList -> OrderDTO.OrderResp.transfer(order, orderProductRespList))
+                );
+    }
+
+    //== 주문 전체 조회 로직 시작 ==//
     /**
      * 주문 목록 조회
      * @return
@@ -144,24 +146,10 @@ public class OrderService {
         return orderRepository.findByMemberId(member.getMemberId())
                 .flatMap(order -> findOrderProducts(order)
                         .flatMap(orderProduct -> findProducts(orderProduct)
-                                .map(product -> OrderDTO.OrderProductResp.builder()
-                                        .productId(product.getProductId())
-                                        .name(product.getName())
-                                        .titleImg(product.getTitleImg())
-                                        .brand(product.getBrand())
-                                        .originalPrice(product.getOriginalPrice())
-                                        .discountPrice(product.getDiscountPrice())
-                                        .quantity(orderProduct.getTotalCount())
-                                        .build()
-                                )
+                                .map(product -> OrderDTO.OrderProductResp.transfer(product, orderProduct))
                         ).collectList()
-                        .map(orderProductResps -> OrderDTO.OrderResp.builder()
-                                .orderId(order.getOrderId())
-                                .orderDate(order.getOrderDate())
-                                .orderStatus(order.getOrderStatus())
-                                .orderProductRespList(orderProductResps)
-                                .build())
-                );
+                        .map(orderProductRespList -> OrderDTO.OrderResp.transfer(order, orderProductRespList)
+                        ));
     }
 
     /**
@@ -181,6 +169,6 @@ public class OrderService {
     public Mono<Product> findProducts(OrderProduct orderProduct) {
         return productRepository.findById(orderProduct.getProductId());
     }
-    //== 주문 조회 로직 끝 ==//
+    //== 주문 전체 조회 로직 끝 ==//
 
 }
