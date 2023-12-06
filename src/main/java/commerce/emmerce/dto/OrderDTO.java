@@ -33,14 +33,6 @@ public class OrderDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class OrderInfoResp {
-        private Long orderId;
-    }
-
-
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
     @Builder
     public static class OrderResp {
         private Long orderId;
