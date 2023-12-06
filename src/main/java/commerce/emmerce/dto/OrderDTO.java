@@ -41,13 +41,15 @@ public class OrderDTO {
         private Long orderId;
         private LocalDateTime orderDate;
         private OrderStatus orderStatus;
+        private boolean reviewStatus;
         private List<OrderProductResp> orderProductRespList;
 
-        public static OrderResp transfer(Order order, List<OrderProductResp> orderProductRespList) {
+        public static OrderResp transfer(Order order, List<OrderProductResp> orderProductRespList, Boolean reviewStatus) {
             return OrderResp.builder()
                     .orderId(order.getOrderId())
                     .orderDate(order.getOrderDate())
                     .orderStatus(order.getOrderStatus())
+                    .reviewStatus(reviewStatus)
                     .orderProductRespList(orderProductRespList)
                     .build();
         }

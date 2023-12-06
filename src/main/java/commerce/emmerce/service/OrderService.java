@@ -1,9 +1,12 @@
 package commerce.emmerce.service;
 
 import commerce.emmerce.config.SecurityUtil;
+import commerce.emmerce.config.exception.ErrorCode;
+import commerce.emmerce.config.exception.GlobalException;
 import commerce.emmerce.domain.*;
 import commerce.emmerce.dto.DeliveryDTO;
 import commerce.emmerce.dto.OrderDTO;
+import commerce.emmerce.dto.ReviewDTO;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +28,7 @@ public class OrderService {
     private final OrderProductRepository orderProductRepository;
     private final ProductRepository productRepository;
     private final DeliveryRepository deliveryRepository;
+    private final ReviewRepository reviewRepository;
 
     private Mono<Member> findCurrentMember() {
         return SecurityUtil.getCurrentMemberName()
@@ -62,7 +66,8 @@ public class OrderService {
                                 .flatMap(orderProduct -> findProducts(orderProduct)
                                         .map(product -> OrderDTO.OrderProductResp.transfer(product, orderProduct))
                                 ).collectList()
-                                .map(orderProductRespList -> OrderDTO.OrderResp.transfer(savedOrder, orderProductRespList))
+                                .flatMap(orderProductRespList -> checkReviewWrote(member, orderProductRespList.get(0).getProductId())
+                                        .map(reviewStatus -> OrderDTO.OrderResp.transfer(savedOrder, orderProductRespList, reviewStatus)))
                         )
                 );
     }
@@ -117,12 +122,16 @@ public class OrderService {
      * @return
      */
     public Mono<OrderDTO.OrderResp> getOrderInfo(Long orderId) {
-        return orderRepository.findById(orderId)
-                .flatMap(order -> findOrderProducts(order)
-                        .flatMap(orderProduct -> findProducts(orderProduct)
-                                .map(product -> OrderDTO.OrderProductResp.transfer(product, orderProduct))
-                        ).collectList()
-                        .map(orderProductRespList -> OrderDTO.OrderResp.transfer(order, orderProductRespList))
+        return findCurrentMember()
+                .flatMap(member -> orderRepository.findById(orderId)
+                        .flatMap(order -> findOrderProducts(order)
+                                .flatMap(orderProduct -> findProducts(orderProduct)
+                                        .map(product -> OrderDTO.OrderProductResp.transfer(product, orderProduct))
+                                ).collectList()
+                                .flatMap(orderProductRespList -> checkReviewWrote(member, orderProductRespList.get(0).getProductId())
+                                        .map(reviewStatus -> OrderDTO.OrderResp.transfer(order, orderProductRespList, reviewStatus))
+                                )
+                        )
                 );
     }
 
@@ -148,7 +157,8 @@ public class OrderService {
                         .flatMap(orderProduct -> findProducts(orderProduct)
                                 .map(product -> OrderDTO.OrderProductResp.transfer(product, orderProduct))
                         ).collectList()
-                        .map(orderProductRespList -> OrderDTO.OrderResp.transfer(order, orderProductRespList)
+                        .flatMap(orderProductRespList -> checkReviewWrote(member, orderProductRespList.get(0).getProductId())
+                        .map(reviewStatus -> OrderDTO.OrderResp.transfer(order, orderProductRespList, reviewStatus))
                         ));
     }
 
@@ -170,5 +180,16 @@ public class OrderService {
         return productRepository.findById(orderProduct.getProductId());
     }
     //== 주문 전체 조회 로직 끝 ==//
+
+    /**
+     * 리뷰 작성 여부 조회
+     * @param member
+     * @param productId
+     * @return
+     */
+    public Mono<Boolean> checkReviewWrote(Member member, Long productId) {
+        return reviewRepository.findByMemberAndProduct(member.getMemberId(), productId)
+                .map(count -> count != 0);
+    }
 
 }
