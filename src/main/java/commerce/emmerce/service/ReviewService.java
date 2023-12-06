@@ -4,10 +4,7 @@ import commerce.emmerce.config.s3.S3FileUploader;
 import commerce.emmerce.config.SecurityUtil;
 import commerce.emmerce.config.exception.ErrorCode;
 import commerce.emmerce.config.exception.GlobalException;
-import commerce.emmerce.domain.DeliveryStatus;
-import commerce.emmerce.domain.Member;
-import commerce.emmerce.domain.OrderProduct;
-import commerce.emmerce.domain.Review;
+import commerce.emmerce.domain.*;
 import commerce.emmerce.dto.PageResponseDTO;
 import commerce.emmerce.dto.ReviewDTO;
 import commerce.emmerce.repository.*;
@@ -28,6 +25,7 @@ public class ReviewService {
 
     private final S3FileUploader s3FileUploader;
     private final MemberRepository memberRepository;
+    private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
     private final ReviewRepository reviewRepository;
     private final DeliveryRepository deliveryRepository;
@@ -52,6 +50,8 @@ public class ReviewService {
                             Flux<FilePart> reviewImages) {
         return findCurrentMember()
                 .flatMap(member -> getOrderProduct(member, reviewReqMono))
+                .flatMap(member -> checkOrderStatus(member, reviewReqMono))
+                .flatMap(member -> checkAlreadyWrote(member, reviewReqMono))
                 .flatMap(member -> writeReview(member, reviewReqMono, reviewImages));
     }
 
@@ -76,9 +76,55 @@ public class ReviewService {
      */
     public Mono<Member> checkDeliveryStatus(Member member, OrderProduct orderProduct) {
         return deliveryRepository.findByOrderId(orderProduct.getOrderId())
-                .filter(delivery -> delivery.getDeliveryStatus().equals(DeliveryStatus.COMPLETE))
-                .switchIfEmpty(Mono.error(new GlobalException(ErrorCode.AFTER_DELIVERY)))
-                .thenReturn(member);
+                .flatMap(delivery -> {
+                    DeliveryStatus status = delivery.getDeliveryStatus();
+                    if(status.equals(DeliveryStatus.COMPLETE)) {
+                        return Mono.just(member);
+                    } else if(status.equals(DeliveryStatus.CANCEL)) {
+                        return Mono.error(new GlobalException(ErrorCode.DELIVERY_CANCELED));
+                    } else {
+                        return Mono.error(new GlobalException(ErrorCode.AFTER_DELIVERY_COMPLETE));
+                    }
+                });
+    }
+
+    /**
+     * 주문 상태 조회
+     * @param member
+     * @param reviewReqMono
+     * @return
+     */
+    public Mono<Member> checkOrderStatus(Member member, Mono<ReviewDTO.ReviewReq> reviewReqMono) {
+        return reviewReqMono.flatMap(reviewReq -> orderRepository.findById(reviewReq.getOrderId())
+                .flatMap(order -> {
+                    OrderStatus status = order.getOrderStatus();
+                    if(status.equals(OrderStatus.COMPLETE)) {
+                        return Mono.just(member);
+                    } else if(status.equals(OrderStatus.CANCEL)) {
+                        return Mono.error(new GlobalException(ErrorCode.ORDER_CANCELED));
+                    } else {
+                        return Mono.error(new GlobalException(ErrorCode.AFTER_ORDER_COMPLETE));
+                    }
+                })
+        );
+    }
+
+    /**
+     * 리뷰 작성 여부 조회
+     * @param member
+     * @param reviewReqMono
+     * @return
+     */
+    public Mono<Member> checkAlreadyWrote(Member member, Mono<ReviewDTO.ReviewReq> reviewReqMono) {
+        return reviewReqMono.flatMap(reviewReq -> reviewRepository.findByMemberAndProduct(member.getMemberId(), reviewReq.getProductId())
+                .flatMap(count -> {
+                    if (count == 0) {
+                        return Mono.just(member);
+                    } else {
+                        return Mono.error(new GlobalException(ErrorCode.ALREADY_WROTE));
+                    }
+                })
+        );
     }
 
     /**

@@ -38,7 +38,7 @@ public class OrderService {
      * @return
      */
     @Transactional
-    public Mono<OrderDTO.OrderInfoResp> startOrder(OrderDTO.OrderReq orderReq) {
+    public Mono<OrderDTO.OrderResp> startOrder(OrderDTO.OrderReq orderReq) {
         return findCurrentMember()
                 .flatMap(member -> makeOrder(member, orderReq));
     }
@@ -49,7 +49,7 @@ public class OrderService {
      * @param orderReq
      * @return
      */
-    private Mono<OrderDTO.OrderInfoResp> makeOrder(Member member, OrderDTO.OrderReq orderReq) {
+    private Mono<OrderDTO.OrderResp> makeOrder(Member member, OrderDTO.OrderReq orderReq) {
         return orderRepository.save(Order.createOrder()
                         .orderDate(LocalDateTime.now())
                         .orderStatus(OrderStatus.ING)
@@ -58,7 +58,25 @@ public class OrderService {
                 .doOnSuccess(savedOrder -> log.info("생성된 order_id: {}", savedOrder.getOrderId()))
                 .flatMap(savedOrder -> saveProductsForOrder(savedOrder, orderReq.getOrderProductList())
                         .then(createDeliveryForOrder(savedOrder, orderReq.getDeliveryReq()))
-                        .thenReturn(new OrderDTO.OrderInfoResp(savedOrder.getOrderId()))
+                        .then(findOrderProducts(savedOrder)
+                                .flatMap(orderProduct -> findProducts(orderProduct)
+                                        .map(product -> OrderDTO.OrderProductResp.builder()
+                                                .productId(product.getProductId())
+                                                .name(product.getName())
+                                                .titleImg(product.getTitleImg())
+                                                .brand(product.getBrand())
+                                                .originalPrice(product.getOriginalPrice())
+                                                .discountPrice(product.getDiscountPrice())
+                                                .quantity(orderProduct.getTotalCount())
+                                                .build())
+                                ).collectList()
+                                .map(orderProductResps -> OrderDTO.OrderResp.builder()
+                                        .orderId(savedOrder.getOrderId())
+                                        .orderDate(savedOrder.getOrderDate())
+                                        .orderStatus(savedOrder.getOrderStatus())
+                                        .orderProductRespList(orderProductResps)
+                                        .build())
+                        )
                 );
     }
 
@@ -125,12 +143,17 @@ public class OrderService {
     public Flux<OrderDTO.OrderResp> findOrders(Member member) {
         return orderRepository.findByMemberId(member.getMemberId())
                 .flatMap(order -> findOrderProducts(order)
-                        .map(product -> OrderDTO.OrderProductResp.builder()
-                                .productId(product.getProductId())
-                                .name(product.getName())
-                                .titleImg(product.getTitleImg())
-                                .brand(product.getBrand())
-                                .build()
+                        .flatMap(orderProduct -> findProducts(orderProduct)
+                                .map(product -> OrderDTO.OrderProductResp.builder()
+                                        .productId(product.getProductId())
+                                        .name(product.getName())
+                                        .titleImg(product.getTitleImg())
+                                        .brand(product.getBrand())
+                                        .originalPrice(product.getOriginalPrice())
+                                        .discountPrice(product.getDiscountPrice())
+                                        .quantity(orderProduct.getTotalCount())
+                                        .build()
+                                )
                         ).collectList()
                         .map(orderProductResps -> OrderDTO.OrderResp.builder()
                                 .orderId(order.getOrderId())
@@ -146,9 +169,8 @@ public class OrderService {
      * @param order
      * @return
      */
-    public Flux<Product> findOrderProducts(Order order) {
-        return orderProductRepository.findAllByOrderId(order.getOrderId())
-                .flatMap(orderProduct -> findProducts(orderProduct));
+    public Flux<OrderProduct> findOrderProducts(Order order) {
+        return orderProductRepository.findAllByOrderId(order.getOrderId());
     }
 
     /**
