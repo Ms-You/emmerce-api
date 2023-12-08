@@ -41,15 +41,13 @@ public class OrderDTO {
         private Long orderId;
         private LocalDateTime orderDate;
         private OrderStatus orderStatus;
-        private boolean reviewStatus;
         private List<OrderProductResp> orderProductRespList;
 
-        public static OrderResp transfer(Order order, List<OrderProductResp> orderProductRespList, Boolean reviewStatus) {
+        public static OrderResp transfer(Order order, List<OrderProductResp> orderProductRespList) {
             return OrderResp.builder()
                     .orderId(order.getOrderId())
                     .orderDate(order.getOrderDate())
                     .orderStatus(order.getOrderStatus())
-                    .reviewStatus(reviewStatus)
                     .orderProductRespList(orderProductRespList)
                     .build();
         }
@@ -68,8 +66,9 @@ public class OrderDTO {
         private Integer originalPrice;
         private Integer discountPrice;
         private Integer quantity;
+        private boolean reviewStatus;
 
-        public static OrderProductResp transfer(Product product, OrderProduct orderProduct) {
+        public static OrderProductResp transfer(Product product, OrderProduct orderProduct, Boolean reviewStatus) {
             return OrderProductResp.builder()
                     .productId(product.getProductId())
                     .name(product.getName())
@@ -78,6 +77,7 @@ public class OrderDTO {
                     .originalPrice(product.getOriginalPrice())
                     .discountPrice(product.getDiscountPrice())
                     .quantity(orderProduct.getTotalCount())
+                    .reviewStatus(reviewStatus)
                     .build();
         }
     }
