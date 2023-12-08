@@ -12,12 +12,12 @@ public enum ErrorCode {
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(), "내부 서버 오류입니다."),
 
     // Auth
-    ACCESS_TOKEN_NOT_VALIDATE(HttpStatus.BAD_REQUEST.value(), "토큰이 유효하지 않습니다."),
-    ACCESS_TOKEN_EXPIRED(HttpStatus.BAD_REQUEST.value(), "만료된 토큰입니다."),
-    ACCESS_TOKEN_UNSUPPORTED(HttpStatus.BAD_REQUEST.value(), "지원하지 않는 토큰입니다."),
-    ACCESS_TOKEN_CLAIM_EMPTY(HttpStatus.BAD_REQUEST.value(), "JWT 클레임 문자열이 비었습니다."),
-    REFRESH_TOKEN_NOT_VALIDATE(HttpStatus.BAD_REQUEST.value(), "리프레시 토큰이 유효하지 않습니다."),
-    REFRESH_TOKEN_NOT_MATCHED(HttpStatus.BAD_REQUEST.value(), "리프레시 토큰이 일치하지 않습니다."),
+    ACCESS_TOKEN_NOT_VALIDATE(600, "토큰이 유효하지 않습니다."),
+    ACCESS_TOKEN_EXPIRED(610, "만료된 토큰입니다."),
+    ACCESS_TOKEN_UNSUPPORTED(620, "지원하지 않는 토큰입니다."),
+    ACCESS_TOKEN_CLAIM_EMPTY(630, "JWT 클레임 문자열이 비었습니다."),
+    REFRESH_TOKEN_NOT_VALIDATE(700, "리프레시 토큰이 유효하지 않습니다."),
+    REFRESH_TOKEN_NOT_MATCHED(710, "리프레시 토큰이 일치하지 않습니다."),
 
     // Member
     MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "존재하지 않는 사용자입니다."),

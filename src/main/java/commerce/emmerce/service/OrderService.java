@@ -64,10 +64,11 @@ public class OrderService {
                         .then(createDeliveryForOrder(savedOrder, orderReq.getDeliveryReq()))
                         .then(findOrderProducts(savedOrder)
                                 .flatMap(orderProduct -> findProducts(orderProduct)
-                                        .map(product -> OrderDTO.OrderProductResp.transfer(product, orderProduct))
+                                        .flatMap(product -> checkReviewWrote(member, product.getProductId())
+                                                .map(reviewStatus -> OrderDTO.OrderProductResp.transfer(product, orderProduct, reviewStatus))
+                                        )
                                 ).collectList()
-                                .flatMap(orderProductRespList -> checkReviewWrote(member, orderProductRespList.get(0).getProductId())
-                                        .map(reviewStatus -> OrderDTO.OrderResp.transfer(savedOrder, orderProductRespList, reviewStatus)))
+                                .map(orderProductRespList -> OrderDTO.OrderResp.transfer(savedOrder, orderProductRespList))
                         )
                 );
     }
@@ -126,11 +127,11 @@ public class OrderService {
                 .flatMap(member -> orderRepository.findById(orderId)
                         .flatMap(order -> findOrderProducts(order)
                                 .flatMap(orderProduct -> findProducts(orderProduct)
-                                        .map(product -> OrderDTO.OrderProductResp.transfer(product, orderProduct))
+                                        .flatMap(product -> checkReviewWrote(member, product.getProductId())
+                                                .map(reviewStatus -> OrderDTO.OrderProductResp.transfer(product, orderProduct, reviewStatus))
+                                        )
                                 ).collectList()
-                                .flatMap(orderProductRespList -> checkReviewWrote(member, orderProductRespList.get(0).getProductId())
-                                        .map(reviewStatus -> OrderDTO.OrderResp.transfer(order, orderProductRespList, reviewStatus))
-                                )
+                                .map(orderProductRespList -> OrderDTO.OrderResp.transfer(order, orderProductRespList))
                         )
                 );
     }
@@ -155,11 +156,12 @@ public class OrderService {
         return orderRepository.findByMemberId(member.getMemberId())
                 .flatMap(order -> findOrderProducts(order)
                         .flatMap(orderProduct -> findProducts(orderProduct)
-                                .map(product -> OrderDTO.OrderProductResp.transfer(product, orderProduct))
+                                .flatMap(product -> checkReviewWrote(member, product.getProductId())
+                                        .map(reviewStatus -> OrderDTO.OrderProductResp.transfer(product, orderProduct, reviewStatus))
+                                )
                         ).collectList()
-                        .flatMap(orderProductRespList -> checkReviewWrote(member, orderProductRespList.get(0).getProductId())
-                        .map(reviewStatus -> OrderDTO.OrderResp.transfer(order, orderProductRespList, reviewStatus))
-                        ));
+                        .map(orderProductRespList -> OrderDTO.OrderResp.transfer(order, orderProductRespList))
+                );
     }
 
     /**
