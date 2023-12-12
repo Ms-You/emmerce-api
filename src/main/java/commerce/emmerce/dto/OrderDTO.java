@@ -1,9 +1,6 @@
 package commerce.emmerce.dto;
 
-import commerce.emmerce.domain.Order;
-import commerce.emmerce.domain.OrderProduct;
-import commerce.emmerce.domain.OrderStatus;
-import commerce.emmerce.domain.Product;
+import commerce.emmerce.domain.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,7 +21,6 @@ public class OrderDTO {
         private DeliveryDTO.DeliveryReq deliveryReq;
     }
 
-
     @Getter
     @NoArgsConstructor
     public static class OrderProductReq {
@@ -32,6 +28,13 @@ public class OrderDTO {
         private Integer totalCount;
     }
 
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class OrderCreateResp {
+        private Long orderId;
+    }
 
     @Getter
     @NoArgsConstructor
@@ -53,7 +56,6 @@ public class OrderDTO {
         }
     }
 
-
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
@@ -67,8 +69,9 @@ public class OrderDTO {
         private Integer discountPrice;
         private Integer quantity;
         private boolean reviewStatus;
+        private DeliveryStatus deliveryStatus;
 
-        public static OrderProductResp transfer(Product product, OrderProduct orderProduct, Boolean reviewStatus) {
+        public static OrderProductResp transfer(Product product, OrderProduct orderProduct, Boolean reviewStatus, DeliveryStatus deliveryStatus) {
             return OrderProductResp.builder()
                     .productId(product.getProductId())
                     .name(product.getName())
@@ -78,6 +81,7 @@ public class OrderDTO {
                     .discountPrice(product.getDiscountPrice())
                     .quantity(orderProduct.getTotalCount())
                     .reviewStatus(reviewStatus)
+                    .deliveryStatus(deliveryStatus)
                     .build();
         }
     }

@@ -1,12 +1,9 @@
 package commerce.emmerce.service;
 
 import commerce.emmerce.config.SecurityUtil;
-import commerce.emmerce.config.exception.ErrorCode;
-import commerce.emmerce.config.exception.GlobalException;
 import commerce.emmerce.domain.*;
 import commerce.emmerce.dto.DeliveryDTO;
 import commerce.emmerce.dto.OrderDTO;
-import commerce.emmerce.dto.ReviewDTO;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +39,7 @@ public class OrderService {
      * @return
      */
     @Transactional
-    public Mono<OrderDTO.OrderResp> startOrder(OrderDTO.OrderReq orderReq) {
+    public Mono<OrderDTO.OrderCreateResp> startOrder(OrderDTO.OrderReq orderReq) {
         return findCurrentMember()
                 .flatMap(member -> makeOrder(member, orderReq));
     }
@@ -53,7 +50,7 @@ public class OrderService {
      * @param orderReq
      * @return
      */
-    private Mono<OrderDTO.OrderResp> makeOrder(Member member, OrderDTO.OrderReq orderReq) {
+    private Mono<OrderDTO.OrderCreateResp> makeOrder(Member member, OrderDTO.OrderReq orderReq) {
         return orderRepository.save(Order.createOrder()
                         .orderDate(LocalDateTime.now())
                         .orderStatus(OrderStatus.ING)
@@ -61,14 +58,11 @@ public class OrderService {
                         .build())
                 .doOnSuccess(savedOrder -> log.info("생성된 order_id: {}", savedOrder.getOrderId()))
                 .flatMap(savedOrder -> saveProductsForOrder(savedOrder, orderReq.getOrderProductList())
-                        .then(createDeliveryForOrder(savedOrder, orderReq.getDeliveryReq()))
-                        .then(findOrderProducts(savedOrder)
-                                .flatMap(orderProduct -> findProducts(orderProduct)
-                                        .flatMap(product -> checkReviewWrote(member, product.getProductId())
-                                                .map(reviewStatus -> OrderDTO.OrderProductResp.transfer(product, orderProduct, reviewStatus))
-                                        )
-                                ).collectList()
-                                .map(orderProductRespList -> OrderDTO.OrderResp.transfer(savedOrder, orderProductRespList))
+                        .then(orderProductRepository.findAllByOrderId(savedOrder.getOrderId())
+                                .flatMap(orderProduct -> createDeliveryForOrder(savedOrder, orderReq.getDeliveryReq(), orderProduct.getProductId()))
+                                .then())
+                        .then(
+                                Mono.just(new OrderDTO.OrderCreateResp(savedOrder.getOrderId()))
                         )
                 );
     }
@@ -103,7 +97,7 @@ public class OrderService {
      * @param deliveryReq
      * @return
      */
-    private Mono<Void> createDeliveryForOrder(Order order, DeliveryDTO.DeliveryReq deliveryReq) {
+    private Mono<Void> createDeliveryForOrder(Order order, DeliveryDTO.DeliveryReq deliveryReq, Long productId) {
         return deliveryRepository.save(Delivery.createDelivery()
                 .name(deliveryReq.getName())
                 .tel(deliveryReq.getTel())
@@ -113,6 +107,7 @@ public class OrderService {
                 .zipcode(deliveryReq.getZipcode())
                 .deliveryStatus(DeliveryStatus.READY)
                 .orderId(order.getOrderId())
+                .productId(productId)
                 .build());
     }
     //== 주문 생성 로직 끝 ==//
@@ -127,8 +122,10 @@ public class OrderService {
                 .flatMap(member -> orderRepository.findById(orderId)
                         .flatMap(order -> findOrderProducts(order)
                                 .flatMap(orderProduct -> findProducts(orderProduct)
-                                        .flatMap(product -> checkReviewWrote(member, product.getProductId())
-                                                .map(reviewStatus -> OrderDTO.OrderProductResp.transfer(product, orderProduct, reviewStatus))
+                                        .flatMap(product -> deliveryRepository.findByOrderIdAndProductId(order.getOrderId(), product.getProductId())
+                                                .flatMap(delivery -> checkReviewWrote(member, product.getProductId())
+                                                        .map(reviewStatus -> OrderDTO.OrderProductResp.transfer(product, orderProduct, reviewStatus, delivery.getDeliveryStatus()))
+                                                )
                                         )
                                 ).collectList()
                                 .map(orderProductRespList -> OrderDTO.OrderResp.transfer(order, orderProductRespList))
@@ -156,8 +153,10 @@ public class OrderService {
         return orderRepository.findByMemberId(member.getMemberId())
                 .flatMap(order -> findOrderProducts(order)
                         .flatMap(orderProduct -> findProducts(orderProduct)
-                                .flatMap(product -> checkReviewWrote(member, product.getProductId())
-                                        .map(reviewStatus -> OrderDTO.OrderProductResp.transfer(product, orderProduct, reviewStatus))
+                                .flatMap(product -> deliveryRepository.findByOrderIdAndProductId(order.getOrderId(), product.getProductId())
+                                        .flatMap(delivery -> checkReviewWrote(member, product.getProductId())
+                                                .map(reviewStatus -> OrderDTO.OrderProductResp.transfer(product, orderProduct, reviewStatus, delivery.getDeliveryStatus()))
+                                        )
                                 )
                         ).collectList()
                         .map(orderProductRespList -> OrderDTO.OrderResp.transfer(order, orderProductRespList))
