@@ -30,9 +30,12 @@ public class Delivery {
 
     private Long orderId;
 
+    private Long productId;
+
 
     @Builder(builderMethodName = "createDelivery")
-    private Delivery(Long deliveryId, String name, String tel, String email, String city, String street, String zipcode, DeliveryStatus deliveryStatus, Long orderId) {
+    private Delivery(Long deliveryId, String name, String tel, String email, String city, String street,
+                     String zipcode, DeliveryStatus deliveryStatus, Long orderId, Long productId) {
         this.deliveryId = deliveryId;
         this.name = name;
         this.tel = tel;
@@ -42,6 +45,7 @@ public class Delivery {
         this.zipcode = zipcode;
         this.deliveryStatus = deliveryStatus;
         this.orderId = orderId;
+        this.productId = productId;
     }
 
     public void updateStatus(DeliveryStatus deliveryStatus) {

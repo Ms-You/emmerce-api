@@ -15,14 +15,14 @@ public class DeliveryRepository {
 
     public Mono<Void> save(Delivery delivery) {
         String insertQuery = """
-                insert into delivery (name, tel, email, city, street, zipcode, delivery_status, order_id)
-                values (:name, :tel, :email, :city, :street, :zipcode, :deliveryStatus, :orderId)
+                insert into delivery (name, tel, email, city, street, zipcode, delivery_status, order_id, product_id)
+                values (:name, :tel, :email, :city, :street, :zipcode, :deliveryStatus, :orderId, :productId)
                 """;
 
         String updateQuery = """
                 update delivery
-                set name = :name, tel = :tel, email = :email, city = :city, street = :street,
-                    zipcode = :zipcode, delivery_status = :deliveryStatus
+                set name = :name, tel = :tel, email = :email, city = :city, street = :street, zipcode = :zipcode,
+                delivery_status = :deliveryStatus, order_id = :orderId, product_id = :productId
                 where delivery_id = :deliveryId
                 """;
 
@@ -36,7 +36,8 @@ public class DeliveryRepository {
                 .bind("street", delivery.getStreet())
                 .bind("zipcode", delivery.getZipcode())
                 .bind("deliveryStatus", delivery.getDeliveryStatus().name())
-                .bind("orderId", delivery.getOrderId());
+                .bind("orderId", delivery.getOrderId())
+                .bind("productId", delivery.getProductId());
 
         if(delivery.getDeliveryId() != null) {
             executeSpec = executeSpec.bind("deliveryId", delivery.getDeliveryId());
@@ -45,15 +46,17 @@ public class DeliveryRepository {
         return executeSpec.then();
     }
 
-    public Mono<Delivery> findByOrderId(Long orderId) {
+    public Mono<Delivery> findByOrderIdAndProductId(Long orderId, Long productId) {
         String query = """
                 select *
                 from delivery d
                 where d.order_id = :orderId
+                    and d.product_id = :productId
                 """;
 
         return databaseClient.sql(query)
                 .bind("orderId", orderId)
+                .bind("productId", productId)
                 .fetch().one()
                 .map(row -> Delivery.createDelivery()
                         .deliveryId((Long) row.get("delivery_id"))
@@ -65,13 +68,14 @@ public class DeliveryRepository {
                         .zipcode((String) row.get("zipcode"))
                         .deliveryStatus(DeliveryStatus.valueOf((String) row.get("delivery_status")))
                         .orderId((Long) row.get("order_id"))
+                        .productId((Long) row.get("product_id"))
                         .build());
     }
 
     public Mono<Long> updateStatus(Long deliveryId, DeliveryStatus deliveryStatus) {
         String query = """
                 update delivery
-                set delivery_status = :deliveryStatus 
+                set delivery_status = :deliveryStatus
                 where delivery_id = :deliveryId
                 """;
 
