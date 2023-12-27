@@ -1,5 +1,6 @@
 package commerce.emmerce.dto;
 
+import commerce.emmerce.domain.Ratings;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +16,7 @@ public class ReviewDTO {
     public static class ReviewReq {
         private String title;
         private String description;
-        private Double starScore;
+        private Ratings ratings;
         private Long orderId;
         private Long productId;
     }
@@ -29,7 +30,7 @@ public class ReviewDTO {
         private Long reviewId;
         private String title;
         private String description;
-        private Double starScore;
+        private Ratings ratings;
         private List<String> reviewImgList;
         private LocalDate writeDate;
         private Long memberId;

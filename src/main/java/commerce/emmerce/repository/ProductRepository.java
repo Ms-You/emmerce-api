@@ -21,16 +21,16 @@ public class ProductRepository {
     public Mono<Void> save(Product product) {
         String insertQuery = """
                 insert into product (name, detail, original_price, discount_price, discount_rate, stock_quantity,
-                                    star_score, title_img, detail_img_list, brand, enroll_time)
+                                    star_score, total_reviews, title_img, detail_img_list, brand, enroll_time)
                 values (:name, :detail, :originalPrice, :discountPrice, :discountRate, :stockQuantity,
-                        :starScore, :titleImg, :detailImgList, :brand, :enrollTime)
+                        :starScore, :totalReviews, :titleImg, :detailImgList, :brand, :enrollTime)
                 """;
 
         String updateQuery = """
                 update product
                 set name = :name, detail = :detail, original_price = :originalPrice,
                     discount_price = :discountPrice, discount_rate = :discountRate, stock_quantity = :stockQuantity,
-                    star_score = :starScore, title_img = :titleImg, detail_img_list = :detailImgList,
+                    star_score = :starScore, total_reviews = :totalReviews, title_img = :titleImg, detail_img_list = :detailImgList,
                     brand = :brand, enroll_time = :enrollTime
                 where product_id = :productId
                 """;
@@ -45,6 +45,7 @@ public class ProductRepository {
                 .bind("discountRate", product.getDiscountRate())
                 .bind("stockQuantity", product.getStockQuantity())
                 .bind("starScore", product.getStarScore())
+                .bind("totalReviews", product.getTotalReviews())
                 .bind("titleImg", product.getTitleImg())
                 .bind("detailImgList", product.getDetailImgList().toArray())
                 .bind("brand", product.getBrand())
@@ -76,6 +77,7 @@ public class ProductRepository {
                         .discountRate((Integer) row.get("discount_rate"))
                         .stockQuantity((Integer) row.get("stock_quantity"))
                         .starScore((Double) row.get("star_score"))
+                        .totalReviews((Integer) row.get("total_reviews"))
                         .titleImg((String) row.get("title_img"))
                         .detailImgList(Arrays.asList((String[]) row.get("detail_img_list")))
                         .brand((String) row.get("brand"))
@@ -100,6 +102,7 @@ public class ProductRepository {
                         .discountRate((Integer) row.get("discount_rate"))
                         .stockQuantity((Integer) row.get("stock_quantity"))
                         .starScore((Double) row.get("star_score"))
+                        .totalReviews((Integer) row.get("total_reviews"))
                         .titleImg((String) row.get("title_img"))
                         .detailImgList(Arrays.asList((String[]) row.get("detail_img_list")))
                         .brand((String) row.get("brand"))
@@ -128,6 +131,7 @@ public class ProductRepository {
                         .discountRate((Integer) row.get("discount_rate"))
                         .stockQuantity((Integer) row.get("stock_quantity"))
                         .starScore((Double) row.get("star_score"))
+                        .totalReviews((Integer) row.get("total_reviews"))
                         .titleImg((String) row.get("title_img"))
                         .detailImgList(Arrays.asList((String[]) row.get("detail_img_list")))
                         .brand((String) row.get("brand"))
@@ -156,6 +160,7 @@ public class ProductRepository {
                         .discountPrice((Integer) row.get("discount_price"))
                         .discountRate((Integer) row.get("discount_rate"))
                         .starScore((Double) row.get("star_score"))
+                        .totalReviews((Integer) row.get("total_reviews"))
                         .titleImg((String) row.get("title_img"))
                         .likeCount((Long) row.get("like_count"))
                         .brand((String) row.get("brand"))
@@ -188,6 +193,7 @@ public class ProductRepository {
                         .discountPrice((Integer) row.get("discount_price"))
                         .discountRate((Integer) row.get("discount_rate"))
                         .starScore((Double) row.get("star_score"))
+                        .totalReviews((Integer) row.get("total_reviews"))
                         .titleImg((String) row.get("title_img"))
                         .likeCount((Long) row.get("like_count"))
                         .brand((String) row.get("brand"))
@@ -234,6 +240,7 @@ public class ProductRepository {
                         .discountPrice((Integer) row.get("discount_price"))
                         .discountRate((Integer) row.get("discount_rate"))
                         .starScore((Double) row.get("star_score"))
+                        .totalReviews((Integer) row.get("total_reviews"))
                         .titleImg((String) row.get("title_img"))
                         .likeCount((Long) row.get("like_count"))
                         .brand((String) row.get("brand"))
@@ -248,6 +255,7 @@ public class ProductRepository {
                         p.discount_price as discount_price,
                         p.discount_rate as discount_rate,
                         p.star_score as star_score,
+                        p.total_reviews as total_reviews,
                         p.title_img as title_img,
                         p.brand as brand,
                         count(l.*) as like_count
@@ -255,12 +263,13 @@ public class ProductRepository {
                 left join product p on p.product_id = op.product_id
                 left join likes l on l.product_id = op.product_id
                 group by p.product_id,
-                        p.name, 
-                        p.original_price, 
-                        p.discount_price, 
-                        p.discount_rate, 
-                        p.star_score, 
-                        p.title_img, 
+                        p.name,
+                        p.original_price,
+                        p.discount_price,
+                        p.discount_rate,
+                        p.star_score,
+                        p.total_reviews,
+                        p.title_img,
                         p.brand
                 order by sum(op.total_count) desc,
                         p.enroll_time asc
@@ -277,6 +286,7 @@ public class ProductRepository {
                         .discountPrice((Integer) row.get("discount_price"))
                         .discountRate((Integer) row.get("discount_rate"))
                         .starScore((Double) row.get("star_score"))
+                        .totalReviews((Integer) row.get("total_reviews"))
                         .titleImg((String) row.get("title_img"))
                         .likeCount((Long) row.get("like_count"))
                         .brand((String) row.get("brand"))

@@ -27,6 +27,9 @@ public enum ErrorCode {
     // CartProduct
     CART_PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "장바구니에서 상품을 찾을 수 없습니다."),
 
+    // Product
+    PRODUCT_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "상품을 찾을 수 없습니다."),
+
     // Order
     CANCELED_ORDER(HttpStatus.BAD_REQUEST.value(), "이미 취소된 주문입니다."),
     ING_ORDER(HttpStatus.BAD_REQUEST.value(), "진행중인 주문입니다."),
@@ -43,6 +46,7 @@ public enum ErrorCode {
     AFTER_ORDER_COMPLETE(HttpStatus.BAD_REQUEST.value(), "주문이 완료된 다음에 작성해주세요."),
     ORDER_CANCELED(HttpStatus.BAD_REQUEST.value(), "주문이 취소되어 리뷰를 작성할 수 없습니다."),
     ALREADY_WROTE(HttpStatus.BAD_REQUEST.value(), "작성한 리뷰가 존재합니다."),
+    REVIEW_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "해당 리뷰를 찾을 수 없습니다."),
     ;
 
     private final int status;

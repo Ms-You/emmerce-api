@@ -2,7 +2,6 @@ package commerce.emmerce.service;
 
 import commerce.emmerce.config.s3.S3FileUploader;
 import commerce.emmerce.domain.Product;
-import commerce.emmerce.domain.Review;
 import commerce.emmerce.dto.*;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ public class ProductService {
 
     private final S3FileUploader s3FileUploader;
     private final ProductRepository productRepository;
-    private final ReviewRepository reviewRepository;
 
     /**
      * 상품 추가
@@ -51,6 +49,7 @@ public class ProductService {
                             .discountRate(discountRate)
                             .stockQuantity(tuple.getT1().getStockQuantity())
                             .starScore(0.0) // 초기 값 세팅
+                            .totalReviews(0)
                             .titleImg(tuple.getT2())
                             .detailImgList(tuple.getT3())
                             .brand(tuple.getT1().getBrand())
@@ -66,32 +65,6 @@ public class ProductService {
      */
     public Mono<ProductDTO.DetailResp> detail(Long productId) {
         return productRepository.findDetailById(productId);
-    }
-
-    /**
-     * 모든 상품 별점 업데이트
-     * @return
-     */
-    public Mono<Void> updateAllProductStarScore() {
-        return productRepository.findAll()
-                .flatMap(product -> reviewRepository.findAllByProductId(product.getProductId())
-                        .collectList()
-                        .filter(reviews -> !reviews.isEmpty())
-                        .map(reviews -> {
-                            double totalScore = 0;
-                            for (Review review : reviews) {
-                                totalScore += review.getStarScore();
-                            }
-
-                            double resultScore = totalScore / reviews.size();
-                            resultScore = Math.round(resultScore * 10) / 10.0;  // 소수점 둘 째 자리에서 반올림
-                            product.updateStarScore(resultScore);
-
-                            return product;
-                        })
-                )
-                .flatMap(product -> productRepository.save(product))
-                .then();
     }
 
     /**

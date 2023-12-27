@@ -23,7 +23,7 @@ public class Review {
 
     private String description;
 
-    private Double starScore;   // 별점
+    private Ratings ratings;
 
     private List<String> reviewImgList = new ArrayList<>();
 
@@ -36,12 +36,12 @@ public class Review {
 
 
     @Builder(builderMethodName = "createReview")
-    private Review(Long reviewId, String title, String description, Double startScore,
+    private Review(Long reviewId, String title, String description, Ratings ratings,
                    List<String> reviewImgList, LocalDate writeDate, Long memberId, Long productId) {
         this.reviewId = reviewId;
         this.title = title;
         this.description = description;
-        this.starScore = startScore;
+        this.ratings = ratings;
         this.reviewImgList = reviewImgList;
         this.writeDate = writeDate;
         this.memberId = memberId;
