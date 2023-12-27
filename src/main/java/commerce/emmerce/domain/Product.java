@@ -30,7 +30,9 @@ public class Product {
 
     private Integer stockQuantity;  // 재고 수량
 
-    private Double starScore;   // 별점
+    private Double starScore;   // 평균 별점
+
+    private Integer totalReviews;   // 리뷰 개수
 
     private String titleImg;
 
@@ -43,7 +45,7 @@ public class Product {
 
     @Builder(builderMethodName = "createProduct")
     private Product(Long productId, String name, String detail, Integer originalPrice, Integer discountPrice, Integer discountRate, Integer stockQuantity,
-                    Double starScore, String titleImg, List<String> detailImgList, String brand, LocalDateTime enrollTime) {
+                    Double starScore, Integer totalReviews, String titleImg, List<String> detailImgList, String brand, LocalDateTime enrollTime) {
         this.productId = productId;
         this.name = name;
         this.detail = detail;
@@ -52,6 +54,7 @@ public class Product {
         this.discountRate = discountRate;
         this.stockQuantity = stockQuantity;
         this.starScore = starScore;
+        this.totalReviews = totalReviews;
         this.titleImg = titleImg;
         this.detailImgList = detailImgList;
         this.brand = brand;
@@ -61,6 +64,10 @@ public class Product {
 
     public void updateStarScore(double starScore) {
         this.starScore = starScore;
+    }
+
+    public void updateTotalReviews(int totalReviews) {
+        this.totalReviews = totalReviews;
     }
 
     public void updateStockQuantity(int stockQuantity) {

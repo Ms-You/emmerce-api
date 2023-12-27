@@ -42,6 +42,7 @@ public class ProductDTO {
         private Integer discountRate;
         private Integer stockQuantity;
         private Double starScore;
+        private Integer totalReviews;
         private String titleImg;
         private List<String> detailImgList;
         private String brand;
@@ -60,6 +61,7 @@ public class ProductDTO {
         private Integer discountPrice;
         private Integer discountRate;
         private Double starScore;
+        private Integer totalReviews;
         private String titleImg;
         private Long likeCount;
         private String brand;

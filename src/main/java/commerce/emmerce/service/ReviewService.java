@@ -27,6 +27,7 @@ public class ReviewService {
     private final MemberRepository memberRepository;
     private final OrderRepository orderRepository;
     private final OrderProductRepository orderProductRepository;
+    private final ProductRepository productRepository;
     private final ReviewRepository reviewRepository;
     private final DeliveryRepository deliveryRepository;
 
@@ -139,13 +140,52 @@ public class ReviewService {
                 .flatMap(tuple -> reviewRepository.save(Review.createReview()
                         .title(tuple.getT1().getTitle())
                         .description(tuple.getT1().getDescription())
-                        .startScore(tuple.getT1().getStarScore())
+                        .ratings(tuple.getT1().getRatings())
                         .reviewImgList(tuple.getT2())
                         .writeDate(LocalDate.now())
                         .memberId(member.getMemberId())
                         .productId(tuple.getT1().getProductId())
-                        .build()));
+                        .build())
+                        .then(updateStarScore(tuple.getT1().getProductId(), tuple.getT1().getRatings(), true)));
     }
+
+
+    /**
+     * 상품 별점 및 리뷰 수 업데이트
+     * @param productId
+     * @param ratings
+     * @param addStatus (true: 리뷰 작성, false: 리뷰 삭제)
+     * @return
+     */
+    public Mono<Void> updateStarScore(Long productId, Ratings ratings, boolean addStatus) {
+        return productRepository.findById(productId)
+                .flatMap(product -> {
+                    double totalRatings = product.getStarScore() * product.getTotalReviews();
+                    int totalReviews = product.getTotalReviews();
+
+                    if(addStatus) {
+                        totalRatings += ratings.getValue();
+                        totalReviews++;
+                    } else {
+                        totalRatings -= ratings.getValue();
+                        totalReviews--;
+
+                        if(totalReviews < 0 || totalRatings < 0) {
+                            totalRatings = 0.0;
+                            totalReviews = 0;
+                        }
+                    }
+
+                    double newStarScore = totalReviews > 0 ? totalRatings / totalReviews : 0;
+                    newStarScore = Math.round(newStarScore * 10) / 10.0;    // 소수점 둘 째 자리에서 반올림
+
+                    product.updateStarScore(newStarScore);
+                    product.updateTotalReviews(totalReviews);
+
+                    return productRepository.save(product);
+                }).then();
+    }
+
 
     /**
      * 리뷰 삭제
@@ -155,10 +195,11 @@ public class ReviewService {
     @Transactional
     public Mono<Void> remove(Long reviewId) {
         return reviewRepository.findById(reviewId)
+                .switchIfEmpty(Mono.error(new GlobalException(ErrorCode.REVIEW_NOT_FOUND)))
                 .flatMap(review -> s3FileUploader.deleteS3ImageList(review.getReviewImgList(), "review")
-                        .then(reviewRepository.deleteById(reviewId)))
-                .doOnNext(rowsUpdated -> log.info("삭제된 리뷰 수: {}", rowsUpdated))
-                .then();
+                        .then(reviewRepository.deleteById(reviewId))
+                        .then(updateStarScore(review.getProductId(), review.getRatings(), false))
+                ).then();
     }
 
     /**
@@ -178,7 +219,7 @@ public class ReviewService {
                                 .reviewId(review.getReviewId())
                                 .title(review.getTitle())
                                 .description(review.getDescription())
-                                .starScore(review.getStarScore())
+                                .ratings(review.getRatings())
                                 .reviewImgList(review.getReviewImgList())
                                 .writeDate(review.getWriteDate())
                                 .memberId(review.getMemberId())

@@ -1,5 +1,6 @@
 package commerce.emmerce.repository;
 
+import commerce.emmerce.domain.Ratings;
 import commerce.emmerce.domain.Review;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
@@ -18,13 +19,13 @@ public class ReviewRepository {
 
     public Mono<Void> save(Review review) {
         String insertQuery = """
-                insert into review (title, description, star_score, review_img_list, write_date, member_id, product_id)
-                values (:title, :description, :starScore, :reviewImgList, :writeDate, :memberId, :productId)
+                insert into review (title, description, ratings, review_img_list, write_date, member_id, product_id)
+                values (:title, :description, :ratings, :reviewImgList, :writeDate, :memberId, :productId)
                 """;
 
         String updateQuery = """
                 update review
-                set title = :title, description = :description, star_score = :starScore,
+                set title = :title, description = :description, ratings = :ratings,
                     review_img_list = :reviewImgList, write_date = :writeDate
                 where review_id = :reviewId
                 """;
@@ -34,7 +35,7 @@ public class ReviewRepository {
         DatabaseClient.GenericExecuteSpec executeSpec = databaseClient.sql(query)
                 .bind("title", review.getTitle())
                 .bind("description", review.getDescription())
-                .bind("starScore", review.getStarScore())
+                .bind("ratings", review.getRatings().getValue())
                 .bind("reviewImgList", review.getReviewImgList().toArray())
                 .bind("writeDate", review.getWriteDate())
                 .bind("memberId", review.getMemberId())
@@ -61,7 +62,7 @@ public class ReviewRepository {
                         .reviewId((Long) row.get("review_id"))
                         .title((String) row.get("title"))
                         .description((String) row.get("description"))
-                        .startScore((Double) row.get("star_score"))
+                        .ratings(Ratings.forValue((Integer) row.get("ratings")))
                         .reviewImgList(Arrays.asList((String[]) row.get("review_img_list")))
                         .writeDate((LocalDate) row.get("write_date"))
                         .memberId((Long) row.get("member_id"))
@@ -83,7 +84,7 @@ public class ReviewRepository {
                         .reviewId((Long) row.get("review_id"))
                         .title((String) row.get("title"))
                         .description((String) row.get("description"))
-                        .startScore((Double) row.get("star_score"))
+                        .ratings(Ratings.forValue((Integer) row.get("ratings")))
                         .reviewImgList(Arrays.asList((String[]) row.get("review_img_list")))
                         .writeDate((LocalDate) row.get("write_date"))
                         .memberId((Long) row.get("member_id"))
