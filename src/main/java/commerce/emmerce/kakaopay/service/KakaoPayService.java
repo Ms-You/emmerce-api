@@ -50,9 +50,9 @@ public class KakaoPayService {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("cid", cid);
         params.add("tax_free_amount", String.valueOf(0));    // 상품 비과세 금액
-        params.add("approval_url", "http://localhost:3000/payment/success?orderId=" + payReq.getOrderId());   // 성공 시 redirect url
-        params.add("cancel_url", "http://localhost:3000/payment/cancel"); // 취소 시 redirect url
-        params.add("fail_url", "http://localhost:3000/payment/fail");   // 실패 시 redirect url
+        params.add("approval_url", "https://emmerce1.duckdns.org/payment/success?orderId=" + payReq.getOrderId());   // 성공 시 redirect url
+        params.add("cancel_url", "https://emmerce1.duckdns.org/payment/cancel"); // 취소 시 redirect url
+        params.add("fail_url", "https://emmerce1.duckdns.org/payment/fail");   // 실패 시 redirect url
 
         return orderRepository.findById(payReq.getOrderId())
                 .flatMap(order -> {
