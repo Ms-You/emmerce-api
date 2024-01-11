@@ -80,14 +80,12 @@ public class CategoryProductRepository {
                     and (p.name like :keyword or p.detail like :keyword)
                     and p.brand like :brand
                     and p.discount_price between :minPrice and :maxPrice
-                limit :limit
                 """;
 
         return databaseClient.sql(query)
                 .bind("categoryId", categoryId)
                 .bind("keyword", searchParamDTO.getKeyword())
                 .bind("brand", searchParamDTO.getBrand())
-                .bind("limit", searchParamDTO.getLimit())
                 .bind("minPrice", searchParamDTO.getMinPrice())
                 .bind("maxPrice", searchParamDTO.getMaxPrice())
                 .fetch().one()
@@ -105,14 +103,12 @@ public class CategoryProductRepository {
                     and p.brand like :brand
                     and p.discount_price between :minPrice and :maxPrice
                 group by p.product_id
-                limit :limit
                 """;
 
         return databaseClient.sql(query)
                 .bind("categoryId", categoryId)
                 .bind("keyword", searchParamDTO.getKeyword())
                 .bind("brand", searchParamDTO.getBrand())
-                .bind("limit", searchParamDTO.getLimit())
                 .bind("minPrice", searchParamDTO.getMinPrice())
                 .bind("maxPrice", searchParamDTO.getMaxPrice())
                 .fetch().all()
