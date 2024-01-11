@@ -51,7 +51,7 @@ public class ProductController {
                                                                      @RequestParam(required = false) Integer minPrice,
                                                                      @RequestParam(required = false) Integer maxPrice,
                                                                      @RequestParam(defaultValue = "1") Integer page,
-                                                                     @RequestParam(defaultValue = "1") Integer size) {
+                                                                     @RequestParam(defaultValue = "40") Integer size) {
         SearchParamDTO searchParamDTO = SearchParamDTO.builder()
                 .keyword(StringUtils.hasText(keyword) ? "%" + keyword + "%" : "%")
                 .brand(StringUtils.hasText(brand) ? "%" + brand + "%" : "%")
