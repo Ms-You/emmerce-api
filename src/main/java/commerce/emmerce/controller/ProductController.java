@@ -41,7 +41,6 @@ public class ProductController {
     @Operation(summary = "상품 검색", description = "조건에 맞는 특정 상품을 조회합니다.")
     @Parameters({ @Parameter(name = "keyword", description = "상품 명 또는 상세 정보에 포함되는 키워드"),
                 @Parameter(name = "brand", description = "조회하고 싶은 브랜드"),
-                @Parameter(name = "limit", description = "조회 할 상품 수"),
                 @Parameter(name = "minPrice", description = "상품 최소 가격"),
                 @Parameter(name = "maxPrice", description = "상품 최대 가격"),
                 @Parameter(name = "page", description = "페이지 번호 (기본 값: 1)"),
@@ -49,15 +48,13 @@ public class ProductController {
     @GetMapping("/search")
     public Mono<PageResponseDTO<ProductDTO.ListResp>> searchProducts(@RequestParam(required = false) String keyword,
                                                                      @RequestParam(required = false) String brand,
-                                                                     @RequestParam(required = false) Integer limit,
                                                                      @RequestParam(required = false) Integer minPrice,
                                                                      @RequestParam(required = false) Integer maxPrice,
                                                                      @RequestParam(defaultValue = "1") Integer page,
-                                                                     @RequestParam(defaultValue = "40") Integer size) {
+                                                                     @RequestParam(defaultValue = "1") Integer size) {
         SearchParamDTO searchParamDTO = SearchParamDTO.builder()
                 .keyword(StringUtils.hasText(keyword) ? "%" + keyword + "%" : "%")
                 .brand(StringUtils.hasText(brand) ? "%" + brand + "%" : "%")
-                .limit(limit != null ? limit : Integer.MAX_VALUE)
                 .minPrice(minPrice != null ? minPrice : 0)
                 .maxPrice(maxPrice != null ? maxPrice : Integer.MAX_VALUE)
                 .page(Math.max(1, page))
