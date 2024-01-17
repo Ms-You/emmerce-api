@@ -103,7 +103,7 @@ public class CategoryProductRepository {
                     and p.brand like :brand
                     and p.discount_price between :minPrice and :maxPrice
                 group by p.product_id
-                """;
+                """ + getOrderByClause(searchParamDTO.getSort());
 
         return databaseClient.sql(query)
                 .bind("categoryId", categoryId)
@@ -123,6 +123,15 @@ public class CategoryProductRepository {
                         .likeCount((Long) row.get("like_count"))
                         .brand((String) row.get("brand"))
                         .build());
+    }
+
+    private String getOrderByClause(String sort) {
+        switch (sort) {
+            case "priceDesc" : return "order by p.discount_price desc";
+            case "likeCountDesc" : return "order by like_count desc";
+            case "discountRateDesc" : return "order by p.discount_rate desc";
+            default : return "order by p.discount_price asc";
+        }
     }
 
 }

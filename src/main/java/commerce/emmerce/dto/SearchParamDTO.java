@@ -11,6 +11,7 @@ public class SearchParamDTO {
     private String brand;
     private Integer minPrice;
     private Integer maxPrice;
+    private String sort;
     private Integer page;
     private Integer size;
 }
