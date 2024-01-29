@@ -27,6 +27,7 @@ public class CategoryProductController {
                 @Parameter(name = "brand", description = "조회하고 싶은 브랜드"),
                 @Parameter(name = "minPrice", description = "상품 최소 가격"),
                 @Parameter(name = "maxPrice", description = "상품 최대 가격"),
+                @Parameter(name = "sort", description = "정렬 조건 (priceAsc, priceDesc, likeCountDesc, discountRateDesc)"),
                 @Parameter(name = "page", description = "페이지 번호 (기본 값: 1)"),
                 @Parameter(name = "size", description = "한 페이지에 조회할 상품 수 (기본 값: 40)") })
     @GetMapping("/list")
@@ -35,6 +36,7 @@ public class CategoryProductController {
                                                                                      @RequestParam(required = false) String brand,
                                                                                      @RequestParam(required = false) Integer minPrice,
                                                                                      @RequestParam(required = false) Integer maxPrice,
+                                                                                     @RequestParam(required = false, defaultValue = "priceAsc") String sort,
                                                                                      @RequestParam(defaultValue = "1") Integer page,
                                                                                      @RequestParam(defaultValue = "40") Integer size) {
         SearchParamDTO searchParamDTO = SearchParamDTO.builder()
@@ -42,6 +44,7 @@ public class CategoryProductController {
                 .brand(StringUtils.hasText(brand) ? "%" + brand + "%" : "%")
                 .minPrice(minPrice != null ? minPrice : 0)
                 .maxPrice(maxPrice != null ? maxPrice : Integer.MAX_VALUE)
+                .sort(sort)
                 .page(Math.max(1, page))
                 .size(size)
                 .build();

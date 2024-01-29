@@ -16,6 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Transactional
 @RequiredArgsConstructor
@@ -146,6 +147,8 @@ public class KakaoPayService {
      */
     private Payment convertToPayment(KakaoPayDTO.ApproveResp approveResp) {
         CardInfo cardInfo = approveResp.getCard_info();
+        Optional<CardInfo> optionalCardInfo = Optional.ofNullable(cardInfo);
+        System.out.println("cardInfo: " + cardInfo);
 
         return Payment.builder()
                 .aid(approveResp.getAid())
@@ -160,17 +163,17 @@ public class KakaoPayService {
                 .point(approveResp.getAmount().getPoint())
                 .discount(approveResp.getAmount().getDiscount())
                 .green_deposit(approveResp.getAmount().getGreen_deposit())
-                .purchase_corp(cardInfo != null ? cardInfo.getPurchase_corp() : "-")
-                .purchase_corp_code(cardInfo != null ? cardInfo.getPurchase_corp_code() : "-")
-                .issuer_corp(cardInfo != null ? cardInfo.getIssuer_corp() : "-")
-                .issuer_corp_code(cardInfo != null ? cardInfo.getIssuer_corp_code() : "-")
-                .bin(cardInfo != null ? cardInfo.getBin() : "-")
-                .card_type(cardInfo != null ? cardInfo.getCard_type() : "-")
-                .install_month(cardInfo != null ? cardInfo.getInstall_month() : "-")
-                .approved_id(cardInfo != null ? cardInfo.getApproved_id() : "-")
-                .card_mid(cardInfo != null ? cardInfo.getCard_mid() : "-")
-                .interest_free_install(cardInfo != null ? cardInfo.getInterest_free_install() : "-")
-                .card_item_code(cardInfo != null ? cardInfo.getCard_item_code() : "-")
+                .purchase_corp(optionalCardInfo.map(CardInfo::getPurchase_corp).orElse("-"))
+                .purchase_corp_code(optionalCardInfo.map(CardInfo::getPurchase_corp_code).orElse("-"))
+                .issuer_corp(optionalCardInfo.map(CardInfo::getIssuer_corp).orElse("-"))
+                .issuer_corp_code(optionalCardInfo.map(CardInfo::getIssuer_corp_code).orElse("-"))
+                .bin(optionalCardInfo.map(CardInfo::getBin).orElse("-"))
+                .card_type(optionalCardInfo.map(CardInfo::getCard_type).orElse("-"))
+                .install_month(optionalCardInfo.map(CardInfo::getInstall_month).orElse("-"))
+                .approved_id(optionalCardInfo.map(CardInfo::getApproved_id).orElse("-"))
+                .card_mid(optionalCardInfo.map(CardInfo::getCard_mid).orElse("-"))
+                .interest_free_install(optionalCardInfo.map(CardInfo::getInterest_free_install).orElse("-"))
+                .card_item_code(optionalCardInfo.map(CardInfo::getCard_item_code).orElse("-"))
                 .item_name(approveResp.getItem_name())
                 .quantity(approveResp.getQuantity())
                 .created_at(LocalDateTime.parse(approveResp.getCreated_at()))
@@ -288,9 +291,10 @@ public class KakaoPayService {
      */
     private Mono<Void> updateDeliveryStatus(Long orderId) {
         return orderProductRepository.findByOrderId(orderId)
-                .flatMap(orderProduct -> deliveryRepository.findByOrderIdAndProductId(orderId, orderProduct.getProductId())
+                .flatMap(orderProduct -> deliveryRepository.findByOrderProductId(orderProduct.getOrderProductId())
                         .flatMap(delivery -> deliveryRepository.updateStatus(delivery.getDeliveryId(), DeliveryStatus.CANCEL))
                 ).then();
     }
+
 
 }

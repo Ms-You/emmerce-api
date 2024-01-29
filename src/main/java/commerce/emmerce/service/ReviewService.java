@@ -76,7 +76,7 @@ public class ReviewService {
      * @return
      */
     public Mono<Member> checkDeliveryStatus(Member member, OrderProduct orderProduct) {
-        return deliveryRepository.findByOrderIdAndProductId(orderProduct.getOrderId(), orderProduct.getProductId())
+        return deliveryRepository.findByOrderProductId(orderProduct.getOrderProductId())
                 .flatMap(delivery -> {
                     DeliveryStatus status = delivery.getDeliveryStatus();
                     if(status.equals(DeliveryStatus.COMPLETE)) {

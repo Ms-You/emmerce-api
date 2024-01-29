@@ -35,6 +35,9 @@ public enum ErrorCode {
     ING_ORDER(HttpStatus.BAD_REQUEST.value(), "진행중인 주문입니다."),
     ORDER_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "해당 주문을 찾을 수 없습니다."),
 
+    // Delivery
+    DELIVERY_NOT_FOUND_BY_ORDER_PRODUCT(HttpStatus.BAD_REQUEST.value(), "올바른 배송 정보를 찾을 수 없습니다."),
+
     // Payment
     PAYMENT_CANCELED(HttpStatus.BAD_REQUEST.value(), "결제가 취소되었습니다."),
     PAYMENT_FAILED(HttpStatus.BAD_REQUEST.value(), "결제에 실패하였습니다."),
