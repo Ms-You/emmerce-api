@@ -288,7 +288,7 @@ public class KakaoPayService {
      */
     private Mono<Void> updateDeliveryStatus(Long orderId) {
         return orderProductRepository.findByOrderId(orderId)
-                .flatMap(orderProduct -> deliveryRepository.findByOrderIdAndProductId(orderId, orderProduct.getProductId())
+                .flatMap(orderProduct -> deliveryRepository.findByOrderProductId(orderProduct.getOrderProductId())
                         .flatMap(delivery -> deliveryRepository.updateStatus(delivery.getDeliveryId(), DeliveryStatus.CANCEL))
                 ).then();
     }
