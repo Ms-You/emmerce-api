@@ -18,12 +18,12 @@ public class AdminDeliveryController {
 
     private final DeliveryService deliveryService;
 
-    @Operation(summary = "배달 상태 수정", description = "배송 상태를 수정합니다. (READY, ING, COMPLETE, CANCEL)")
-    @Parameters({ @Parameter(name = "deliveryId", description = "조회할 배송 id"),
+    @Operation(summary = "배송 상태 수정", description = "배송 상태를 수정합니다. (READY, ING, COMPLETE, CANCEL)")
+    @Parameters({ @Parameter(name = "orderProductId", description = "조회할 주문 상품 id"),
                 @Parameter(name = "statusReq", description = "변경할 배송 상태") })
-    @PutMapping("/{deliveryId}")
-    public Mono<Void> updateDeliveryStatus(@PathVariable Long deliveryId,
-                                                     @RequestBody DeliveryDTO.StatusReq statusReq) {
-        return deliveryService.changeStatus(deliveryId, statusReq);
+    @PutMapping("/orderProduct/{orderProductId}")
+    public Mono<Void> updateDeliveryStatus(@PathVariable Long orderProductId,
+                                             @RequestBody DeliveryDTO.StatusReq statusReq) {
+        return deliveryService.changeStatus(orderProductId, statusReq);
     }
 }

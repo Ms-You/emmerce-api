@@ -68,17 +68,20 @@ public class DeliveryRepository {
                         .build());
     }
 
-    public Mono<Long> updateStatus(Long deliveryId, DeliveryStatus deliveryStatus) {
+    public Mono<Void> updateStatus(Long deliveryId, Long orderProductId, DeliveryStatus deliveryStatus) {
         String query = """
                 update delivery
                 set delivery_status = :deliveryStatus
                 where delivery_id = :deliveryId
+                and
+                    order_product_id = :orderProductId
                 """;
 
         return databaseClient.sql(query)
                 .bind("deliveryStatus", deliveryStatus.name())
                 .bind("deliveryId", deliveryId)
-                .fetch().rowsUpdated();
+                .bind("orderProductId", orderProductId)
+                .then();
     }
 
 }
