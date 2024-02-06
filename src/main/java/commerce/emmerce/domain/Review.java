@@ -6,7 +6,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +28,7 @@ public class Review {
     private List<String> reviewImgList = new ArrayList<>();
 
     @CreatedDate
-    private LocalDate writeDate;
+    private LocalDateTime writeDate;
 
     private Long memberId;
 
@@ -37,7 +37,7 @@ public class Review {
 
     @Builder(builderMethodName = "createReview")
     private Review(Long reviewId, String title, String description, Ratings ratings,
-                   List<String> reviewImgList, LocalDate writeDate, Long memberId, Long productId) {
+                   List<String> reviewImgList, LocalDateTime writeDate, Long memberId, Long productId) {
         this.reviewId = reviewId;
         this.title = title;
         this.description = description;

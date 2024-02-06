@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -142,7 +142,7 @@ public class ReviewService {
                         .description(tuple.getT1().getDescription())
                         .ratings(tuple.getT1().getRatings())
                         .reviewImgList(tuple.getT2())
-                        .writeDate(LocalDate.now())
+                        .writeDate(LocalDateTime.now())
                         .memberId(member.getMemberId())
                         .productId(tuple.getT1().getProductId())
                         .build())
@@ -213,19 +213,7 @@ public class ReviewService {
         Mono<Long> totalReviews = reviewRepository.reviewCountByProduct(productId);
         Flux<ReviewDTO.ReviewResp> reviewRespFlux = reviewRepository.findAllByProductId(productId)
                 .skip((page-1) * size)
-                .take(size)
-                .flatMap(review -> memberRepository.findById(review.getMemberId())
-                        .map(member -> ReviewDTO.ReviewResp.builder()
-                                .reviewId(review.getReviewId())
-                                .title(review.getTitle())
-                                .description(review.getDescription())
-                                .ratings(review.getRatings())
-                                .reviewImgList(review.getReviewImgList())
-                                .writeDate(review.getWriteDate())
-                                .memberId(review.getMemberId())
-                                .writer(maskingMemberName(member.getName()))
-                                .build())
-                );
+                .take(size);
 
         return Mono.zip(reviewRespFlux.collectList(), totalReviews)
                 .map(t -> new PageResponseDTO<>(t.getT1(), page, size, t.getT2().intValue()));

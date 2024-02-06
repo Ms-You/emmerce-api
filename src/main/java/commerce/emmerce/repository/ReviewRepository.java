@@ -2,13 +2,14 @@ package commerce.emmerce.repository;
 
 import commerce.emmerce.domain.Ratings;
 import commerce.emmerce.domain.Review;
+import commerce.emmerce.dto.ReviewDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 @RequiredArgsConstructor
@@ -64,31 +65,33 @@ public class ReviewRepository {
                         .description((String) row.get("description"))
                         .ratings(Ratings.forValue((Integer) row.get("ratings")))
                         .reviewImgList(Arrays.asList((String[]) row.get("review_img_list")))
-                        .writeDate((LocalDate) row.get("write_date"))
+                        .writeDate((LocalDateTime) row.get("write_date"))
                         .memberId((Long) row.get("member_id"))
                         .productId((Long) row.get("product_id"))
                         .build());
     }
 
-    public Flux<Review> findAllByProductId(Long productId) {
+    public Flux<ReviewDTO.ReviewResp> findAllByProductId(Long productId) {
         String query = """
-                select *
+                select r.*, m.name as writer
                 from review r
-                where r.product_id = :productId
+                inner join member m on m.member_id = r.member_id
+                where product_id = :productId
+                order by r.write_date desc
                 """;
 
         return databaseClient.sql(query)
                 .bind("productId", productId)
                 .fetch().all()
-                .map(row -> Review.createReview()
+                .map(row -> ReviewDTO.ReviewResp.builder()
                         .reviewId((Long) row.get("review_id"))
                         .title((String) row.get("title"))
                         .description((String) row.get("description"))
                         .ratings(Ratings.forValue((Integer) row.get("ratings")))
                         .reviewImgList(Arrays.asList((String[]) row.get("review_img_list")))
-                        .writeDate((LocalDate) row.get("write_date"))
+                        .writeDate((LocalDateTime) row.get("write_date"))
                         .memberId((Long) row.get("member_id"))
-                        .productId((Long) row.get("product_id"))
+                        .writer((String) row.get("writer"))
                         .build());
     }
 
