@@ -20,8 +20,8 @@ public class ReviewRepository {
 
     public Mono<Void> save(Review review) {
         String insertQuery = """
-                insert into review (title, description, ratings, review_img_list, write_date, member_id, product_id)
-                values (:title, :description, :ratings, :reviewImgList, :writeDate, :memberId, :productId)
+                insert into review (title, description, ratings, review_img_list, write_date, member_id, product_id, order_product_id)
+                values (:title, :description, :ratings, :reviewImgList, :writeDate, :memberId, :productId, :orderProductId)
                 """;
 
         String updateQuery = """
@@ -40,7 +40,8 @@ public class ReviewRepository {
                 .bind("reviewImgList", review.getReviewImgList().toArray())
                 .bind("writeDate", review.getWriteDate())
                 .bind("memberId", review.getMemberId())
-                .bind("productId", review.getProductId());
+                .bind("productId", review.getProductId())
+                .bind("orderProductId", review.getOrderProductId());
 
         if(review.getReviewId() != null) {
             executeSpec = executeSpec.bind("reviewId", review.getReviewId());
@@ -68,6 +69,7 @@ public class ReviewRepository {
                         .writeDate((LocalDateTime) row.get("write_date"))
                         .memberId((Long) row.get("member_id"))
                         .productId((Long) row.get("product_id"))
+                        .orderProductId((Long) row.get("order_product_id"))
                         .build());
     }
 
@@ -120,17 +122,17 @@ public class ReviewRepository {
                 .map(result -> (Long) result.get("count"));
     }
 
-    public Mono<Long> findByMemberAndProduct(Long memberId, Long productId) {
+    public Mono<Long> findByMemberAndOrderProduct(Long memberId, Long orderProductId) {
         String query = """
                 select count(*) as count
                 from review r
                 where r.member_id = :memberId
-                    and r.product_id = :productId
+                    and r.order_product_id = :orderProductId
                 """;
 
         return databaseClient.sql(query)
                 .bind("memberId", memberId)
-                .bind("productId", productId)
+                .bind("orderProductId", orderProductId)
                 .fetch().one()
                 .map(result -> (Long) result.get("count"));
     }

@@ -17,8 +17,7 @@ public class ReviewDTO {
         private String title;
         private String description;
         private Ratings ratings;
-        private Long orderId;
-        private Long productId;
+        private Long orderProductId;
     }
 
 

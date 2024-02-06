@@ -34,10 +34,12 @@ public class Review {
 
     private Long productId;
 
+    private Long orderProductId;
+
 
     @Builder(builderMethodName = "createReview")
     private Review(Long reviewId, String title, String description, Ratings ratings,
-                   List<String> reviewImgList, LocalDateTime writeDate, Long memberId, Long productId) {
+                   List<String> reviewImgList, LocalDateTime writeDate, Long memberId, Long productId, Long orderProductId) {
         this.reviewId = reviewId;
         this.title = title;
         this.description = description;
@@ -46,6 +48,7 @@ public class Review {
         this.writeDate = writeDate;
         this.memberId = memberId;
         this.productId = productId;
+        this.orderProductId = orderProductId;
     }
 
 

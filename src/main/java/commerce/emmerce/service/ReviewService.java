@@ -63,7 +63,7 @@ public class ReviewService {
      * @return
      */
     public Mono<Member> getOrderProduct(Member member, Mono<ReviewDTO.ReviewReq> reviewReqMono) {
-        return reviewReqMono.flatMap(reviewReq -> orderProductRepository.findByOrderIdAndProductId(reviewReq.getOrderId(), reviewReq.getProductId())
+        return reviewReqMono.flatMap(reviewReq -> orderProductRepository.findById(reviewReq.getOrderProductId())
                 .switchIfEmpty(Mono.error(new GlobalException(ErrorCode.ORDER_NOT_FOUND)))
                 .flatMap(orderProduct -> checkDeliveryStatus(member, orderProduct))
         );
@@ -96,17 +96,19 @@ public class ReviewService {
      * @return
      */
     public Mono<Member> checkOrderStatus(Member member, Mono<ReviewDTO.ReviewReq> reviewReqMono) {
-        return reviewReqMono.flatMap(reviewReq -> orderRepository.findById(reviewReq.getOrderId())
-                .flatMap(order -> {
-                    OrderStatus status = order.getOrderStatus();
-                    if(status.equals(OrderStatus.COMPLETE)) {
-                        return Mono.just(member);
-                    } else if(status.equals(OrderStatus.CANCEL)) {
-                        return Mono.error(new GlobalException(ErrorCode.ORDER_CANCELED));
-                    } else {
-                        return Mono.error(new GlobalException(ErrorCode.AFTER_ORDER_COMPLETE));
-                    }
-                })
+        return reviewReqMono.flatMap(reviewReq -> orderProductRepository.findById(reviewReq.getOrderProductId())
+                .flatMap(orderProduct -> orderRepository.findById(orderProduct.getOrderId())
+                        .flatMap(order -> {
+                            OrderStatus status = order.getOrderStatus();
+                            if(status.equals(OrderStatus.COMPLETE)) {
+                                return Mono.just(member);
+                            } else if(status.equals(OrderStatus.CANCEL)) {
+                                return Mono.error(new GlobalException(ErrorCode.ORDER_CANCELED));
+                            } else {
+                                return Mono.error(new GlobalException(ErrorCode.AFTER_ORDER_COMPLETE));
+                            }
+                        })
+                )
         );
     }
 
@@ -117,7 +119,7 @@ public class ReviewService {
      * @return
      */
     public Mono<Member> checkAlreadyWrote(Member member, Mono<ReviewDTO.ReviewReq> reviewReqMono) {
-        return reviewReqMono.flatMap(reviewReq -> reviewRepository.findByMemberAndProduct(member.getMemberId(), reviewReq.getProductId())
+        return reviewReqMono.flatMap(reviewReq -> reviewRepository.findByMemberAndOrderProduct(member.getMemberId(), reviewReq.getOrderProductId())
                 .flatMap(count -> {
                     if (count == 0) {
                         return Mono.just(member);
@@ -137,16 +139,19 @@ public class ReviewService {
      */
     public Mono<Void> writeReview(Member member, Mono<ReviewDTO.ReviewReq> reviewReqMono, Flux<FilePart> reviewImages) {
         return reviewReqMono.zipWith(s3FileUploader.uploadS3ImageList(reviewImages, "review"))
-                .flatMap(tuple -> reviewRepository.save(Review.createReview()
-                        .title(tuple.getT1().getTitle())
-                        .description(tuple.getT1().getDescription())
-                        .ratings(tuple.getT1().getRatings())
-                        .reviewImgList(tuple.getT2())
-                        .writeDate(LocalDateTime.now())
-                        .memberId(member.getMemberId())
-                        .productId(tuple.getT1().getProductId())
-                        .build())
-                        .then(updateStarScore(tuple.getT1().getProductId(), tuple.getT1().getRatings(), true)));
+                .flatMap(tuple -> orderProductRepository.findById(tuple.getT1().getOrderProductId())
+                        .flatMap(orderProduct -> reviewRepository.save(Review.createReview()
+                                        .title(tuple.getT1().getTitle())
+                                        .description(tuple.getT1().getDescription())
+                                        .ratings(tuple.getT1().getRatings())
+                                        .reviewImgList(tuple.getT2())
+                                        .writeDate(LocalDateTime.now())
+                                        .memberId(member.getMemberId())
+                                        .productId(orderProduct.getProductId())
+                                        .orderProductId(tuple.getT1().getOrderProductId())
+                                        .build())
+                                .then(updateStarScore(orderProduct.getProductId(), tuple.getT1().getRatings(), true)))
+                );
     }
 
 
