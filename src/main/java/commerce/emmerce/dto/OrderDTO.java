@@ -61,6 +61,7 @@ public class OrderDTO {
     @AllArgsConstructor
     @Builder
     public static class OrderProductResp {
+        private Long orderProductId;
         private Long productId;
         private String name;
         private String titleImg;
@@ -73,6 +74,7 @@ public class OrderDTO {
 
         public static OrderProductResp transfer(Product product, OrderProduct orderProduct, Boolean reviewStatus, DeliveryStatus deliveryStatus) {
             return OrderProductResp.builder()
+                    .orderProductId(orderProduct.getOrderProductId())
                     .productId(product.getProductId())
                     .name(product.getName())
                     .titleImg(product.getTitleImg())
