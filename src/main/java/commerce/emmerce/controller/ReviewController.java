@@ -25,7 +25,7 @@ public class ReviewController {
                 @Parameter(name = "reviewImages", description = "리뷰에 포함할 이미지 목록을 전달")})
     @PostMapping("/review")
     public Mono<Void> writeReview(@RequestPart("reviewReq") Mono<ReviewDTO.ReviewReq> reviewReqMono,
-                                  @RequestPart("reviewImages") Flux<FilePart> reviewImages) {
+                                  @RequestPart(value = "reviewImages", required = false) Flux<FilePart> reviewImages) {
         return reviewService.write(reviewReqMono, reviewImages);
     }
 

@@ -65,7 +65,7 @@ public class S3FileUploader {
                     })
                     .flatMap(bytes -> Mono.fromFuture(s3AsyncClient.putObject(putObjectRequest, AsyncRequestBody.fromBytes(bytes))))  // AsyncRequestBody 형태로 변환하고 putObject 에 넘겨 이미지 업로드
                     .then(Mono.just(String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, region, fileName)));
-        });
+        }).switchIfEmpty(Mono.just(""));    // 이미지를 전달받지 않았을 때
     }
 
     /**
