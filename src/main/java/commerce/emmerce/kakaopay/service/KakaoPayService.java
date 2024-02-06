@@ -54,6 +54,9 @@ public class KakaoPayService {
         params.add("approval_url", "https://emmerce1.duckdns.org/payment/success?orderId=" + payReq.getOrderId());   // 성공 시 redirect url
         params.add("cancel_url", "https://emmerce1.duckdns.org/payment/cancel"); // 취소 시 redirect url
         params.add("fail_url", "https://emmerce1.duckdns.org/payment/fail");   // 실패 시 redirect url
+//        params.add("approval_url", "http://localhost:8088/payment/success?orderId=" + payReq.getOrderId());   // 성공 시 redirect url
+//        params.add("cancel_url", "http://localhost:8088/payment/cancel"); // 취소 시 redirect url
+//        params.add("fail_url", "http://localhost:8088/payment/fail");   // 실패 시 redirect url
 
         return orderRepository.findById(payReq.getOrderId())
                 .flatMap(order -> {
@@ -292,7 +295,7 @@ public class KakaoPayService {
     private Mono<Void> updateDeliveryStatus(Long orderId) {
         return orderProductRepository.findByOrderId(orderId)
                 .flatMap(orderProduct -> deliveryRepository.findByOrderProductId(orderProduct.getOrderProductId())
-                        .flatMap(delivery -> deliveryRepository.updateStatus(delivery.getDeliveryId(), DeliveryStatus.CANCEL))
+                        .flatMap(delivery -> deliveryRepository.updateStatus(delivery.getDeliveryId(), orderProduct.getOrderProductId(), DeliveryStatus.CANCEL))
                 ).then();
     }
 

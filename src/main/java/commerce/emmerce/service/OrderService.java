@@ -126,7 +126,7 @@ public class OrderService {
                                                 findProducts(orderProduct),
                                                 deliveryRepository.findByOrderProductId(orderProduct.getOrderProductId())
                                                         .switchIfEmpty(Mono.error(new GlobalException(ErrorCode.DELIVERY_NOT_FOUND_BY_ORDER_PRODUCT))),
-                                                checkReviewWrote(member, orderProduct.getProductId()))
+                                                checkReviewWrote(member, orderProduct.getOrderProductId()))
                                         .flatMap(tuple -> {
                                             Product product = tuple.getT1();
                                             Delivery delivery = tuple.getT2();
@@ -175,7 +175,7 @@ public class OrderService {
                                         findProducts(orderProduct),
                                         deliveryRepository.findByOrderProductId(orderProduct.getOrderProductId())
                                                 .switchIfEmpty(Mono.error(new GlobalException(ErrorCode.DELIVERY_NOT_FOUND_BY_ORDER_PRODUCT))),
-                                        checkReviewWrote(member, orderProduct.getProductId()))
+                                        checkReviewWrote(member, orderProduct.getOrderProductId()))
                                 .map(tuple -> {
                                     Product product = tuple.getT1();
                                     Delivery delivery = tuple.getT2();
@@ -225,11 +225,11 @@ public class OrderService {
     /**
      * 리뷰 작성 여부 조회
      * @param member
-     * @param productId
+     * @param orderProductId
      * @return
      */
-    public Mono<Boolean> checkReviewWrote(Member member, Long productId) {
-        return reviewRepository.findByMemberAndProduct(member.getMemberId(), productId)
+    public Mono<Boolean> checkReviewWrote(Member member, Long orderProductId) {
+        return reviewRepository.findByMemberAndOrderProduct(member.getMemberId(), orderProductId)
                 .map(count -> count != 0);
     }
 
