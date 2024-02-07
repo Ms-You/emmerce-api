@@ -24,7 +24,7 @@ public class ReviewDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    @Builder
+    @Builder(toBuilder = true)
     public static class ReviewResp {
         private Long reviewId;
         private String title;

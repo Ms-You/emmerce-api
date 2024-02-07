@@ -121,34 +121,38 @@ public class OrderService {
     public Mono<OrderDTO.OrderResp> getOrderInfo(Long orderId) {
         return findCurrentMember()
                 .flatMap(member -> orderRepository.findById(orderId)
-                        .flatMap(order -> findOrderProducts(order)
-                                .flatMap(orderProduct -> Mono.zip(
-                                                findProducts(orderProduct),
-                                                deliveryRepository.findByOrderProductId(orderProduct.getOrderProductId())
-                                                        .switchIfEmpty(Mono.error(new GlobalException(ErrorCode.DELIVERY_NOT_FOUND_BY_ORDER_PRODUCT))),
-                                                checkReviewWrote(member, orderProduct.getOrderProductId()))
-                                        .flatMap(tuple -> {
-                                            Product product = tuple.getT1();
-                                            Delivery delivery = tuple.getT2();
-                                            Boolean reviewStatus = tuple.getT3();
-                                            DeliveryStatus deliveryStatus = delivery != null ? delivery.getDeliveryStatus() : DeliveryStatus.READY;
+                        .flatMap(order -> {
+                            // 현재 사용자가 주문자와 같은지 체크
+                            if (order.getMemberId() != member.getMemberId()) {
+                                return Mono.error(new GlobalException(ErrorCode.ORDER_MEMBER_NOT_MATCHED));
+                            }
 
-                                            return Mono.just(
-                                                    OrderDTO.OrderProductResp.transfer(
-                                                            product,
-                                                            orderProduct,
-                                                            reviewStatus,
-                                                            deliveryStatus
-                                                    )
-                                            );
-                                        }).onErrorResume(e -> {
-                                            log.error(e.getMessage());
+                            return findOrderProducts(order)
+                                    .flatMap(orderProduct -> Mono.zip(
+                                            findProducts(orderProduct),
+                                            deliveryRepository.findByOrderProductId(orderProduct.getOrderProductId())
+                                                    .switchIfEmpty(Mono.error(new GlobalException(ErrorCode.DELIVERY_NOT_FOUND_BY_ORDER_PRODUCT))),
+                                            checkReviewWrote(member, orderProduct.getOrderProductId())
+                                            // 상품 목록, 배송 정보, 리뷰 작성 여부
+                                    ).flatMap(tuple -> {
+                                        Product product = tuple.getT1();
+                                        Delivery delivery = tuple.getT2();
+                                        Boolean reviewStatus = tuple.getT3();
+                                        DeliveryStatus deliveryStatus = delivery != null ? delivery.getDeliveryStatus() : DeliveryStatus.READY;
 
-                                            return Mono.empty();
-                                        })
-                                ).collectList()
-                                .map(orderProductRespList -> OrderDTO.OrderResp.transfer(order, orderProductRespList))
-                        )
+                                        return Mono.just(OrderDTO.OrderProductResp.transfer(
+                                                product,
+                                                orderProduct,
+                                                reviewStatus,
+                                                deliveryStatus
+                                        ));
+                                    }).onErrorResume(e -> {
+                                        log.error(e.getMessage());
+
+                                        return Mono.empty();
+                                    })).collectList()
+                                    .map(orderProductRespList -> OrderDTO.OrderResp.transfer(order, orderProductRespList));
+                        })
                 );
     }
 

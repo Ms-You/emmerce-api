@@ -218,7 +218,17 @@ public class ReviewService {
         Mono<Long> totalReviews = reviewRepository.reviewCountByProduct(productId);
         Flux<ReviewDTO.ReviewResp> reviewRespFlux = reviewRepository.findAllByProductId(productId)
                 .skip((page-1) * size)
-                .take(size);
+                .take(size)
+                .map(reviewResp -> reviewResp.toBuilder().writer(maskingMemberName(reviewResp.getWriter())).build());
+        /*
+            reviewRepository.findAllByProductId() 메서드가 Flux<ReviewResp> 객체를 반환함
+            그러다보니 리뷰 작성자 명을 마스킹하지 못하는 문제 발생
+            repository 에서 masking 을 해주자니 각 계층 별 책임을 명확히 하지 못함
+            그렇다고 findAllByProductId() 메서드가 Flux<Review> 를 반환하도록 하면
+            결국 review.getMemberId() 를 통해 member 객체를 찾아 마스킹 해줘야하므로 DB 접근 횟수 증가
+            결과적으로 DB 접근을 최소화하며 이를 해결하기 위해 toBuilder 사용
+            - ReviewResp DTO @Builder(toBuilder = true) 옵션 추가
+        */
 
         return Mono.zip(reviewRespFlux.collectList(), totalReviews)
                 .map(t -> new PageResponseDTO<>(t.getT1(), page, size, t.getT2().intValue()));
