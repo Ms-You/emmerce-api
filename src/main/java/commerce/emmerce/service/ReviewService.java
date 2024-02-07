@@ -99,7 +99,13 @@ public class ReviewService {
         return reviewReqMono.flatMap(reviewReq -> orderProductRepository.findById(reviewReq.getOrderProductId())
                 .flatMap(orderProduct -> orderRepository.findById(orderProduct.getOrderId())
                         .flatMap(order -> {
+                            // 현재 사용자가 주문자와 같은지 체크
+                            if(order.getMemberId() != member.getMemberId()) {
+                                return Mono.error(new GlobalException(ErrorCode.ORDER_MEMBER_NOT_MATCHED));
+                            }
+
                             OrderStatus status = order.getOrderStatus();
+                            // 주문 상태 체크
                             if(status.equals(OrderStatus.COMPLETE)) {
                                 return Mono.just(member);
                             } else if(status.equals(OrderStatus.CANCEL)) {
