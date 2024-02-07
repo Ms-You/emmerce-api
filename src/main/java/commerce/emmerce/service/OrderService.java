@@ -121,6 +121,7 @@ public class OrderService {
     public Mono<OrderDTO.OrderResp> getOrderInfo(Long orderId) {
         return findCurrentMember()
                 .flatMap(member -> orderRepository.findById(orderId)
+                        .switchIfEmpty(Mono.error(new GlobalException(ErrorCode.ORDER_NOT_FOUND)))  // 잘못된 orderId 를 받았을 때 예외처리
                         .flatMap(order -> {
                             // 현재 사용자가 주문자와 같은지 체크
                             if (order.getMemberId() != member.getMemberId()) {
