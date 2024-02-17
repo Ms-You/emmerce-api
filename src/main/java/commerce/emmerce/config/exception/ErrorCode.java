@@ -34,6 +34,8 @@ public enum ErrorCode {
     CANCELED_ORDER(HttpStatus.BAD_REQUEST.value(), "이미 취소된 주문입니다."),
     ING_ORDER(HttpStatus.BAD_REQUEST.value(), "진행중인 주문입니다."),
     ORDER_NOT_FOUND(HttpStatus.BAD_REQUEST.value(), "해당 주문을 찾을 수 없습니다."),
+    ORDER_NOT_COMPLETED(HttpStatus.BAD_REQUEST.value(), "주문이 완료되지 않았습니다."),
+    ORDER_ALREADY_CANCELED(HttpStatus.BAD_REQUEST.value(), "이미 취소된 주문입니다."),
 
     // Delivery
     DELIVERY_NOT_FOUND_BY_ORDER_PRODUCT(HttpStatus.BAD_REQUEST.value(), "올바른 배송 정보를 찾을 수 없습니다."),

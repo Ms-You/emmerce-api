@@ -103,6 +103,7 @@ public class KakaoPayService {
                                         .cid(cid)
                                         .partner_order_id(String.valueOf(payReq.getOrderId()))
                                         .partner_user_id(String.valueOf(member.getMemberId()))
+                                        .paymentStatus(PaymentStatus.ING)
                                         .build();
                                 return paymentRepository.saveTemporary(payment)
                                         .thenReturn(readyResp);
@@ -181,6 +182,7 @@ public class KakaoPayService {
                 .quantity(approveResp.getQuantity())
                 .created_at(LocalDateTime.parse(approveResp.getCreated_at()))
                 .approved_at(LocalDateTime.parse(approveResp.getApproved_at()))
+                .paymentStatus(PaymentStatus.COMPLETE)
                 .build();
     }
 
@@ -217,11 +219,36 @@ public class KakaoPayService {
     }
 
     /**
+     * 카카오페이 결제 취소
+     * @param payReq
+     * @return
+     */
+    public Mono<Void> kakaoPayCancel(KakaoPayDTO.PayReq payReq) {
+        return findCurrentMember()
+                .flatMap(member -> orderRepository.findById(payReq.getOrderId())
+                        .flatMap(order -> {
+                            if (member.getMemberId() != order.getMemberId()) {
+                                return Mono.error(new GlobalException(ErrorCode.ORDER_MEMBER_NOT_MATCHED));
+                            }
+
+                            if(order.getOrderStatus().equals(OrderStatus.CANCEL)) {
+                                return Mono.error(new GlobalException(ErrorCode.ORDER_ALREADY_CANCELED));
+                            }
+
+                            return updateOrderStatus(order.getOrderId(), OrderStatus.CANCEL)
+                                    .then(updateDeliveryStatus(order.getOrderId()))
+                                    .then(updatePaymentStatus(order.getOrderId(), PaymentStatus.CANCEL))
+                                    .then();
+                        })
+                );
+    }
+
+    /**
      * 카카오페이 결제 정보 조회
      * @param payReq
      * @return
      */
-    public Mono<KakaoPayDTO.OrderResp> kakaoPayOrdered(KakaoPayDTO.PayReq payReq) {
+    public Mono<KakaoPayDTO.OrderResp> kakaoPayInfo(KakaoPayDTO.PayReq payReq) {
         return findCurrentMember()
                 .flatMap(member -> orderRepository.findById(payReq.getOrderId())
                         .flatMap(order -> {
@@ -242,11 +269,11 @@ public class KakaoPayService {
     }
 
     /**
-     * 카카오페이 결제 취소
+     * 카카오페이 결제 환불
      * @param payReq
      * @return
-     */
-    public Mono<KakaoPayDTO.CancelResp> kakaoPayCancel(KakaoPayDTO.PayReq payReq) {
+     *//*
+    public Mono<KakaoPayDTO.RefundResp> kakaoPayRefund(KakaoPayDTO.PayReq payReq) {
         return findCurrentMember()
                 .flatMap(member -> orderRepository.findById(payReq.getOrderId())
                         .flatMap(order -> {
@@ -281,11 +308,11 @@ public class KakaoPayService {
                                                                 .queryParams(params)
                                                                 .build())
                                                         .retrieve()
-                                                        .bodyToMono(KakaoPayDTO.CancelResp.class);
+                                                        .bodyToMono(KakaoPayDTO.RefundResp.class);
                                             }));
                         })
                 );
-    }
+    }*/
 
     /**
      * 주문 상태 변경
@@ -299,5 +326,10 @@ public class KakaoPayService {
                 ).then();
     }
 
+    private Mono<Void> updatePaymentStatus(Long orderId, PaymentStatus paymentStatus) {
+        return paymentRepository.findByOrderId(orderId)
+                .flatMap(payment -> paymentRepository.updateStatus(payment.getTid(), paymentStatus))
+                .then();
+    }
 
 }

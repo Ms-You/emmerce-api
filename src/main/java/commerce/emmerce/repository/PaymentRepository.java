@@ -1,6 +1,7 @@
 package commerce.emmerce.repository;
 
 import commerce.emmerce.domain.Payment;
+import commerce.emmerce.domain.PaymentStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
@@ -16,8 +17,8 @@ public class PaymentRepository {
 
     public Mono<Void> saveTemporary(Payment payment) {
         String query = """
-                insert into payment (tid, cid, partner_order_id, partner_user_id)
-                values (:tid, :cid, :partner_order_id, :partner_user_id)
+                insert into payment (tid, cid, partner_order_id, partner_user_id, payment_status)
+                values (:tid, :cid, :partner_order_id, :partner_user_id, :paymentStatus)
                 """;
 
         return databaseClient.sql(query)
@@ -25,6 +26,7 @@ public class PaymentRepository {
                 .bind("cid", payment.getCid())
                 .bind("partner_order_id", payment.getPartner_order_id())
                 .bind("partner_user_id", payment.getPartner_user_id())
+                .bind("paymentStatus", payment.getPaymentStatus().name())
                 .then();
     }
 
@@ -33,11 +35,11 @@ public class PaymentRepository {
                 insert into payment (aid, tid, cid, partner_order_id, partner_user_id, payment_method_type, total_amount,
                                     tax_free, vat, point, discount, green_deposit, purchase_corp, purchase_corp_code,
                                     issuer_corp, issuer_corp_code, bin, card_type, install_month, approved_id, card_mid,
-                                    interest_free_install, card_item_code, item_name, quantity, created_at, approved_at)
+                                    interest_free_install, card_item_code, item_name, quantity, created_at, approved_at, payment_status)
                 values (:aid, :tid, :cid, :partner_order_id, :partner_user_id, :payment_method_type, :total_amount,
                         :tax_free, :vat, :point, :discount, :green_deposit, :purchase_corp, :purchase_corp_code,
                         :issuer_corp, :issuer_corp_code, :bin, :card_type, :install_month, :approved_id, :card_mid,
-                        :interest_free_install, :card_item_code, :item_name, :quantity, :created_at, :approved_at)
+                        :interest_free_install, :card_item_code, :item_name, :quantity, :created_at, :approved_at, :paymentStatus)
                 on conflict (tid) do update
                 set aid = :aid, cid = :cid, partner_order_id = :partner_order_id, partner_user_id = :partner_user_id,
                                     payment_method_type = :payment_method_type, total_amount = :total_amount, tax_free = :tax_free, vat = :vat,
@@ -45,7 +47,7 @@ public class PaymentRepository {
                                     purchase_corp_code = :purchase_corp_code, issuer_corp = :issuer_corp, issuer_corp_code = :issuer_corp_code,
                                     bin = :bin, card_type = :card_type, install_month = :install_month, approved_id = :approved_id,
                                     card_mid = :card_mid, interest_free_install = :interest_free_install, card_item_code = :card_item_code,
-                                    item_name = :item_name, quantity = :quantity, created_at = :created_at, approved_at = :approved_at
+                                    item_name = :item_name, quantity = :quantity, created_at = :created_at, approved_at = :approved_at, payment_status = :paymentStatus
                 returning *
                 """;
 
@@ -77,6 +79,7 @@ public class PaymentRepository {
                 .bind("quantity", payment.getQuantity())
                 .bind("created_at", payment.getCreated_at())
                 .bind("approved_at", payment.getApproved_at())
+                .bind("paymentStatus", payment.getPaymentStatus().name())
                 .fetch().one()
                 .map(row -> Payment.builder()
                         .aid((String)row.get("aid"))
@@ -106,6 +109,7 @@ public class PaymentRepository {
                         .quantity((Integer)row.get("quantity"))
                         .created_at((LocalDateTime) row.get("created_at"))
                         .approved_at((LocalDateTime) row.get("approved_at"))
+                        .paymentStatus(PaymentStatus.valueOf((String) row.get("payment_status")))
                         .build());
     }
 
@@ -147,7 +151,21 @@ public class PaymentRepository {
                         .quantity((Integer)row.get("quantity"))
                         .created_at((LocalDateTime) row.get("created_at"))
                         .approved_at((LocalDateTime) row.get("approved_at"))
+                        .paymentStatus(PaymentStatus.valueOf((String) row.get("payment_status")))
                         .build());
+    }
+
+    public Mono<Void> updateStatus(String tid, PaymentStatus paymentStatus) {
+        String query = """
+                update payment
+                set payment_status = :paymentStatus
+                where tid = :tid
+                """;
+
+        return databaseClient.sql(query)
+                .bind("paymentStatus", paymentStatus.name())
+                .bind("tid", tid)
+                .then();
     }
 
 }
