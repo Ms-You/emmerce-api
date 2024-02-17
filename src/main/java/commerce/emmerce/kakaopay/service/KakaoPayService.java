@@ -8,7 +8,6 @@ import commerce.emmerce.kakaopay.dto.CardInfo;
 import commerce.emmerce.kakaopay.dto.KakaoPayDTO;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -104,6 +103,7 @@ public class KakaoPayService {
                                         .cid(cid)
                                         .partner_order_id(String.valueOf(payReq.getOrderId()))
                                         .partner_user_id(String.valueOf(member.getMemberId()))
+                                        .paymentStatus(PaymentStatus.ING)
                                         .build();
                                 return paymentRepository.saveTemporary(payment)
                                         .thenReturn(readyResp);
@@ -182,6 +182,7 @@ public class KakaoPayService {
                 .quantity(approveResp.getQuantity())
                 .created_at(LocalDateTime.parse(approveResp.getCreated_at()))
                 .approved_at(LocalDateTime.parse(approveResp.getApproved_at()))
+                .paymentStatus(PaymentStatus.COMPLETE)
                 .build();
     }
 
@@ -236,6 +237,7 @@ public class KakaoPayService {
 
                             return updateOrderStatus(order.getOrderId(), OrderStatus.CANCEL)
                                     .then(updateDeliveryStatus(order.getOrderId()))
+                                    .then(updatePaymentStatus(order.getOrderId(), PaymentStatus.CANCEL))
                                     .then();
                         })
                 );
@@ -246,7 +248,7 @@ public class KakaoPayService {
      * @param payReq
      * @return
      */
-    public Mono<KakaoPayDTO.OrderResp> kakaoPayOrdered(KakaoPayDTO.PayReq payReq) {
+    public Mono<KakaoPayDTO.OrderResp> kakaoPayInfo(KakaoPayDTO.PayReq payReq) {
         return findCurrentMember()
                 .flatMap(member -> orderRepository.findById(payReq.getOrderId())
                         .flatMap(order -> {
@@ -270,7 +272,7 @@ public class KakaoPayService {
      * 카카오페이 결제 환불
      * @param payReq
      * @return
-     */
+     *//*
     public Mono<KakaoPayDTO.RefundResp> kakaoPayRefund(KakaoPayDTO.PayReq payReq) {
         return findCurrentMember()
                 .flatMap(member -> orderRepository.findById(payReq.getOrderId())
@@ -310,7 +312,7 @@ public class KakaoPayService {
                                             }));
                         })
                 );
-    }
+    }*/
 
     /**
      * 주문 상태 변경
@@ -324,5 +326,10 @@ public class KakaoPayService {
                 ).then();
     }
 
+    private Mono<Void> updatePaymentStatus(Long orderId, PaymentStatus paymentStatus) {
+        return paymentRepository.findByOrderId(orderId)
+                .flatMap(payment -> paymentRepository.updateStatus(payment.getTid(), paymentStatus))
+                .then();
+    }
 
 }

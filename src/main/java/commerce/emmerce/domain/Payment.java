@@ -42,14 +42,15 @@ public class Payment {
     private Integer quantity;
     private LocalDateTime created_at;
     private LocalDateTime approved_at;
+    private PaymentStatus paymentStatus;
 
 
     @Builder
-    public Payment(String aid, String tid, String cid, String partner_order_id, String partner_user_id, String payment_method_type,
-                   Integer total_amount, Integer tax_free, Integer vat, Integer point, Integer discount, Integer green_deposit,
-                   String purchase_corp, String purchase_corp_code, String issuer_corp, String issuer_corp_code, String bin,
-                   String card_type, String install_month, String approved_id, String card_mid, String interest_free_install,
-                   String card_item_code, String item_name, Integer quantity, LocalDateTime created_at, LocalDateTime approved_at) {
+    public Payment(String aid, String tid, String cid, String partner_order_id, String partner_user_id, String payment_method_type, Integer total_amount,
+                   Integer tax_free, Integer vat, Integer point, Integer discount, Integer green_deposit, String purchase_corp, String purchase_corp_code,
+                   String issuer_corp, String issuer_corp_code, String bin, String card_type, String install_month, String approved_id, String card_mid,
+                   String interest_free_install, String card_item_code, String item_name, Integer quantity, LocalDateTime created_at, LocalDateTime approved_at,
+                   PaymentStatus paymentStatus) {
         this.aid = aid;
         this.tid = tid;
         this.cid = cid;
@@ -77,5 +78,10 @@ public class Payment {
         this.quantity = quantity;
         this.created_at = created_at;
         this.approved_at = approved_at;
+        this.paymentStatus = paymentStatus;
+    }
+
+    public void updateStatus(PaymentStatus paymentStatus) {
+        this.paymentStatus = paymentStatus;
     }
 }

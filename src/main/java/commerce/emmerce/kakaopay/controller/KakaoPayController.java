@@ -43,7 +43,7 @@ public class KakaoPayController {
     @Parameter(name = "payReq", description = "결제 정보를 조회할 주문 id")
     @PostMapping("/order")
     public Mono<KakaoPayDTO.OrderResp> lookUpOrder(@RequestBody KakaoPayDTO.PayReq payReq) {
-        return kakaoPayService.kakaoPayOrdered(payReq);
+        return kakaoPayService.kakaoPayInfo(payReq);
     }
 
 
@@ -61,11 +61,11 @@ public class KakaoPayController {
     }
 
 
-    @Operation(summary = "결제 환불 요청", description = "결제 승인 완료 후 결제에 대해 환불합니다.")
+    /*@Operation(summary = "결제 환불 요청", description = "결제 승인 완료 후 결제에 대해 환불합니다.")
     @Parameter(name = "payReq", description = "환불 할 주문 id")
     @PostMapping("/refund")
     public Mono<KakaoPayDTO.RefundResp> refund(@RequestBody KakaoPayDTO.PayReq payReq) {
         return kakaoPayService.kakaoPayRefund(payReq);
-    }
+    }*/
 
 }
