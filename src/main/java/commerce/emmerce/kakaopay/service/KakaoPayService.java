@@ -8,6 +8,7 @@ import commerce.emmerce.kakaopay.dto.CardInfo;
 import commerce.emmerce.kakaopay.dto.KakaoPayDTO;
 import commerce.emmerce.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -217,6 +218,30 @@ public class KakaoPayService {
     }
 
     /**
+     * 카카오페이 결제 취소
+     * @param payReq
+     * @return
+     */
+    public Mono<Void> kakaoPayCancel(KakaoPayDTO.PayReq payReq) {
+        return findCurrentMember()
+                .flatMap(member -> orderRepository.findById(payReq.getOrderId())
+                        .flatMap(order -> {
+                            if (member.getMemberId() != order.getMemberId()) {
+                                return Mono.error(new GlobalException(ErrorCode.ORDER_MEMBER_NOT_MATCHED));
+                            }
+
+                            if(order.getOrderStatus().equals(OrderStatus.CANCEL)) {
+                                return Mono.error(new GlobalException(ErrorCode.ORDER_ALREADY_CANCELED));
+                            }
+
+                            return updateOrderStatus(order.getOrderId(), OrderStatus.CANCEL)
+                                    .then(updateDeliveryStatus(order.getOrderId()))
+                                    .then();
+                        })
+                );
+    }
+
+    /**
      * 카카오페이 결제 정보 조회
      * @param payReq
      * @return
@@ -242,11 +267,11 @@ public class KakaoPayService {
     }
 
     /**
-     * 카카오페이 결제 취소
+     * 카카오페이 결제 환불
      * @param payReq
      * @return
      */
-    public Mono<KakaoPayDTO.CancelResp> kakaoPayCancel(KakaoPayDTO.PayReq payReq) {
+    public Mono<KakaoPayDTO.RefundResp> kakaoPayRefund(KakaoPayDTO.PayReq payReq) {
         return findCurrentMember()
                 .flatMap(member -> orderRepository.findById(payReq.getOrderId())
                         .flatMap(order -> {
@@ -281,7 +306,7 @@ public class KakaoPayService {
                                                                 .queryParams(params)
                                                                 .build())
                                                         .retrieve()
-                                                        .bodyToMono(KakaoPayDTO.CancelResp.class);
+                                                        .bodyToMono(KakaoPayDTO.RefundResp.class);
                                             }));
                         })
                 );

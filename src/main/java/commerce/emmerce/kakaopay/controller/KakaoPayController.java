@@ -47,10 +47,10 @@ public class KakaoPayController {
     }
 
 
-    @Operation(summary = "결제 취소", description = "결제 요청 중 에러 발생으로 결제 취소 시 리다이렉트합니다.")
-    @GetMapping("/cancel")
-    public Mono<ResponseEntity> cancel() {
-        return Mono.error(new GlobalException(ErrorCode.PAYMENT_CANCELED));
+    @Operation(summary = "결제 취소", description = "결제 요청 중 사용자 요청으로 결제를 취소합니다.")
+    @PostMapping("/cancel")
+    public Mono<Void> cancel(@RequestBody KakaoPayDTO.PayReq payReq) {
+        return kakaoPayService.kakaoPayCancel(payReq);
     }
 
 
@@ -64,8 +64,8 @@ public class KakaoPayController {
     @Operation(summary = "결제 환불 요청", description = "결제 승인 완료 후 결제에 대해 환불합니다.")
     @Parameter(name = "payReq", description = "환불 할 주문 id")
     @PostMapping("/refund")
-    public Mono<KakaoPayDTO.CancelResp> refund(@RequestBody KakaoPayDTO.PayReq payReq) {
-        return kakaoPayService.kakaoPayCancel(payReq);
+    public Mono<KakaoPayDTO.RefundResp> refund(@RequestBody KakaoPayDTO.PayReq payReq) {
+        return kakaoPayService.kakaoPayRefund(payReq);
     }
 
 }
