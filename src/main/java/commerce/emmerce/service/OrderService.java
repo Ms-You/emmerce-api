@@ -126,7 +126,7 @@ public class OrderService {
                             // 현재 사용자가 주문자와 같은지 체크
                             if (order.getMemberId() != member.getMemberId()) {
                                 return Mono.error(new GlobalException(ErrorCode.ORDER_MEMBER_NOT_MATCHED));
-                            } else if(order.getOrderStatus().equals(OrderStatus.COMPLETE)) {    // 주문이 완료되었는지 확인
+                            } else if(!order.getOrderStatus().equals(OrderStatus.COMPLETE)) {    // 주문이 완료되었는지 확인
                                 return Mono.error(new GlobalException(ErrorCode.ORDER_NOT_COMPLETED));
                             }
 
