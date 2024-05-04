@@ -9,6 +9,7 @@ public class CartProductDTO {
 
     @Getter
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class EnrollReq {
         private Long productId;
         private Integer quantity;
