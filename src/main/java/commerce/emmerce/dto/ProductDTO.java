@@ -3,13 +3,14 @@ package commerce.emmerce.dto;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ProductDTO {
 
     @Getter
     @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class ProductReq {
         private String name;
         private String detail;
@@ -21,6 +22,8 @@ public class ProductDTO {
 
     @Getter
     @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class UpdateReq {
         private String name;
         private String detail;

@@ -13,6 +13,7 @@ public class ReviewDTO {
 
     @Getter
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class ReviewReq {
         private String title;
         private String description;

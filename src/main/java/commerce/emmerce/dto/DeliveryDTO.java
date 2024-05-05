@@ -1,6 +1,8 @@
 package commerce.emmerce.dto;
 
 import commerce.emmerce.domain.DeliveryStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -8,6 +10,8 @@ public class DeliveryDTO {
 
     @Getter
     @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
     public static class DeliveryReq {
         // 주문자 정보
         private String name;
@@ -22,6 +26,7 @@ public class DeliveryDTO {
 
     @Getter
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class StatusReq {
         private DeliveryStatus deliveryStatus;
     }

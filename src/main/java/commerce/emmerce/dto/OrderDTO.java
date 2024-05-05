@@ -14,6 +14,7 @@ public class OrderDTO {
 
     @Getter
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class OrderReq {
         // 주문 상품 목록
         private List<OrderProductReq> orderProductList;
@@ -23,6 +24,7 @@ public class OrderDTO {
 
     @Getter
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class OrderProductReq {
         private Long productId;
         private Integer totalCount;
