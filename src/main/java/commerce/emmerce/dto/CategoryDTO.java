@@ -9,6 +9,7 @@ public class CategoryDTO {
 
     @Getter
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class CreateReq {
         private Integer tier;
         private String name;
