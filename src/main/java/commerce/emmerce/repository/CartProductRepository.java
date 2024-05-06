@@ -37,7 +37,10 @@ public class CartProductRepository {
             executeSpec = executeSpec.bind("cartProductId", cartProduct.getCartProductId());
         }
 
-        return executeSpec.then();
+        return executeSpec
+                .fetch()
+                .rowsUpdated()
+                .then();
     }
 
     public Mono<CartProduct> findByCartIdAndCartProductId(Long cartId, Long cartProductId) {
@@ -89,6 +92,8 @@ public class CartProductRepository {
 
         return databaseClient.sql(query)
                 .bind("cartProductId", cartProduct.getCartProductId())
+                .fetch()
+                .rowsUpdated()
                 .then();
     }
 
@@ -101,7 +106,8 @@ public class CartProductRepository {
 
         return databaseClient.sql(query)
                 .bind("cartId", cartId)
-                .fetch().rowsUpdated();
+                .fetch()
+                .rowsUpdated();
     }
 
     public Flux<CartProductDTO.ListResp> findAllByCartId(Long cartId) {
