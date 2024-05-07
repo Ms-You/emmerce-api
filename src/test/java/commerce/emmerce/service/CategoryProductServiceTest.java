@@ -40,7 +40,6 @@ class CategoryProductServiceTest {
     private CategoryProductRepository categoryProductRepository;
 
     private Category category;
-    private CategoryProduct categoryProduct;
     private Product product;
 
     @BeforeEach
@@ -67,12 +66,6 @@ class CategoryProductServiceTest {
                 .detailImgList(List.of("바지 상세 이미지1", "바지 상세 이미지2"))
                 .brand("이머스몰")
                 .enrollTime(LocalDateTime.now())
-                .build();
-
-        categoryProduct = CategoryProduct.builder()
-                .categoryProductId(1L)
-                .categoryId(category.getCategoryId())
-                .productId(product.getProductId())
                 .build();
     }
 
