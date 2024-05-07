@@ -27,6 +27,8 @@ public class PaymentRepository {
                 .bind("partner_order_id", payment.getPartner_order_id())
                 .bind("partner_user_id", payment.getPartner_user_id())
                 .bind("paymentStatus", payment.getPaymentStatus().name())
+                .fetch()
+                .rowsUpdated()
                 .then();
     }
 
@@ -165,6 +167,8 @@ public class PaymentRepository {
         return databaseClient.sql(query)
                 .bind("paymentStatus", paymentStatus.name())
                 .bind("tid", tid)
+                .fetch()
+                .rowsUpdated()
                 .then();
     }
 

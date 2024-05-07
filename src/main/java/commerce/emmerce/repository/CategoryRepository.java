@@ -37,7 +37,10 @@ public class CategoryRepository {
             executeSpec = executeSpec.bind("categoryId", category.getCategoryId());
         }
 
-        return executeSpec.then();
+        return executeSpec
+                .fetch()
+                .rowsUpdated()
+                .then();
     }
 
     public Flux<Category> findAll() {

@@ -38,7 +38,10 @@ public class OrderProductRepository {
             executeSpec = executeSpec.bind("orderProductId", orderProduct.getOrderProductId());
         }
 
-        return executeSpec.then();
+        return executeSpec
+                .fetch()
+                .rowsUpdated()
+                .then();
     }
 
     public Mono<OrderProduct> findById(Long orderProductId) {

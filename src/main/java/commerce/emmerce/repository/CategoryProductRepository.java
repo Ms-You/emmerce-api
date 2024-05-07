@@ -37,7 +37,10 @@ public class CategoryProductRepository {
             executeSpec = executeSpec.bind("categoryProductId", categoryProduct.getCategoryProductId());
         }
 
-        return executeSpec.then();
+        return executeSpec
+                .fetch()
+                .rowsUpdated()
+                .then();
     }
 
     public Flux<CategoryProduct> findByProductId(Long productId) {
@@ -68,6 +71,8 @@ public class CategoryProductRepository {
         return databaseClient.sql(query)
                 .bind("categoryId", categoryId)
                 .bind("productId", productId)
+                .fetch()
+                .rowsUpdated()
                 .then();
     }
 

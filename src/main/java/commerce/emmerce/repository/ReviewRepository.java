@@ -47,7 +47,10 @@ public class ReviewRepository {
             executeSpec = executeSpec.bind("reviewId", review.getReviewId());
         }
 
-        return executeSpec.then();
+        return executeSpec
+                .fetch()
+                .rowsUpdated()
+                .then();
     }
 
     public Mono<Review> findById(Long reviewId) {
