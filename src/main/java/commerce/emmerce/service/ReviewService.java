@@ -18,6 +18,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 
+import static commerce.emmerce.common.MemberUtil.maskingMemberName;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -238,20 +240,6 @@ public class ReviewService {
 
         return Mono.zip(reviewRespFlux.collectList(), totalReviews)
                 .map(t -> new PageResponseDTO<>(t.getT1(), page, size, t.getT2().intValue()));
-    }
-
-    /**
-     * 사용자 이름 마스킹 처리
-     * @param existsName
-     * @return
-     */
-    private String maskingMemberName(String existsName) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(existsName.substring(0,1));
-        sb.append("********");
-        sb.append(existsName.substring(existsName.length() - 1));
-
-        return sb.toString();
     }
 
 }
