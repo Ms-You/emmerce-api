@@ -124,7 +124,7 @@ public class OrderService {
                         .switchIfEmpty(Mono.error(new GlobalException(ErrorCode.ORDER_NOT_FOUND)))  // 잘못된 orderId 를 받았을 때 예외처리
                         .flatMap(order -> {
                             // 현재 사용자가 주문자와 같은지 체크
-                            if (order.getMemberId() != member.getMemberId()) {
+                            if (!order.getMemberId().equals(member.getMemberId())) {
                                 return Mono.error(new GlobalException(ErrorCode.ORDER_MEMBER_NOT_MATCHED));
                             } else if(!order.getOrderStatus().equals(OrderStatus.COMPLETE)) {    // 주문이 완료되었는지 확인
                                 return Mono.error(new GlobalException(ErrorCode.ORDER_NOT_COMPLETED));
@@ -149,11 +149,8 @@ public class OrderService {
                                                 reviewStatus,
                                                 deliveryStatus
                                         ));
-                                    }).onErrorResume(e -> {
-                                        log.error(e.getMessage());
-
-                                        return Mono.empty();
-                                    })).collectList()
+                                    }).onErrorResume(this::handleGlobalException)
+                                    ).collectList()
                                     .map(orderProductRespList -> OrderDTO.OrderResp.transfer(order, orderProductRespList));
                         })
                 );
@@ -196,19 +193,11 @@ public class OrderService {
                                             reviewStatus,
                                             deliveryStatus
                                     );
-                                }).onErrorResume(e -> {
-                                    log.error(e.getMessage());
-
-                                    return Mono.empty();
-                                })
+                                }).onErrorResume(this::handleGlobalException)
                         ).collectList()
                         .map(orderProductRespList -> OrderDTO.OrderResp.transfer(order, orderProductRespList))
                 )
-                .onErrorResume(e -> {
-                    log.error(e.getMessage());
-
-                    return Flux.empty();
-                });
+                .onErrorResume(this::handleGlobalException);
     }
 
     /**
@@ -239,6 +228,16 @@ public class OrderService {
     public Mono<Boolean> checkReviewWrote(Member member, Long orderProductId) {
         return reviewRepository.findByMemberAndOrderProduct(member.getMemberId(), orderProductId)
                 .map(count -> count != 0);
+    }
+
+    public <T> Mono <T> handleGlobalException(Throwable e) {
+        if(e instanceof GlobalException) {
+            return Mono.error(new GlobalException(((GlobalException) e).getErrorCode()));
+        } else {
+            log.error("Error Message: {}", e.getMessage(), e);
+
+            return Mono.error(new GlobalException(ErrorCode.INTERNAL_SERVER_ERROR));
+        }
     }
 
 }
