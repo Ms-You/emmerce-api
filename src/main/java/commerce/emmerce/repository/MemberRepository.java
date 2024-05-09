@@ -58,6 +58,8 @@ public class MemberRepository {
                 .flatMap(memberId ->
                         databaseClient.sql(cartQuery)
                                 .bind("memberId", memberId)
+                                .fetch()
+                                .rowsUpdated()
                                 .then()
                 ).switchIfEmpty(Mono.empty())
                 .as(transactionalOperator::transactional);
