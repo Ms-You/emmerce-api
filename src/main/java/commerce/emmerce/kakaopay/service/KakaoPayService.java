@@ -61,7 +61,7 @@ public class KakaoPayService {
         return orderRepository.findById(payReq.getOrderId())
                 .flatMap(order -> {
                     params.add("partner_order_id", String.valueOf(order.getOrderId()));   // 가맹점 주문 번호
-                    return orderProductRepository.findByOrderId(order.getOrderId()).collectList();
+                    return orderProductRepository.findAllByOrderId(order.getOrderId()).collectList();
                 })
                 .flatMap(orderProductList -> {
                     int totalQuantity = orderProductList.stream()
@@ -208,7 +208,7 @@ public class KakaoPayService {
      * @return
      */
     private Mono<Void> updateProductStock(Long orderId, boolean flag) {
-        return orderProductRepository.findByOrderId(orderId)
+        return orderProductRepository.findAllByOrderId(orderId)
                 .flatMap(orderProduct -> productRepository.findById(orderProduct.getProductId())
                         .doOnSuccess(product -> {
                             int stockQuantity = flag ? product.getStockQuantity() - orderProduct.getTotalCount()
@@ -320,7 +320,7 @@ public class KakaoPayService {
      * @return
      */
     private Mono<Void> updateDeliveryStatus(Long orderId) {
-        return orderProductRepository.findByOrderId(orderId)
+        return orderProductRepository.findAllByOrderId(orderId)
                 .flatMap(orderProduct -> deliveryRepository.findByOrderProductId(orderProduct.getOrderProductId())
                         .flatMap(delivery -> deliveryRepository.updateStatus(delivery.getDeliveryId(), orderProduct.getOrderProductId(), DeliveryStatus.CANCEL))
                 ).then();
