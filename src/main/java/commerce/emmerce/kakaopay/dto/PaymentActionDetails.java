@@ -1,8 +1,10 @@
 package commerce.emmerce.kakaopay.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class PaymentActionDetails {
     private String aid;	// Request 고유 번호
     private String approved_at;	// 거래시간

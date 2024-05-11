@@ -1,8 +1,10 @@
 package commerce.emmerce.kakaopay.dto;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class CardInfo {
     private String purchase_corp;	// 매입 카드사 한글명
     private String purchase_corp_code;	// 매입 카드사 코드

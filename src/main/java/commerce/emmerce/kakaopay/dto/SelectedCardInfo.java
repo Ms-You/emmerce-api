@@ -1,8 +1,10 @@
 package commerce.emmerce.kakaopay.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class SelectedCardInfo {
     private String card_bin;	// 카드 BIN
     private int install_month;	// 할부 개월 수

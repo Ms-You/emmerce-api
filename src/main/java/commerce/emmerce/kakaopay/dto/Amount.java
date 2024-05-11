@@ -1,8 +1,10 @@
 package commerce.emmerce.kakaopay.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class Amount {
     private int total;  // 전체 결제 금액
     private int tax_free;   // 비과세 금액
