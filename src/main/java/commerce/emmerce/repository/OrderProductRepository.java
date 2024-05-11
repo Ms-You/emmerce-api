@@ -38,7 +38,10 @@ public class OrderProductRepository {
             executeSpec = executeSpec.bind("orderProductId", orderProduct.getOrderProductId());
         }
 
-        return executeSpec.then();
+        return executeSpec
+                .fetch()
+                .rowsUpdated()
+                .then();
     }
 
     public Mono<OrderProduct> findById(Long orderProductId) {
@@ -79,23 +82,5 @@ public class OrderProductRepository {
                         .build());
     }
 
-    public Flux<OrderProduct> findByOrderId(Long orderId) {
-        String query = """
-                select *
-                from order_product op
-                where op.order_id = :orderId
-                """;
-
-        return databaseClient.sql(query)
-                .bind("orderId", orderId)
-                .fetch().all()
-                .map(row -> OrderProduct.builder()
-                        .orderProductId((Long) row.get("order_product_id"))
-                        .totalPrice((Integer) row.get("total_price"))
-                        .totalCount((Integer) row.get("total_count"))
-                        .orderId((Long) row.get("order_id"))
-                        .productId((Long) row.get("product_id"))
-                        .build());
-    }
 
 }

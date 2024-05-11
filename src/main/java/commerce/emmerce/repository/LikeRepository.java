@@ -34,7 +34,10 @@ public class LikeRepository {
             executeSpec = executeSpec.bind("likeId", like.getLikeId());
         }
 
-        return executeSpec.then();
+        return executeSpec
+                .fetch()
+                .rowsUpdated()
+                .then();
     }
 
     public Mono<Like> findByMemberIdAndProductId(Long memberId, Long productId) {
@@ -67,6 +70,8 @@ public class LikeRepository {
         return databaseClient.sql(query)
                 .bind("memberId", memberId)
                 .bind("productId", productId)
+                .fetch()
+                .rowsUpdated()
                 .then();
     }
 

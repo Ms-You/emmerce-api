@@ -1,6 +1,7 @@
 package commerce.emmerce.kakaopay.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -8,6 +9,7 @@ public class KakaoPayDTO {
 
     @Getter
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class PayReq {
         private Long orderId;
     }
@@ -25,6 +27,7 @@ public class KakaoPayDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class ApproveResp {
         private String aid; // 요청 고유 번호
         private String tid; // 결제 고유 번호
@@ -47,6 +50,7 @@ public class KakaoPayDTO {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
+    @Builder
     public static class OrderResp {
         private String tid;	// 결제 고유 번호, 20자
         private String cid;	// 가맹점 코드

@@ -27,6 +27,8 @@ public class PaymentRepository {
                 .bind("partner_order_id", payment.getPartner_order_id())
                 .bind("partner_user_id", payment.getPartner_user_id())
                 .bind("paymentStatus", payment.getPaymentStatus().name())
+                .fetch()
+                .rowsUpdated()
                 .then();
     }
 
@@ -99,7 +101,7 @@ public class PaymentRepository {
                         .issuer_corp((String)row.get("issuer_corp"))
                         .issuer_corp_code((String)row.get("issuer_corp_code"))
                         .bin((String)row.get("bin"))
-                        .card_type((String)row.get("cart_type"))
+                        .card_type((String)row.get("card_type"))
                         .install_month((String)row.get("install_month"))
                         .approved_id((String)row.get("approved_id"))
                         .card_mid((String)row.get("card_mid"))
@@ -141,7 +143,7 @@ public class PaymentRepository {
                         .issuer_corp((String)row.get("issuer_corp"))
                         .issuer_corp_code((String)row.get("issuer_corp_code"))
                         .bin((String)row.get("bin"))
-                        .card_type((String)row.get("cart_type"))
+                        .card_type((String)row.get("card_type"))
                         .install_month((String)row.get("install_month"))
                         .approved_id((String)row.get("approved_id"))
                         .card_mid((String)row.get("card_mid"))
@@ -165,6 +167,8 @@ public class PaymentRepository {
         return databaseClient.sql(query)
                 .bind("paymentStatus", paymentStatus.name())
                 .bind("tid", tid)
+                .fetch()
+                .rowsUpdated()
                 .then();
     }
 

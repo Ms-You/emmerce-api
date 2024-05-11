@@ -1,8 +1,10 @@
 package commerce.emmerce.kakaopay.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class CanceledAvailableAmount {
     private int total;	// 전체 취소 가능 금액
     private int tax_free;	// 취소 가능한 비과세 금액

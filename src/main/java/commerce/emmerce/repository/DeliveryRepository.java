@@ -42,7 +42,10 @@ public class DeliveryRepository {
             executeSpec = executeSpec.bind("deliveryId", delivery.getDeliveryId());
         }
 
-        return executeSpec.then();
+        return executeSpec
+                .fetch()
+                .rowsUpdated()
+                .then();
     }
 
     public Mono<Delivery> findByOrderProductId(Long orderProductId) {
@@ -81,6 +84,8 @@ public class DeliveryRepository {
                 .bind("deliveryStatus", deliveryStatus.name())
                 .bind("deliveryId", deliveryId)
                 .bind("orderProductId", orderProductId)
+                .fetch()
+                .rowsUpdated()
                 .then();
     }
 
